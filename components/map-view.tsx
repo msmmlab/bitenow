@@ -168,7 +168,7 @@ export default function MapView({ venues, onSelectVenue, userLocation }: MapView
                     console.log("Recenter clicked - fitting bounds for venues");
                     handleRecenter();
                 }}
-                className="absolute right-4 bottom-32 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-3 rounded-full shadow-2xl border border-gray-100 dark:border-zinc-800 text-black dark:text-white active:scale-90 transition-all z-10"
+                className="absolute right-4 bottom-8 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-3 rounded-full shadow-2xl border border-gray-100 dark:border-zinc-800 text-black dark:text-white active:scale-90 transition-all z-10"
                 title="Recenter Map"
             >
                 <Crosshair className="w-6 h-6" />

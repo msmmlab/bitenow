@@ -191,28 +191,28 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
 
                                     <div className="mt-6 pt-6 border-t border-gray-50">
                                         <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-5 text-left border border-yellow-100 dark:border-yellow-900/30">
-                                            <h4 className="font-black text-[10px] text-yellow-700 dark:text-yellow-500 uppercase tracking-[0.2em] mb-3">Own this place?</h4>
-                                            <p className="text-sm text-yellow-900 dark:text-yellow-400 font-bold leading-tight mb-2">
-                                                Activate specials
+                                            <h4 className="font-black text-[10px] text-yellow-700 dark:text-yellow-500 uppercase tracking-[0.2em] mb-3 text-center sm:text-left">Own this place?</h4>
+                                            <p className="text-sm text-yellow-900 dark:text-yellow-400 font-bold leading-tight mb-2 text-center sm:text-left">
+                                                Activate specials instantly
                                             </p>
-                                            <p className="text-xs text-yellow-800 dark:text-yellow-500/80 leading-relaxed mb-4">
-                                                Text your lunch special or a photo of today&apos;s specials board. <span className="font-black text-yellow-900 dark:text-yellow-400">No login required.</span>
+                                            <p className="text-xs text-yellow-800 dark:text-yellow-500/80 leading-relaxed mb-4 text-center sm:text-left">
+                                                No logins, no dashboards. Just text us your deal or a photo of today&apos;s specials board.
                                             </p>
 
-                                            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-3 mb-4 font-mono text-sm border border-yellow-200/50">
-                                                <span className="text-xs text-yellow-600 block mb-1">Text to:</span>
-                                                <span className="font-black text-lg text-yellow-900 dark:text-yellow-400 break-all">{activationPhone}</span>
+                                            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 mb-4 font-mono text-center border border-yellow-200/50 shadow-sm transition-all">
+                                                <span className="text-[10px] text-yellow-700 font-bold uppercase tracking-wider block mb-1">Text your special to:</span>
+                                                <span className="font-black text-xl text-yellow-900 dark:text-yellow-400 break-all underline decoration-2 underline-offset-4">{activationPhone}</span>
                                             </div>
 
-                                            <div className="space-y-2 opacity-80">
-                                                <p className="text-[10px] text-yellow-700 italic">Example: &quot;$15 lunch schnitzel 12–3&quot;</p>
-                                                <p className="text-[10px] text-yellow-700 italic">Example: &quot;2-for-1 Aperol Spritz 4–6&quot;</p>
+                                            <div className="space-y-2 opacity-80 text-center sm:text-left">
+                                                <p className="text-[10px] text-yellow-700 italic font-medium leading-tight">&quot;$15 lunch schnitzel 12–3&quot;</p>
+                                                <p className="text-[10px] text-yellow-700 italic font-medium leading-tight">Or just text a photo of your specials board</p>
                                             </div>
 
-                                            <div className="mt-4 pt-4 border-t border-yellow-200/30 flex items-center gap-2">
+                                            <div className="mt-5 pt-4 border-t border-yellow-200/30 flex items-center justify-center sm:justify-start gap-2">
                                                 <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse" />
-                                                <p className="text-[10px] font-bold text-yellow-800 dark:text-yellow-600">
-                                                    We&apos;ll turn it into a deal card automatically.
+                                                <p className="text-[10px] font-bold text-yellow-800 dark:text-yellow-600 uppercase tracking-tighter">
+                                                    We&apos;ll turn it into a deal card instantly.
                                                 </p>
                                             </div>
                                         </div>
