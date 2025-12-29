@@ -114,8 +114,14 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
                             ? "bg-gradient-to-br from-orange-500 via-orange-400 to-yellow-400"
                             : "bg-gradient-to-br from-gray-500 to-gray-400"
                     )}>
-                        <div className="text-6xl mb-3 drop-shadow-md">{icon}</div>
-                        <h2 className="font-extrabold text-3xl leading-none drop-shadow-md mb-1">{venueName}</h2>
+                        <div className="text-6xl mb-3 drop-shadow-md flex justify-center">
+                            {icon && icon.startsWith('/') ? (
+                                <img src={icon} alt={venueName} className="w-20 h-20 object-contain" />
+                            ) : (
+                                icon
+                            )}
+                        </div>
+                        <h2 className="font-extrabold text-3xl leading-none drop-shadow-md mb-1 text-center">{venueName}</h2>
                         <p className="text-xs font-bold uppercase tracking-widest opacity-90">{category}</p>
 
                         {/* Travel Time Badge */}

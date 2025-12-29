@@ -309,8 +309,12 @@ export default function Home() {
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-3">
-                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-xl bg-gray-100 dark:bg-gray-800")}>
-                          {item.icon || '🍽️'}
+                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-xl bg-gray-100 dark:bg-gray-800 overflow-hidden")}>
+                          {item.icon && item.icon.startsWith('/') ? (
+                            <img src={item.icon} alt={item.category} className="w-full h-full object-cover" />
+                          ) : (
+                            item.icon || '🍽️'
+                          )}
                         </div>
                         <div>
                           <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-tight">{item.name}</h3>

@@ -29,16 +29,19 @@ export default function MapView({ venues, onSelectVenue }: MapViewProps) {
 
         mapboxgl.accessToken = MAPBOX_TOKEN;
 
+        console.log("MapView: Initializing with venues:", venues.length);
+
         try {
-            map.current = new mapboxgl.Map({
-                container: mapContainer.current,
+            const mapInstance = new mapboxgl.Map({
+                container: mapContainer.current!,
                 style: 'mapbox://styles/mapbox/streets-v12',
                 center: NOOSA_COORDS,
                 zoom: 13,
             });
+            map.current = mapInstance;
 
-            map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-            map.current.addControl(
+            mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+            mapInstance.addControl(
                 new mapboxgl.GeolocateControl({
                     positionOptions: { enableHighAccuracy: true },
                     trackUserLocation: true,
@@ -46,38 +49,54 @@ export default function MapView({ venues, onSelectVenue }: MapViewProps) {
                 })
             );
 
-            map.current.on('load', () => {
+            mapInstance.on('load', () => {
+                console.log("MapView: Map loaded, adding markers");
+                if (venues.length === 0) return;
+
+                const bounds = new mapboxgl.LngLatBounds();
+                let hasValidCoords = false;
+
                 venues.forEach((venue) => {
-                    let lngLat: [number, number] = NOOSA_COORDS;
+                    let lngLat: [number, number];
                     if (venue.lng && venue.lat) {
-                        lngLat = [venue.lng, venue.lat];
+                        lngLat = [Number(venue.lng), Number(venue.lat)];
                     } else {
+                        // Fallback to jittered Noosa center
                         const offsetLat = (Math.random() - 0.5) * 0.02;
                         const offsetLng = (Math.random() - 0.5) * 0.02;
                         lngLat = [NOOSA_COORDS[0] + offsetLng, NOOSA_COORDS[1] + offsetLat];
                     }
 
+                    bounds.extend(lngLat);
+                    hasValidCoords = true;
+
                     // Marker Element
                     const el = document.createElement('div');
                     el.className = 'marker';
                     const icon = venue.icon || '🍽️';
-                    el.innerHTML = `<div class="bg-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg border-2 border-white text-3xl hover:scale-110 transition-transform cursor-pointer transform -translate-y-1/2">${icon}</div>`;
+                    const isImg = icon.startsWith('/');
+                    el.innerHTML = `
+                        <div class="bg-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg border-2 border-white text-3xl hover:scale-110 transition-transform cursor-pointer transform -translate-y-1/2 overflow-hidden">
+                            ${isImg ? `<img src="${icon}" class="w-full h-full object-cover" />` : icon}
+                        </div>
+                    `;
 
-                    // Click Listener -> Set React State
                     el.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Prevent map click
+                        e.stopPropagation();
                         onSelectVenue(venue);
-                        // Optional: Pan to marker
                     });
 
                     new mapboxgl.Marker(el)
                         .setLngLat(lngLat)
-                        .addTo(map.current!);
+                        .addTo(mapInstance);
                 });
+
+                if (hasValidCoords && venues.length > 1) {
+                    mapInstance.fitBounds(bounds, { padding: 80, maxZoom: 15 });
+                }
             });
 
-            // Close modal on map click
-            map.current.on('click', () => {
+            mapInstance.on('click', () => {
                 onSelectVenue(null);
             });
 
@@ -85,6 +104,13 @@ export default function MapView({ venues, onSelectVenue }: MapViewProps) {
             console.error("Map error", err);
             setError("Could not load map");
         }
+
+        return () => {
+            if (map.current) {
+                map.current.remove();
+                map.current = null;
+            }
+        };
 
     }, [venues, onSelectVenue]);
 
@@ -98,8 +124,6 @@ export default function MapView({ venues, onSelectVenue }: MapViewProps) {
             </div>
         );
     }
-
-
 
     return (
         <div className="relative w-full h-full">
