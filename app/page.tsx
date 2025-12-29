@@ -53,24 +53,38 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 };
 
 // Helper for utility signals
-const getVenueSignal = (category: string) => {
+const getVenueSignal = (category: string, timeLens: string = 'Now') => {
   const hour = new Date().getHours();
   const lowerCat = category.toLowerCase();
+  const lowerLens = timeLens.toLowerCase();
 
   // Simple logic for MVP: standard trading hours 10am-10pm unless cafe
   if (lowerCat.includes('cafe')) {
-    if (hour < 7 || hour >= 16) return "Closed";
+    if (hour < 7 || hour >= 16) {
+      if (lowerLens === 'tonight') return "Open tomorrow";
+      return "Opens later";
+    }
     return "Open for coffee & food";
   }
 
-  if (hour < 10) return "Opening at 10am";
+  if (hour < 10) {
+    if (lowerLens === 'tonight') return "Opens tonight";
+    return "Opens later";
+  }
 
   const isNightSpot = lowerCat.includes('bar') || lowerCat.includes('pub') || lowerCat.includes('brewery') || lowerCat.includes('cocktail');
 
   if (isNightSpot) {
     if (hour >= 22 || hour < 2) return "Open late";
+    if (hour >= 2 && hour < 10) {
+      if (lowerLens === 'tonight') return "Opens tonight";
+      return "Opens later";
+    }
   } else {
-    if (hour >= 22) return "Closed";
+    if (hour >= 22) {
+      if (lowerLens === 'tonight') return "Likely open for dinner";
+      return "Opens later";
+    }
   }
 
   if (hour >= 11 && hour <= 14) return "Serving lunch";
@@ -158,8 +172,8 @@ export default function Home() {
       if (!userLocation) return { ...v, distance: "..." };
 
       const dist = calculateDistance(userLocation.lat, userLocation.lng, v.lat, v.lng);
-      const signal = getVenueSignal(v.category);
-      const isOpen = signal !== "Closed" && !signal.includes("Opening");
+      const signal = getVenueSignal(v.category, timeFilter);
+      const isOpen = !signal.includes("Closed") && !signal.includes("Opens") && !signal.includes("Likely");
 
       return {
         ...v,
@@ -425,7 +439,7 @@ export default function Home() {
                             </div>
                             <div className="text-[10px] text-green-600 dark:text-green-500 font-bold uppercase tracking-tighter mt-0.5 flex items-center gap-1">
                               <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                              {getVenueSignal(item.category)}
+                              {getVenueSignal(item.category, timeFilter)}
                             </div>
                           </div>
                         </div>
@@ -457,7 +471,11 @@ export default function Home() {
                         </>
                       ) : (
                         <>
-                          <h4 className="text-lg font-bold text-gray-400 dark:text-zinc-600 pr-8 italic">Awaiting today&apos;s specials</h4>
+                          {(timeFilter === 'Tonight' || new Date().getHours() < 13) && (
+                            <h4 className="text-lg font-bold text-gray-400 dark:text-zinc-600 pr-8 italic">
+                              {timeFilter === 'Tonight' ? 'No specials posted yet' : 'Awaiting today\'s specials'}
+                            </h4>
+                          )}
                           {item.known_for_bullets && item.known_for_bullets.length > 0 ? (
                             <div className="mt-2 space-y-1">
                               <div className="text-[10px] text-orange-400 mb-1">✨</div>
@@ -479,10 +497,12 @@ export default function Home() {
                               ))}
                             </div>
                           )}
-                          <div className="flex items-center gap-1.5 mt-2 text-sm text-gray-400 dark:text-zinc-600">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>Check back later — venues update daily</span>
-                          </div>
+                          {(timeFilter === 'Tonight' || new Date().getHours() < 13) && (
+                            <div className="flex items-center gap-1.5 mt-2 text-sm text-gray-400 dark:text-zinc-600">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>Check back later — venues update daily</span>
+                            </div>
+                          )}
                         </>
                       )}
                     </div>
