@@ -293,6 +293,30 @@ export async function GET() {
                 town: "Noosa",
                 activation_phone: activatePhone,
             },
+            {
+                name: "Village Bicycle",
+                slug: "village-bicycle",
+                category: "Bar & Grill",
+                icon: "🍻",
+                lat: -26.397,
+                lng: 153.065,
+                address: "Noosaville QLD 4566",
+                is_active: true,
+                town: "Noosa",
+                activation_phone: activatePhone,
+            },
+            {
+                name: "Mr Drifter",
+                slug: "mr-drifter",
+                category: "Modern Bar",
+                icon: "🎶",
+                lat: -26.398,
+                lng: 153.068,
+                address: "Noosaville QLD 4566",
+                is_active: true,
+                town: "Noosa",
+                activation_phone: activatePhone,
+            },
 
             // -------------------------
             // CALOUNDRA
@@ -539,9 +563,54 @@ export async function GET() {
             },
         ];
 
+        const RECOMMENDATIONS: Record<string, string> = {
+            "land-and-sea": "Small-batch craft beers, relaxed brewery lunches, and casual post-beach sessions.",
+            "noosa-burger-co": "Big, juicy burgers with loaded sides and classic takeaway comfort food.",
+            "sushi-wave": "Fresh sushi rolls, quick lunch bites, and light Japanese options.",
+            "sails-noosa": "Premium seafood dishes and long lunches with a beachfront view.",
+            "rickys": "Modern Australian plates, riverside dining, and well-crafted cocktails.",
+            "bistro-c": "Beachside dining, seafood classics, and relaxed coastal meals.",
+            "lucios": "Traditional Italian pastas, seafood specials, and marina-side dinners.",
+            "lanai": "Fresh seafood, modern coastal flavours, and scenic river views.",
+            "sum-yung-guys": "Asian-inspired share plates, bold flavours, and a lively dinner atmosphere.",
+            "miss-moneypennys": "Creative cocktails, stylish bar snacks, and vibrant evening vibes.",
+            "noosa-boathouse": "Seafood dishes, relaxed waterfront dining, and sunset drinks.",
+            "happy-turtle-cafe-caloundra": "Coffee, casual café breakfasts, and easy daytime meals by the water.",
+            "amici-caloundra": "Classic Italian pizzas, hearty pastas, and family-friendly dinners.",
+            "drift-bar-caloundra": "Casual drinks, light meals, and laid-back beachside afternoons.",
+            "golden-beach-tavern-caloundra": "Pub classics, cold beers, and straightforward Aussie tavern meals.",
+            "the-dock-mooloolaba": "Grill favourites, pub-style meals, and drinks with marina views.",
+            "rice-boi-mooloolaba": "Fast Asian bowls, bold flavours, and casual lunch or early dinner.",
+            "bella-venezia-mooloolaba": "Authentic Italian pasta, traditional recipes, and relaxed long meals.",
+            "la-casa-mooloolaba": "Beachfront dining, modern bistro dishes, and daytime cocktails.",
+            "colombian-coffee-co-mooloolaba": "Specialty coffee, espresso classics, and quick café stops.",
+            "giddy-geisha-maroochydore": "Japanese fusion, sushi, and modern Asian share plates.",
+            "market-bistro-maroochydore": "Modern bistro dishes, seasonal menus, and casual sit-down meals.",
+            "duporth-tavern-maroochydore": "Pub favourites, hearty meals, and casual group dining.",
+            "bottarga-maroochydore": "Contemporary Italian cuisine, fresh pasta, and refined flavours.",
+            "colombian-coffee-co-duporth-maroochydore": "Quality coffee, light bites, and quick takeaway options.",
+            "sands-tavern-maroochydore": "Pub meals, sports viewing, and easygoing drinks with friends.",
+            "coolum-surf-club": "Surf club classics, generous meals, and relaxed beachfront dining.",
+            "canteen-kitchen-bar-coolum": "All-day dining, modern casual dishes, and flexible meal options.",
+            "coolum-thai-spice": "Authentic Thai curries, stir-fries, and traditional flavours.",
+            "coolum-beach-hotel": "Hotel bistro meals, pub favourites, and casual group dining.",
+            "village-bicycle": "Craft beer lovers, relaxed pub-style meals, and standout burgers with a great tap selection.",
+            "mr-drifter": "Quality kitchen-driven dishes, a lively bar atmosphere, and regular live music sessions."
+        };
+
         // 2) Upsert restaurants
         // Strip out fields that might not be in the Supabase schema yet (town, activation_phone)
-        const safeRestaurants = restaurants.map(({ town, activation_phone, ...r }) => r);
+        const safeRestaurants = restaurants.map((r) => ({
+            name: r.name,
+            slug: r.slug,
+            category: r.category,
+            icon: r.icon,
+            lat: r.lat,
+            lng: r.lng,
+            address: r.address,
+            is_active: r.is_active,
+            recommended_for: RECOMMENDATIONS[r.slug] || null
+        }));
 
         const { data: createdRestaurants, error: rError } = await supabase
             .from("restaurants")
@@ -559,8 +628,9 @@ export async function GET() {
 
         return NextResponse.json({
             success: true,
-            message: `Seeded venues (Noosa + Caloundra + Mooloolaba + Maroochydore + Coolum). Specials cleared for ${today}.`,
+            message: `Seeded venues. Specials cleared for ${today}.`,
             venues_seeded: createdRestaurants?.length ?? 0,
+            sample_rec: createdRestaurants?.[0]?.recommended_for,
             mode: "pessimistic_zero_specials",
         });
     } catch (error: any) {

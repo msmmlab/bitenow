@@ -25,6 +25,7 @@ interface Venue {
   } | null;
   distance?: string;
   distanceValue?: number;
+  recommended_for?: string | null;
 }
 
 
@@ -40,6 +41,18 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
+};
+
+// Helper for utility signals
+const getVenueSignal = (category: string) => {
+  const hour = new Date().getHours();
+  const lowerCat = category.toLowerCase();
+
+  if (hour >= 11 && hour <= 14) return "Likely serving lunch";
+  if (hour >= 17 && hour <= 21) return "Open for dinner";
+  if (lowerCat.includes('cafe') && hour >= 7 && hour <= 15) return "Open for coffee & food";
+
+  return "Open now";
 };
 
 export default function Home() {
@@ -64,7 +77,7 @@ export default function Home() {
       // 1. Fetch all active restaurants
       const { data: restaurants, error: rError } = await supabase
         .from('restaurants')
-        .select('id, name, category, icon, lat, lng')
+        .select('id, name, category, icon, lat, lng, recommended_for')
         .eq('is_active', true);
 
       if (rError) {
@@ -94,6 +107,7 @@ export default function Home() {
       });
 
       setVenues(mapped);
+      console.log('Fetched venues with recommendations:', mapped.map(v => ({ name: v.name, rec: v.recommended_for })));
       setLoading(false);
     }
 
@@ -111,7 +125,8 @@ export default function Home() {
       return {
         ...v,
         distance: dist < 1 ? `${(dist * 1000).toFixed(0)}m` : `${dist.toFixed(1)}km`,
-        distanceValue: dist
+        distanceValue: dist,
+        recommended_for: v.recommended_for
       };
     }).sort((a, b) => {
       if (a.distanceValue === undefined) return 0;
@@ -264,9 +279,16 @@ export default function Home() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-sm text-gray-500 px-1">
-                  <span>{hasAnySpecials ? 'Active Specials' : 'Nearby Venues'}</span>
-                  <button className="flex items-center gap-1 text-black font-medium text-xs dark:text-white">
+                <div className="flex items-end justify-between px-1">
+                  <div className="flex flex-col">
+                    <span className="text-sm text-gray-500 font-bold">{hasAnySpecials ? 'Active Specials' : 'Nearby Venues'}</span>
+                    {!hasAnySpecials && (
+                      <span className="text-[10px] text-gray-400 font-medium leading-tight mt-0.5">
+                        No active specials yet — showing closest venues instead.
+                      </span>
+                    )}
+                  </div>
+                  <button className="flex items-center gap-1 text-black font-black text-xs dark:text-white uppercase tracking-tighter mb-0.5">
                     Closest <Filter className="w-3 h-3" />
                   </button>
                 </div>
@@ -292,11 +314,17 @@ export default function Home() {
                         </div>
                         <div>
                           <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-tight">{item.name}</h3>
-                          <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                            <MapPin className="w-3 h-3" />
-                            <span>{item.distance}</span>
-                            <span className="text-gray-300">•</span>
-                            <span>{item.category}</span>
+                          <div className="flex flex-col mt-0.5">
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <MapPin className="w-3 h-3" />
+                              <span>{item.distance}</span>
+                              <span className="text-gray-300">•</span>
+                              <span>{item.category}</span>
+                            </div>
+                            <div className="text-[10px] text-green-600 dark:text-green-500 font-bold uppercase tracking-tighter mt-0.5 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                              {getVenueSignal(item.category)}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -318,8 +346,13 @@ export default function Home() {
                         </>
                       ) : (
                         <>
-                          <h4 className="text-lg font-bold text-gray-400 dark:text-zinc-600 pr-8 italic">No special listed yet</h4>
-                          <div className="flex items-center gap-1.5 mt-1 text-sm text-gray-400 dark:text-zinc-600">
+                          <h4 className="text-lg font-bold text-gray-400 dark:text-zinc-600 pr-8 italic">Awaiting today&apos;s specials</h4>
+                          {item.recommended_for && (
+                            <p className="mt-2 text-[11px] leading-relaxed text-gray-400 dark:text-zinc-500">
+                              <span className="font-bold text-gray-500 dark:text-zinc-400">Known for</span> {item.recommended_for}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-1.5 mt-2 text-sm text-gray-400 dark:text-zinc-600">
                             <Clock className="w-3.5 h-3.5" />
                             <span>Check back later — venues update daily</span>
                           </div>
@@ -327,22 +360,35 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div className="mt-4 flex gap-2">
-                      {!item.special ? (
-                        <button className="flex-1 flex items-center justify-center gap-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-500 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider border border-yellow-100 dark:border-yellow-900/30">
-                          Activate specials
+                    <div className="mt-4 flex flex-col gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedVenue(item);
+                        }}
+                        className="w-full flex items-center justify-center gap-2 bg-black text-white dark:bg-white dark:text-black py-3 rounded-xl text-sm font-black uppercase tracking-wider shadow-lg active:scale-95 transition-all"
+                      >
+                        <Navigation className="w-4 h-4" />
+                        Navigate There
+                      </button>
+
+                      {!item.special && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedVenue(item);
+                          }}
+                          className="w-full text-center text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 py-1 transition-colors"
+                        >
+                          Own this place? Activate specials
                         </button>
-                      ) : (
-                        <>
-                          <button className="flex-1 flex items-center justify-center gap-2 bg-gray-50 dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 py-2.5 rounded-xl text-sm font-semibold transition-colors">
-                            <Navigation className="w-4 h-4" />
-                            Directions
-                          </button>
-                          <button className="flex-1 flex items-center justify-center gap-2 bg-black text-white dark:bg-white dark:text-black py-2.5 rounded-xl text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity">
-                            <Phone className="w-4 h-4" />
-                            Call
-                          </button>
-                        </>
+                      )}
+
+                      {item.special && (
+                        <button className="w-full flex items-center justify-center gap-2 bg-gray-50 dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+                          <Phone className="w-4 h-4" />
+                          Call Venue
+                        </button>
                       )}
                     </div>
                   </div>

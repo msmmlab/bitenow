@@ -170,25 +170,45 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
                             ) : (
                                 <div className="text-center py-2">
                                     <h3 className="font-black text-xl text-gray-400 leading-tight italic mb-2">
-                                        No special listed yet
+                                        Awaiting today&apos;s specials
                                     </h3>
                                     <p className="text-sm text-gray-400">
                                         Check back later — venues can update their specials daily.
                                     </p>
+                                    {venue.recommended_for && (
+                                        <div className="mt-4 p-4 bg-gray-50 dark:bg-zinc-800/50 rounded-xl text-left border border-gray-100 dark:border-zinc-800">
+                                            <p className="text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+                                                <span className="font-bold text-gray-700 dark:text-zinc-300">Known for</span> {venue.recommended_for}
+                                            </p>
+                                        </div>
+                                    )}
 
                                     <div className="mt-6 pt-6 border-t border-gray-50">
-                                        <div className="bg-yellow-50 rounded-xl p-4 text-left">
-                                            <h4 className="font-black text-xs text-yellow-700 uppercase tracking-wider mb-2">Own this place?</h4>
-                                            <p className="text-xs text-yellow-800 leading-normal">
-                                                Text your lunch special (or a photo of your board) to <span className="font-bold underline">{activationPhone}</span>
+                                        <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-5 text-left border border-yellow-100 dark:border-yellow-900/30">
+                                            <h4 className="font-black text-[10px] text-yellow-700 dark:text-yellow-500 uppercase tracking-[0.2em] mb-3">Own this place?</h4>
+                                            <p className="text-sm text-yellow-900 dark:text-yellow-400 font-bold leading-tight mb-2">
+                                                Activate specials
                                             </p>
-                                            <div className="mt-3 space-y-1">
-                                                <p className="text-[10px] text-yellow-600 italic">Example: &quot;$15 lunch schnitzel 12–3&quot;</p>
-                                                <p className="text-[10px] text-yellow-600 italic">Example: &quot;2-for-1 aperol spritz 4–6&quot;</p>
+                                            <p className="text-xs text-yellow-800 dark:text-yellow-500/80 leading-relaxed mb-4">
+                                                Text your lunch special or a photo of today&apos;s specials board. <span className="font-black text-yellow-900 dark:text-yellow-400">No login required.</span>
+                                            </p>
+
+                                            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-3 mb-4 font-mono text-sm border border-yellow-200/50">
+                                                <span className="text-xs text-yellow-600 block mb-1">Text to:</span>
+                                                <span className="font-black text-lg text-yellow-900 dark:text-yellow-400 break-all">{activationPhone}</span>
                                             </div>
-                                            <p className="mt-3 text-[10px] font-bold text-yellow-700">
-                                                We&apos;ll turn it into a deal card automatically.
-                                            </p>
+
+                                            <div className="space-y-2 opacity-80">
+                                                <p className="text-[10px] text-yellow-700 italic">Example: &quot;$15 lunch schnitzel 12–3&quot;</p>
+                                                <p className="text-[10px] text-yellow-700 italic">Example: &quot;2-for-1 Aperol Spritz 4–6&quot;</p>
+                                            </div>
+
+                                            <div className="mt-4 pt-4 border-t border-yellow-200/30 flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse" />
+                                                <p className="text-[10px] font-bold text-yellow-800 dark:text-yellow-600">
+                                                    We&apos;ll turn it into a deal card automatically.
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
