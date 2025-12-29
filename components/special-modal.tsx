@@ -210,7 +210,19 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
                                     <p className="text-sm text-gray-400">
                                         Check back later — venues can update their specials daily.
                                     </p>
-                                    {venue.recommended_for && (
+                                    {venue.known_for_bullets && venue.known_for_bullets.length > 0 ? (
+                                        <div className="mt-4 p-5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl text-left border border-gray-100 dark:border-zinc-800 shadow-inner">
+                                            <div className="space-y-1.5">
+                                                <div className="text-xs text-orange-400 mb-2">✨</div>
+                                                {venue.known_for_bullets.map((point: string, idx: number) => (
+                                                    <p key={idx} className="text-xs leading-relaxed text-gray-500 dark:text-gray-400 flex items-start gap-2.5">
+                                                        <span className="text-gray-300 dark:text-zinc-700 font-bold">•</span>
+                                                        <span>{point}</span>
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : venue.recommended_for && (
                                         <div className="mt-4 p-5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl text-left border border-gray-100 dark:border-zinc-800 shadow-inner">
                                             <div className="space-y-1.5">
                                                 <div className="text-xs text-orange-400 mb-2">✨</div>

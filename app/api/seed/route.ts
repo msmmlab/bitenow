@@ -1,167 +1,3 @@
-// import { NextResponse } from 'next/server';
-// import { supabase } from '@/lib/supabase';
-
-// export async function GET() {
-//     try {
-//         // 1. Create Restaurants
-//         const restaurants = [
-//             // Existing
-//             {
-//                 name: 'Land & Sea',
-//                 slug: 'land-and-sea',
-//                 category: 'Brewery',
-//                 icon: '🍻',
-//                 lat: -26.4200,
-//                 lng: 153.0450,
-//                 address: '19 Venture Drive, Noosaville',
-//                 is_active: true
-//             },
-//             {
-//                 name: 'Noosa Burger Co.',
-//                 slug: 'noosa-burger-co',
-//                 category: 'Burger',
-//                 icon: '🍔',
-//                 lat: -26.3960,
-//                 lng: 153.0910,
-//                 address: '10 Hastings St, Noosa Heads',
-//                 is_active: true
-//             },
-//             {
-//                 name: 'Sushi Wave',
-//                 slug: 'sushi-wave',
-//                 category: 'Sushi',
-//                 icon: '🍣',
-//                 lat: -26.3940,
-//                 lng: 153.0890,
-//                 address: '5 Hastings St, Noosa Heads',
-//                 is_active: true
-//             },
-//             // New Real Restaurants
-//             { name: 'Sails', slug: 'sails-noosa', category: 'Seafood', icon: '🍷', lat: -26.3868, lng: 153.0929, address: '75 Hastings St', is_active: true },
-//             { name: "Ricky's River Bar", slug: 'rickys', category: 'Modern Aus', icon: '🥂', lat: -26.3975, lng: 153.0784, address: '2 Quamby Pl', is_active: true },
-//             { name: 'Bistro C', slug: 'bistro-c', category: 'Beachside', icon: '🌊', lat: -26.3864, lng: 153.0906, address: '49 Hastings St', is_active: true },
-//             { name: "Lucio's Marina", slug: 'lucios', category: 'Italian', icon: '🍝', lat: -26.3943, lng: 153.0412, address: '2 Parkyn Ct', is_active: true },
-//             { name: 'Lanai Noosa', slug: 'lanai', category: 'Seafood', icon: '🦐', lat: -26.3978, lng: 153.0641, address: '201 Gympie Tce', is_active: true },
-//             { name: 'Sum Yung Guys', slug: 'sum-yung-guys', category: 'Asian Fusion', icon: '🥢', lat: -26.4040, lng: 153.0720, address: '205 Weyba Rd', is_active: true },
-//             { name: 'El Capitano', slug: 'el-capitano', category: 'Pizza', icon: '🍕', lat: -26.3871, lng: 153.0911, address: '52 Hastings St', is_active: true },
-//             { name: 'Season', slug: 'season-noosa', category: 'Modern', icon: '🍽️', lat: -26.3871, lng: 153.0926, address: '25 Hastings St', is_active: true },
-//             { name: 'Noosa Boathouse', slug: 'noosa-boathouse', category: 'Seafood', icon: '⛴️', lat: -26.3974, lng: 153.0613, address: '194 Gympie Tce', is_active: true },
-//             { name: "Miss Moneypenny's", slug: 'miss-moneypennys', category: 'Cocktails', icon: '🍸', lat: -26.3890, lng: 153.0920, address: '6 Hastings St', is_active: true }
-//         ];
-
-//         const { data: createdRestaurants, error: rError } = await supabase
-//             .from('restaurants')
-//             .upsert(restaurants, { onConflict: 'slug' })
-//             .select();
-
-//         if (rError) throw rError;
-
-//         // 2. Create Contacts (for SMS testing)
-//         // We'll add a dummy contact for the first one
-//         if (createdRestaurants && createdRestaurants.length > 0) {
-//             await supabase.from('restaurant_contacts').upsert({
-//                 restaurant_id: createdRestaurants[0].id,
-//                 contact_name: 'Manager',
-//                 phone_e164: process.env.TWILIO_PHONE_NUMBER || '+15550000000', // Use your own number to test
-//                 verified: true
-//             }, { onConflict: 'phone_e164' });
-//         }
-
-//         // 3. Create Specials (Today)
-//         const today = new Date().toISOString().split('T')[0];
-
-//         // High-Quality, "Shouting" Ad Copy Templates
-//         const SPECIAL_TEMPLATES = [
-//             {
-//                 title: '🔥 CHEESEBURGER EXPLOSION',
-//                 desc: 'Double smashed patty, spicy Jalapeños, house sauce & crispy chips. ONLY $18! Best hangover cure in town.',
-//                 time: '3pm - 4pm'
-//             },
-//             {
-//                 title: '🇮🇹 AUTHENTIC LASAGNE LUNCH',
-//                 desc: 'Grandma\'s secret recipe beef lasagne + icy cold soft drink. The perfect midday fuel.',
-//                 time: '12pm - 2pm'
-//             },
-//             {
-//                 title: '🌅 SUNSET SPRITZ SESSIONS',
-//                 desc: 'Buy 1 Get 1 FREE Aperol Spritz! Watch the sun go down with the best view in Noosa.',
-//                 time: '4pm - 6pm'
-//             },
-//             {
-//                 title: '🦪 $2 OYSTER FRENZY',
-//                 desc: 'Freshly shucked Coffin Bay oysters. Limit 12 per person. Get in before they sell out!',
-//                 time: '3pm - 5pm'
-//             },
-//             {
-//                 title: '🥩 STEAK NIGHT MADNESS',
-//                 desc: '250g Rump Steak, chips, salad & choice of sauce. Unbeatable value at $24.',
-//                 time: '5pm - 9pm'
-//             },
-//             {
-//                 title: '🌮 TACO TUESDAY TAKEOVER',
-//                 desc: '$5 Fish or Pork Tacos all night long! Live Mariachi band starts at 6pm.',
-//                 time: '5pm - Late'
-//             },
-//             {
-//                 title: '🍕 WOODFIRED PIZZA PARTY',
-//                 desc: 'Any Large Pizza + 2 Peroni Beers for just $45. Perfect date night deal.',
-//                 time: 'All Night'
-//             },
-//         ];
-
-//         // Clear existing for today
-//         await supabase.from('specials').delete().eq('date_local', today);
-
-//         const specials = createdRestaurants?.map((r, i) => {
-//             let template;
-//             // Specific overrides for known venues to make them tailored
-//             if (r.slug === 'noosa-burger-co') {
-//                 template = {
-//                     title: '🍔 THE ULTIMATE BURGER DEAL',
-//                     desc: 'Wagyu Beef Burger with truffle mayo, caramelised onions & rosemary fries. Includes a schooner of Stone & Wood!',
-//                     time: 'Lunch Only'
-//                 };
-//             } else if (r.slug === 'land-and-sea') {
-//                 template = {
-//                     title: '🍻 BREWERY BASH',
-//                     desc: '$10 Pints of our signature Lager! Come cool off after the beach with live acoustic tunes.',
-//                     time: '12pm - 6pm'
-//                 };
-//             } else {
-//                 template = SPECIAL_TEMPLATES[Math.floor(Math.random() * SPECIAL_TEMPLATES.length)];
-//             }
-
-//             // Append time to description if we want it part of the text,
-//             // or we could store it separately. For now, appending for MVP simplicity in display.
-//             const fullDesc = `${template.desc}`;
-
-//             return {
-//                 restaurant_id: r.id,
-//                 title: template.title,
-//                 description: fullDesc,
-//                 // We'll borrow the 'source' field or time_desc if we had it, 
-//                 // but for now let's put the specific time in the description for the MapView to regex or just show.
-//                 // Actually, let's prepend it to description so we can parse it out or just show.
-//                 // Better yet, just use the description field effectively.
-//                 // Let's just pass it through.
-//                 date_local: today,
-//                 is_active: true,
-//                 source: 'seed'
-//             };
-//         });
-
-//         if (specials) {
-//             await supabase.from('specials').insert(specials);
-//         }
-
-//         return NextResponse.json({ success: true, message: 'Seeded Noosa data' });
-
-//     } catch (error) {
-//         return NextResponse.json({ error }, { status: 500 });
-//     }
-// }
-
-
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
@@ -170,32 +6,168 @@ import { supabase } from "@/lib/supabase";
 const jitter = (base: number, amount: number = 0.006) =>
     Number((base + (Math.random() - 0.5) * amount).toFixed(6));
 
+type WalkIn = "low" | "medium" | "high";
+type Speed = "fast" | "medium" | "slow";
+type PriceRisk = "low" | "medium" | "high";
+type BestTime = "breakfast" | "coffee" | "lunch" | "afternoon" | "dinner" | "late";
+
+type RestaurantSeed = {
+    name: string;
+    slug: string;
+    category: string;
+    icon: string;
+    lat: number;
+    lng: number;
+    address: string;
+    is_active: boolean;
+    town?: string;
+    activation_phone?: string;
+
+    // New decision metadata
+    formality_level?: 0 | 1 | 2 | 3;
+    walk_in_friendliness?: WalkIn;
+    service_speed?: Speed;
+    price_risk?: PriceRisk;
+    best_times?: BestTime[];
+    vibe_tags?: string[];
+    known_for_bullets?: string[];
+    booking_likely?: boolean;
+
+    // Optional legacy field you already use
+    recommended_for?: string | null;
+};
+
+function defaultsForCategory(categoryRaw: string) {
+    const c = (categoryRaw || "").toLowerCase();
+
+    // Surf Clubs / Clubs
+    if (c.includes("surf") || c.includes("club")) {
+        return {
+            formality_level: 0 as const,
+            walk_in_friendliness: "high" as const,
+            service_speed: "medium" as const,
+            price_risk: "low" as const,
+            best_times: ["lunch", "afternoon", "dinner"] as BestTime[],
+            vibe_tags: ["views", "casual", "family", "locals"] as string[],
+            booking_likely: false,
+        };
+    }
+
+    // Cafes
+    if (c.includes("cafe") || c.includes("coffee")) {
+        return {
+            formality_level: 0 as const,
+            walk_in_friendliness: "high" as const,
+            service_speed: "fast" as const,
+            price_risk: "low" as const,
+            best_times: ["coffee", "breakfast", "lunch"] as BestTime[],
+            vibe_tags: ["casual", "quick"] as string[],
+            booking_likely: false,
+        };
+    }
+
+    // Breweries / Pubs / Bars
+    if (c.includes("brew") || c.includes("pub") || c.includes("bar")) {
+        return {
+            formality_level: 1 as const,
+            walk_in_friendliness: "high" as const,
+            service_speed: "medium" as const,
+            price_risk: "low" as const,
+            best_times: ["afternoon", "dinner", "late"] as BestTime[],
+            vibe_tags: ["casual", "lively"] as string[],
+            booking_likely: false,
+        };
+    }
+
+    // Fast casual
+    if (c.includes("burger") || c.includes("fish") || c.includes("chips") || c.includes("sushi")) {
+        return {
+            formality_level: 0 as const,
+            walk_in_friendliness: "high" as const,
+            service_speed: "fast" as const,
+            price_risk: "low" as const,
+            best_times: ["lunch", "dinner"] as BestTime[],
+            vibe_tags: ["casual", "quick"] as string[],
+            booking_likely: false,
+        };
+    }
+
+    // Asian / Thai
+    if (c.includes("thai") || c.includes("asian") || c.includes("fusion")) {
+        return {
+            formality_level: 1 as const,
+            walk_in_friendliness: "medium" as const,
+            service_speed: "medium" as const,
+            price_risk: "medium" as const,
+            best_times: ["lunch", "dinner"] as BestTime[],
+            vibe_tags: ["casual", "lively"] as string[],
+            booking_likely: false,
+        };
+    }
+
+    // Italian / Seafood / Modern / Bistro
+    if (c.includes("italian") || c.includes("seafood") || c.includes("modern") || c.includes("bistro")) {
+        return {
+            formality_level: 2 as const,
+            walk_in_friendliness: "medium" as const,
+            service_speed: "medium" as const,
+            price_risk: "medium" as const,
+            best_times: ["dinner", "lunch"] as BestTime[],
+            vibe_tags: ["date", "views"] as string[],
+            booking_likely: true,
+        };
+    }
+
+    // Default catch-all
+    return {
+        formality_level: 1 as const,
+        walk_in_friendliness: "medium" as const,
+        service_speed: "medium" as const,
+        price_risk: "medium" as const,
+        best_times: ["lunch", "dinner"] as BestTime[],
+        vibe_tags: ["casual"] as string[],
+        booking_likely: false,
+    };
+}
+
+function mergeMeta(r: RestaurantSeed): RestaurantSeed {
+    const d = defaultsForCategory(r.category);
+    return {
+        ...r,
+        formality_level: r.formality_level ?? d.formality_level,
+        walk_in_friendliness: r.walk_in_friendliness ?? d.walk_in_friendliness,
+        service_speed: r.service_speed ?? d.service_speed,
+        price_risk: r.price_risk ?? d.price_risk,
+        best_times: r.best_times ?? d.best_times,
+        vibe_tags: r.vibe_tags ?? d.vibe_tags,
+        booking_likely: r.booking_likely ?? d.booking_likely,
+        known_for_bullets: r.known_for_bullets ?? [],
+    };
+}
+
 export async function GET() {
     try {
-        // Seed config
         const now = new Date();
         const today = now.toISOString().split("T")[0];
 
-        // Town centers (approx)
         const TOWNS = {
             NOOSA: { lat: -26.3968, lng: 153.0906 },
             CALOUNDRA: { lat: -26.8066, lng: 153.1282 },
             MOOLOOLABA: { lat: -26.6810, lng: 153.1191 },
             MAROOCHYDORE: { lat: -26.6506, lng: 153.0933 },
             COOLUM: { lat: -26.5284, lng: 153.0881 },
+            SUNSHINE_BEACH: { lat: -26.4129, lng: 153.1050 },
         };
 
-        // Optional: show an "Activate via SMS" CTA everywhere
-        // (You can store this on restaurant rows, or just compute in UI from env)
         const activatePhone =
             process.env.PUBLIC_ACTIVATION_PHONE ||
             process.env.TWILIO_PHONE_NUMBER ||
             "+61XXXXXXXXX";
 
-        // 1) Restaurants (Noosa + new towns)
-        const restaurants = [
+        // Restaurants
+        const restaurants: RestaurantSeed[] = [
             // -------------------------
-            // NOOSA (existing / sample)
+            // NOOSA
             // -------------------------
             {
                 name: "Land & Sea",
@@ -208,6 +180,9 @@ export async function GET() {
                 is_active: true,
                 town: "Noosa",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Small-batch craft beers", "Relaxed brewery lunches", "Casual post-beach sessions"],
+                price_risk: "low",
+                walk_in_friendliness: "high",
             },
             {
                 name: "Noosa Burger Co.",
@@ -220,6 +195,10 @@ export async function GET() {
                 is_active: true,
                 town: "Noosa",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Big burgers & loaded sides", "Fast casual feeds", "Easy takeaway option"],
+                service_speed: "fast",
+                price_risk: "low",
+                walk_in_friendliness: "high",
             },
             {
                 name: "Sushi Wave",
@@ -232,7 +211,54 @@ export async function GET() {
                 is_active: true,
                 town: "Noosa",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Fresh sushi rolls", "Quick lunch bites", "Light Japanese options"],
+                service_speed: "fast",
+                price_risk: "low",
+                walk_in_friendliness: "high",
             },
+
+            // Added: LOCALE (fancy, booking likely)
+            {
+                name: "Locale Noosa",
+                slug: "locale-noosa",
+                category: "Italian (Fine)",
+                icon: "/icons/fancy_dinner.png",
+                lat: -26.3867,
+                lng: 153.0926,
+                address: "62 Hastings St, Noosa Heads QLD 4567",
+                is_active: true,
+                town: "Noosa",
+                activation_phone: activatePhone,
+                formality_level: 3,
+                walk_in_friendliness: "low",
+                service_speed: "slow",
+                price_risk: "high",
+                best_times: ["dinner", "late", "lunch"],
+                vibe_tags: ["date", "special-occasion", "wine"],
+                booking_likely: true,
+                known_for_bullets: ["Date-night Italian", "Wine-forward dining", "Often best booked for peak times"],
+            },
+
+            // Added: NOOSA SURF CLUB (casual, walk-in, views)
+            {
+                name: "Noosa Surf Club",
+                slug: "noosa-surf-club",
+                category: "Surf Club",
+                icon: "/icons/fish_chips.png",
+                lat: -26.3869,
+                lng: 153.0929,
+                address: "69 Hastings St, Noosa Heads QLD 4567",
+                is_active: true,
+                town: "Noosa",
+                activation_phone: activatePhone,
+                known_for_bullets: ["Beachfront club meals", "Great views over Main Beach", "Easy walk-in dining"],
+                formality_level: 0,
+                walk_in_friendliness: "high",
+                price_risk: "low",
+                best_times: ["lunch", "afternoon", "dinner"],
+                vibe_tags: ["views", "casual", "family"],
+            },
+
             {
                 name: "Sails",
                 slug: "sails-noosa",
@@ -244,11 +270,19 @@ export async function GET() {
                 is_active: true,
                 town: "Noosa",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Premium seafood", "Long lunches by the beach", "Special occasion meals"],
+                formality_level: 3,
+                walk_in_friendliness: "low",
+                service_speed: "slow",
+                price_risk: "high",
+                best_times: ["lunch", "dinner"],
+                vibe_tags: ["views", "date", "special-occasion"],
+                booking_likely: true,
             },
             {
                 name: "Ricky's River Bar",
                 slug: "rickys",
-                category: "Modern Aus",
+                category: "Modern",
                 icon: "/icons/wine.png",
                 lat: -26.3975,
                 lng: 153.0784,
@@ -256,18 +290,32 @@ export async function GET() {
                 is_active: true,
                 town: "Noosa",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Riverside dining", "Modern plates", "Cocktails at sunset"],
+                formality_level: 2,
+                walk_in_friendliness: "medium",
+                price_risk: "high",
+                best_times: ["afternoon", "dinner"],
+                vibe_tags: ["views", "date", "cocktails"],
+                booking_likely: true,
             },
             {
                 name: "Bistro C",
                 slug: "bistro-c",
-                category: "Beachside",
-                icon: "/icons/asian.png",
+                category: "Beachside Bistro",
+                icon: "/icons/fancy_dinner.png",
                 lat: -26.3864,
                 lng: 153.0906,
                 address: "49 Hastings St, Noosa Heads QLD",
                 is_active: true,
                 town: "Noosa",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Beachside bistro classics", "Seafood & cocktails", "Great for sunset meals"],
+                formality_level: 2,
+                walk_in_friendliness: "medium",
+                price_risk: "high",
+                best_times: ["lunch", "dinner"],
+                vibe_tags: ["views", "date"],
+                booking_likely: true,
             },
             {
                 name: "Sum Yung Guys",
@@ -280,18 +328,32 @@ export async function GET() {
                 is_active: true,
                 town: "Noosa",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Share plates & bold flavours", "Busy dinner vibe", "Often worth booking"],
+                formality_level: 2,
+                walk_in_friendliness: "low",
+                price_risk: "medium",
+                best_times: ["dinner", "late"],
+                vibe_tags: ["lively", "date"],
+                booking_likely: true,
             },
             {
                 name: "Miss Moneypenny's",
                 slug: "miss-moneypennys",
-                category: "Cocktails",
-                icon: "/icons/beer.png",
+                category: "Cocktail Bar",
+                icon: "/icons/wine.png",
                 lat: -26.389,
                 lng: 153.092,
                 address: "6 Hastings St, Noosa Heads QLD",
                 is_active: true,
                 town: "Noosa",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Cocktails & late-night energy", "Bar snacks", "Good pre/post-dinner stop"],
+                formality_level: 1,
+                walk_in_friendliness: "medium",
+                service_speed: "medium",
+                price_risk: "high",
+                best_times: ["afternoon", "dinner", "late"],
+                vibe_tags: ["lively", "cocktails"],
             },
             {
                 name: "Village Bicycle",
@@ -304,18 +366,50 @@ export async function GET() {
                 is_active: true,
                 town: "Noosa",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Great tap selection", "Burgers that hit the spot", "Easy casual vibe"],
+                formality_level: 1,
+                walk_in_friendliness: "high",
+                price_risk: "medium",
+                best_times: ["afternoon", "dinner", "late"],
+                vibe_tags: ["casual", "lively"],
             },
             {
                 name: "Mr Drifter",
                 slug: "mr-drifter",
                 category: "Modern Bar",
-                icon: "/icons/thai.png",
+                icon: "/icons/beer.png",
                 lat: -26.398,
                 lng: 153.092,
                 address: "Sunshine Beach Rd, Noosa Junction QLD 4567",
                 is_active: true,
                 town: "Noosa",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Kitchen-driven bar food", "Great vibe", "Regular live music nights"],
+                formality_level: 1,
+                walk_in_friendliness: "medium",
+                price_risk: "medium",
+                best_times: ["dinner", "late"],
+                vibe_tags: ["lively", "music"],
+            },
+
+            // Added: SUNSHINE BEACH SURF CLUB
+            {
+                name: "Sunshine Beach Surf Club",
+                slug: "sunshine-beach-surf-club",
+                category: "Surf Club",
+                icon: "/icons/fish_chips.png",
+                lat: jitter(TOWNS.SUNSHINE_BEACH.lat),
+                lng: jitter(TOWNS.SUNSHINE_BEACH.lng),
+                address: "Corner of Duke St & Belmore Terrace, Sunshine Beach QLD 4567",
+                is_active: true,
+                town: "Sunshine Beach",
+                activation_phone: activatePhone,
+                known_for_bullets: ["Big ocean views", "Classic club meals & drinks", "Great casual sunset stop"],
+                formality_level: 0,
+                walk_in_friendliness: "high",
+                price_risk: "low",
+                best_times: ["lunch", "afternoon", "dinner"],
+                vibe_tags: ["views", "casual", "family", "locals"],
             },
 
             // -------------------------
@@ -332,6 +426,7 @@ export async function GET() {
                 is_active: true,
                 town: "Caloundra",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Coffee by the water", "Easy breakfasts", "Casual daytime meals"],
             },
             {
                 name: "Amici Restaurant Pizzeria",
@@ -344,18 +439,20 @@ export async function GET() {
                 is_active: true,
                 town: "Caloundra",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Classic pizzas", "Hearty pastas", "Family-friendly dinner"],
             },
             {
                 name: "Drift Bar",
                 slug: "drift-bar-caloundra",
                 category: "Bar",
-                icon: "🍻",
+                icon: "/icons/beer.png",
                 lat: jitter(TOWNS.CALOUNDRA.lat),
                 lng: jitter(TOWNS.CALOUNDRA.lng),
                 address: "30 The Esplanade, Bulcock Beach, Caloundra QLD 4551",
                 is_active: true,
                 town: "Caloundra",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Beachside drinks", "Light meals", "Easy afternoon sessions"],
             },
             {
                 name: "Golden Beach Tavern",
@@ -368,6 +465,27 @@ export async function GET() {
                 is_active: true,
                 town: "Caloundra",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Pub classics", "Cold beers", "Group-friendly meals"],
+            },
+
+            // Added: CALOUNDRA SURF CLUB (Kings Beach)
+            {
+                name: "Caloundra Surf Club (Kings Beach)",
+                slug: "caloundra-surf-club-kings-beach",
+                category: "Surf Club",
+                icon: "/icons/fish_chips.png",
+                lat: jitter(TOWNS.CALOUNDRA.lat),
+                lng: jitter(TOWNS.CALOUNDRA.lng),
+                address: "1 Spender Ln, Kings Beach QLD 4551",
+                is_active: true,
+                town: "Caloundra",
+                activation_phone: activatePhone,
+                known_for_bullets: ["Beachfront club meals", "Relaxed walk-in dining", "Great value for groups"],
+                formality_level: 0,
+                walk_in_friendliness: "high",
+                price_risk: "low",
+                best_times: ["lunch", "afternoon", "dinner"],
+                vibe_tags: ["views", "casual", "family"],
             },
 
             // -------------------------
@@ -377,13 +495,14 @@ export async function GET() {
                 name: "The Dock Mooloolaba",
                 slug: "the-dock-mooloolaba",
                 category: "Bar & Grill",
-                icon: "🍖",
+                icon: "/icons/burger.png",
                 lat: jitter(TOWNS.MOOLOOLABA.lat),
                 lng: jitter(TOWNS.MOOLOOLABA.lng),
                 address: "123 Parkyn Parade, Mooloolaba QLD 4557",
                 is_active: true,
                 town: "Mooloolaba",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Grill favourites", "Marina-side meals", "Good for groups"],
             },
             {
                 name: "Rice Boi",
@@ -392,10 +511,11 @@ export async function GET() {
                 icon: "/icons/asian.png",
                 lat: jitter(TOWNS.MOOLOOLABA.lat),
                 lng: jitter(TOWNS.MOOLOOLABA.lng),
-                address: "123 Parkyn Parade (The Wharf), Mooloolaba QLD 4557",
+                address: "The Wharf, Mooloolaba QLD 4557",
                 is_active: true,
                 town: "Mooloolaba",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Bold flavours", "Casual bowls & share plates", "Great quick dinner option"],
             },
             {
                 name: "Bella Venezia",
@@ -408,18 +528,20 @@ export async function GET() {
                 is_active: true,
                 town: "Mooloolaba",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Traditional Italian", "Long relaxed meals", "Solid date-night choice"],
             },
             {
                 name: "La Casa Beach Bar Bistro",
                 slug: "la-casa-mooloolaba",
                 category: "Beach Bar",
-                icon: "🌴",
+                icon: "/icons/beer.png",
                 lat: jitter(TOWNS.MOOLOOLABA.lat),
                 lng: jitter(TOWNS.MOOLOOLABA.lng),
                 address: "2/121 Mooloolaba Esplanade, Mooloolaba QLD 4557",
                 is_active: true,
                 town: "Mooloolaba",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Beachfront bistro meals", "Daytime cocktails", "Great afternoon vibe"],
             },
             {
                 name: "The Colombian Coffee Co.",
@@ -428,10 +550,31 @@ export async function GET() {
                 icon: "/icons/coffee.png",
                 lat: jitter(TOWNS.MOOLOOLABA.lat),
                 lng: jitter(TOWNS.MOOLOOLABA.lng),
-                address: "Lot 4/20 Brisbane Rd, Mooloolaba QLD 4557",
+                address: "20 Brisbane Rd, Mooloolaba QLD 4557",
                 is_active: true,
                 town: "Mooloolaba",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Specialty coffee", "Quick stop", "Easy takeaway"],
+            },
+
+            // Added: MOOLOOLABA SURF CLUB
+            {
+                name: "The Surf Club Mooloolaba",
+                slug: "mooloolaba-surf-club",
+                category: "Surf Club",
+                icon: "/icons/fish_chips.png",
+                lat: jitter(TOWNS.MOOLOOLABA.lat),
+                lng: jitter(TOWNS.MOOLOOLABA.lng),
+                address: "1 The Esplanade, Mooloolaba QLD 4557",
+                is_active: true,
+                town: "Mooloolaba",
+                activation_phone: activatePhone,
+                known_for_bullets: ["Beachfront dining & drinks", "All-day casual meals", "Big views over the beach"],
+                formality_level: 0,
+                walk_in_friendliness: "high",
+                price_risk: "low",
+                best_times: ["lunch", "afternoon", "dinner"],
+                vibe_tags: ["views", "casual", "family", "locals"],
             },
 
             // -------------------------
@@ -448,30 +591,33 @@ export async function GET() {
                 is_active: true,
                 town: "Maroochydore",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Modern Japanese fusion", "Share plates", "Good dinner spot"],
             },
             {
                 name: "Market Bistro",
                 slug: "market-bistro-maroochydore",
                 category: "Bistro",
-                icon: "🍽️",
+                icon: "/icons/fancy_dinner.png",
                 lat: jitter(TOWNS.MAROOCHYDORE.lat),
                 lng: jitter(TOWNS.MAROOCHYDORE.lng),
                 address: "8 Market Lane, Maroochydore QLD 4558",
                 is_active: true,
                 town: "Maroochydore",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Seasonal bistro dishes", "Casual sit-down meals", "Good for couples"],
             },
             {
                 name: "Duporth Tavern",
                 slug: "duporth-tavern-maroochydore",
                 category: "Pub",
-                icon: "🍺",
+                icon: "/icons/beer.png",
                 lat: jitter(TOWNS.MAROOCHYDORE.lat),
                 lng: jitter(TOWNS.MAROOCHYDORE.lng),
                 address: "52 Duporth Ave, Maroochydore QLD 4558",
                 is_active: true,
                 town: "Maroochydore",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Hearty pub meals", "Easy group dining", "No-fuss value"],
             },
             {
                 name: "Bottarga",
@@ -484,6 +630,10 @@ export async function GET() {
                 is_active: true,
                 town: "Maroochydore",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Modern Italian flavours", "Fresh pasta focus", "Refined dinner option"],
+                formality_level: 2,
+                price_risk: "high",
+                booking_likely: true,
             },
             {
                 name: "The Colombian Coffee Co. (Duporth Ave)",
@@ -496,18 +646,20 @@ export async function GET() {
                 is_active: true,
                 town: "Maroochydore",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Quality coffee", "Light bites", "Quick takeaway"],
             },
             {
                 name: "The Sands Tavern",
                 slug: "sands-tavern-maroochydore",
                 category: "Pub",
-                icon: "🍻",
+                icon: "/icons/beer.png",
                 lat: jitter(TOWNS.MAROOCHYDORE.lat),
                 lng: jitter(TOWNS.MAROOCHYDORE.lng),
                 address: "Plaza Parade, Maroochydore QLD 4558",
                 is_active: true,
                 town: "Maroochydore",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Pub meals & beers", "Sports-friendly vibe", "Easygoing catch-ups"],
             },
 
             // -------------------------
@@ -516,7 +668,7 @@ export async function GET() {
             {
                 name: "Coolum Surf Club",
                 slug: "coolum-surf-club",
-                category: "Club",
+                category: "Surf Club",
                 icon: "/icons/fish_chips.png",
                 lat: jitter(TOWNS.COOLUM.lat),
                 lng: jitter(TOWNS.COOLUM.lng),
@@ -524,18 +676,20 @@ export async function GET() {
                 is_active: true,
                 town: "Coolum Beach",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Club classics & big portions", "Relaxed beachfront dining", "Easy for families"],
             },
             {
                 name: "Canteen Kitchen + Bar",
                 slug: "canteen-kitchen-bar-coolum",
                 category: "Modern",
-                icon: "🍸",
+                icon: "/icons/fancy_dinner.png",
                 lat: jitter(TOWNS.COOLUM.lat),
                 lng: jitter(TOWNS.COOLUM.lng),
                 address: "1750 David Low Way, Coolum Beach QLD 4573",
                 is_active: true,
                 town: "Coolum Beach",
                 activation_phone: activatePhone,
+                known_for_bullets: ["All-day modern menu", "Casual but polished", "Good mixed groups"],
             },
             {
                 name: "Coolum Thai Spice",
@@ -548,58 +702,34 @@ export async function GET() {
                 is_active: true,
                 town: "Coolum Beach",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Curries & stir-fries", "Reliable Thai comfort", "Good value dinner"],
             },
             {
                 name: "Coolum Beach Hotel",
                 slug: "coolum-beach-hotel",
                 category: "Pub",
-                icon: "🍺",
+                icon: "/icons/beer.png",
                 lat: jitter(TOWNS.COOLUM.lat),
                 lng: jitter(TOWNS.COOLUM.lng),
                 address: "David Low Way, Coolum Beach QLD 4573",
                 is_active: true,
                 town: "Coolum Beach",
                 activation_phone: activatePhone,
+                known_for_bullets: ["Pub bistro meals", "Group-friendly", "Easy casual drinks"],
             },
-        ];
+        ].map(mergeMeta);
 
+        // Optional legacy recommended_for (keep if your UI uses it)
+        // If you want, you can drop this entirely and render known_for_bullets instead.
         const RECOMMENDATIONS: Record<string, string> = {
-            "land-and-sea": "Small-batch craft beers, relaxed brewery lunches, and casual post-beach sessions.",
-            "noosa-burger-co": "Big, juicy burgers with loaded sides and classic takeaway comfort food.",
-            "sushi-wave": "Fresh sushi rolls, quick lunch bites, and light Japanese options.",
-            "sails-noosa": "Premium seafood dishes and long lunches with a beachfront view.",
-            "rickys": "Modern Australian plates, riverside dining, and well-crafted cocktails.",
-            "bistro-c": "Beachside dining, seafood classics, and relaxed coastal meals.",
-            "lucios": "Traditional Italian pastas, seafood specials, and marina-side dinners.",
-            "lanai": "Fresh seafood, modern coastal flavours, and scenic river views.",
-            "sum-yung-guys": "Asian-inspired share plates, bold flavours, and a lively dinner atmosphere.",
-            "miss-moneypennys": "Creative cocktails, stylish bar snacks, and vibrant evening vibes.",
-            "noosa-boathouse": "Seafood dishes, relaxed waterfront dining, and sunset drinks.",
-            "happy-turtle-cafe-caloundra": "Coffee, casual café breakfasts, and easy daytime meals by the water.",
-            "amici-caloundra": "Classic Italian pizzas, hearty pastas, and family-friendly dinners.",
-            "drift-bar-caloundra": "Casual drinks, light meals, and laid-back beachside afternoons.",
-            "golden-beach-tavern-caloundra": "Pub classics, cold beers, and straightforward Aussie tavern meals.",
-            "the-dock-mooloolaba": "Grill favourites, pub-style meals, and drinks with marina views.",
-            "rice-boi-mooloolaba": "Fast Asian bowls, bold flavours, and casual lunch or early dinner.",
-            "bella-venezia-mooloolaba": "Authentic Italian pasta, traditional recipes, and relaxed long meals.",
-            "la-casa-mooloolaba": "Beachfront dining, modern bistro dishes, and daytime cocktails.",
-            "colombian-coffee-co-mooloolaba": "Specialty coffee, espresso classics, and quick café stops.",
-            "giddy-geisha-maroochydore": "Japanese fusion, sushi, and modern Asian share plates.",
-            "market-bistro-maroochydore": "Modern bistro dishes, seasonal menus, and casual sit-down meals.",
-            "duporth-tavern-maroochydore": "Pub favourites, hearty meals, and casual group dining.",
-            "bottarga-maroochydore": "Contemporary Italian cuisine, fresh pasta, and refined flavours.",
-            "colombian-coffee-co-duporth-maroochydore": "Quality coffee, light bites, and quick takeaway options.",
-            "sands-tavern-maroochydore": "Pub meals, sports viewing, and easygoing drinks with friends.",
-            "coolum-surf-club": "Surf club classics, generous meals, and relaxed beachfront dining.",
-            "canteen-kitchen-bar-coolum": "All-day dining, modern casual dishes, and flexible meal options.",
-            "coolum-thai-spice": "Authentic Thai curries, stir-fries, and traditional flavours.",
-            "coolum-beach-hotel": "Hotel bistro meals, pub favourites, and casual group dining.",
-            "village-bicycle": "Craft beer lovers, relaxed pub-style meals, and standout burgers with a great tap selection.",
-            "mr-drifter": "Quality kitchen-driven dishes, a lively bar atmosphere, and regular live music sessions."
+            "locale-noosa": "Date-night Italian on Hastings Street — tends to suit ‘Tonight’ more than ‘Now’.",
+            "noosa-surf-club": "Classic surf club meals with one of the best views on Main Beach.",
+            "sunshine-beach-surf-club": "Ocean views + casual surf-club value — great for walk-ins.",
+            "mooloolaba-surf-club": "All-day dining right on the sand — easy beers, meals, and views.",
+            "caloundra-surf-club-kings-beach": "Walk-in friendly surf club on Kings Beach — great for groups and value.",
         };
 
         // 2) Upsert restaurants
-        // Strip out fields that might not be in the Supabase schema yet (town, activation_phone)
         const safeRestaurants = restaurants.map((r) => ({
             name: r.name,
             slug: r.slug,
@@ -609,7 +739,19 @@ export async function GET() {
             lng: r.lng,
             address: r.address,
             is_active: r.is_active,
-            recommended_for: RECOMMENDATIONS[r.slug] || null
+
+            // Existing field you already use
+            recommended_for: RECOMMENDATIONS[r.slug] || r.recommended_for || null,
+
+            // New metadata fields (ensure these columns exist in Supabase)
+            formality_level: r.formality_level,
+            walk_in_friendliness: r.walk_in_friendliness,
+            service_speed: r.service_speed,
+            price_risk: r.price_risk,
+            best_times: r.best_times,
+            vibe_tags: r.vibe_tags,
+            known_for_bullets: r.known_for_bullets,
+            booking_likely: r.booking_likely,
         }));
 
         const { data: createdRestaurants, error: rError } = await supabase
@@ -619,25 +761,20 @@ export async function GET() {
 
         if (rError) throw rError;
 
-        // 3) Pessimistic mode: start with 0 specials.
-        // Keep DB clean for today's date to avoid old seeded specials showing up.
+        // 3) Pessimistic mode: start with 0 specials
         await supabase.from("specials").delete().eq("date_local", today);
-
-        // Optional: also clear any "seed" source specials from past (if you want a clean slate)
-        // await supabase.from("specials").delete().eq("source", "seed");
 
         return NextResponse.json({
             success: true,
-            message: `Seeded venues. Specials cleared for ${today}.`,
+            message: `Seeded venues + metadata. Specials cleared for ${today}.`,
             venues_seeded: createdRestaurants?.length ?? 0,
-            sample_rec: createdRestaurants?.[0]?.recommended_for,
             mode: "pessimistic_zero_specials",
         });
     } catch (error: any) {
         console.error("Seed error:", error);
-        return NextResponse.json({
-            error: error.message || String(error),
-            details: error
-        }, { status: 500 });
+        return NextResponse.json(
+            { error: error.message || String(error), details: error },
+            { status: 500 }
+        );
     }
 }

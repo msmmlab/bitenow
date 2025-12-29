@@ -7,6 +7,7 @@ import MapView from '@/components/map-view';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import SpecialModal from '@/components/special-modal';
+import { getIntentOptions, scoreRestaurant } from '@/lib/recommendation';
 
 // TYPES
 interface Venue {
@@ -26,6 +27,14 @@ interface Venue {
   distance?: string;
   distanceValue?: number;
   recommended_for?: string | null;
+  formality_level?: number;
+  walk_in_friendliness?: 'low' | 'medium' | 'high';
+  service_speed?: 'fast' | 'medium' | 'slow';
+  price_risk?: 'low' | 'medium' | 'high';
+  best_times?: string[];
+  vibe_tags?: string[];
+  known_for_bullets?: string[];
+  booking_likely?: boolean;
 }
 
 
@@ -54,9 +63,17 @@ const getVenueSignal = (category: string) => {
     return "Open for coffee & food";
   }
 
-  if (hour < 10 || hour >= 22) return "Closed";
+  if (hour < 10) return "Opening at 10am";
 
-  if (hour >= 11 && hour <= 14) return "Likely serving lunch";
+  const isNightSpot = lowerCat.includes('bar') || lowerCat.includes('pub') || lowerCat.includes('brewery') || lowerCat.includes('cocktail');
+
+  if (isNightSpot) {
+    if (hour >= 22 || hour < 2) return "Open late";
+  } else {
+    if (hour >= 22) return "Closed";
+  }
+
+  if (hour >= 11 && hour <= 14) return "Serving lunch";
   if (hour >= 17 && hour <= 21) return "Open for dinner";
 
   return "Open now";
@@ -73,6 +90,7 @@ export default function Home() {
   const [suggestText, setSuggestText] = useState("");
   const [suggestSuccess, setSuggestSuccess] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'Now' | 'Later' | 'Tonight'>('Now');
+  const [intent, setIntent] = useState<string | null>(null);
   const [showFAQ, setShowFAQ] = useState(false);
   const [showContact, setShowContact] = useState(false);
 
@@ -95,7 +113,7 @@ export default function Home() {
       // 1. Fetch all active restaurants
       const { data: restaurants, error: rError } = await supabase
         .from('restaurants')
-        .select('id, name, category, icon, lat, lng, recommended_for')
+        .select('*')
         .eq('is_active', true);
 
       if (rError) {
@@ -140,28 +158,30 @@ export default function Home() {
       if (!userLocation) return { ...v, distance: "..." };
 
       const dist = calculateDistance(userLocation.lat, userLocation.lng, v.lat, v.lng);
+      const signal = getVenueSignal(v.category);
+      const isOpen = signal !== "Closed" && !signal.includes("Opening");
+
       return {
         ...v,
         distance: dist < 1 ? `${(dist * 1000).toFixed(0)}m` : `${dist.toFixed(1)}km`,
         distanceValue: dist,
-        recommended_for: v.recommended_for
+        recommended_for: v.recommended_for,
+        isOpen
       };
     }).sort((a, b) => {
-      // 1. Prioritize Active Specials
-      const aHasSpecial = !!a.special;
-      const bHasSpecial = !!b.special;
-      if (aHasSpecial !== bHasSpecial) return aHasSpecial ? -1 : 1;
+      const context = {
+        timeLens: timeFilter.toLowerCase(),
+        date: new Date(),
+        intent: intent,
+        distanceValue: a.distanceValue
+      };
 
-      // 2. Prioritize venues with "Known for" content
-      const aHasRec = !!a.recommended_for;
-      const bHasRec = !!b.recommended_for;
-      if (aHasRec !== bHasRec) return aHasRec ? -1 : 1;
+      const scoreA = scoreRestaurant(a, context);
+      const scoreB = scoreRestaurant(b, { ...context, distanceValue: b.distanceValue });
 
-      // 3. Fallback to Distance
-      if (a.distanceValue === undefined || b.distanceValue === undefined) return 0;
-      return (a.distanceValue || 0) - (b.distanceValue || 0);
+      return scoreB - scoreA;
     });
-  }, [venues, userLocation]);
+  }, [venues, userLocation, timeFilter, intent]);
 
   // Filter & Sort Logic
   const filteredVenues = venuesWithDistance.filter(v => {
@@ -169,17 +189,21 @@ export default function Home() {
     const hour = new Date().getHours();
 
     if (timeFilter === 'Now') {
-      // Show open venues or venues with currently active specials
-      const isOpen = getVenueSignal(v.category) !== "Closed"; // Simplified check
-      if (!isOpen && !v.special) return false;
+      // Don't filter out entirely, just show everything as the scoring will handle the order.
+      // But for "Now", if it's super late (past midnight), maybe just return true to see everything.
+      return true;
     } else if (timeFilter === 'Tonight') {
-      // Focus on dinner and evening categories
-      const isEveningVenue = ["Dinner", "Cocktails", "Pub", "Bar", "Brewery", "Pizza", "Asian Fusion"].includes(v.category);
+      // For "Tonight", check against categories or best_times
+      const isEveningVenue = ["Dinner", "Cocktails", "Pub", "Bar", "Brewery", "Pizza", "Asian Fusion"].includes(v.category) ||
+        (v.best_times && (v.best_times.includes('dinner') || v.best_times.includes('late')));
+
       const isNightSpecial = v.special && (v.special.title.toLowerCase().includes("dinner") || v.special.description.toLowerCase().includes("pm"));
-      if (!isEveningVenue && !isNightSpecial) return false;
+
+      // Be generous - if it fits the vibe, show it even if "Closed" just triggered.
+      return !!isEveningVenue || !!isNightSpecial;
     } else if (timeFilter === 'Later') {
-      // Show everything that isn't strictly past its prime (e.g., if it's 2pm, show dinner/night stuff)
-      if (hour >= 20) return false; // Too late for "Later"
+      // Later should show anything that has a lunch or dinner presence later in the day
+      return true;
     }
 
     // 2. Vibe/Category Filtering
@@ -282,7 +306,10 @@ export default function Home() {
           {(['Now', 'Later', 'Tonight'] as const).map((t) => (
             <button
               key={t}
-              onClick={() => setTimeFilter(t)}
+              onClick={() => {
+                setTimeFilter(t);
+                setIntent(null); // Reset intent when changing lens
+              }}
               className={cn(
                 "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
                 timeFilter === t
@@ -293,6 +320,27 @@ export default function Home() {
               {t === 'Later' ? 'Later' : t}
             </button>
           ))}
+        </div>
+
+        {/* Intent Chips */}
+        <div className="flex items-center gap-3 mt-3 px-1 overflow-x-auto no-scrollbar">
+          <span className="text-[10px] font-black uppercase tracking-tighter text-gray-400 shrink-0">Take me for…</span>
+          <div className="flex gap-2">
+            {getIntentOptions(timeFilter.toLowerCase(), new Date()).map((option) => (
+              <button
+                key={option}
+                onClick={() => setIntent(intent === option ? null : option)}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border",
+                  intent === option
+                    ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-sm"
+                    : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-100 dark:border-zinc-700 hover:border-gray-300"
+                )}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -330,7 +378,9 @@ export default function Home() {
                 )}
 
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-sm text-gray-500 font-bold">{hasAnySpecials ? 'Active Specials' : 'Nearby Venues'}</span>
+                  <span className="text-sm text-gray-500 font-bold">
+                    {intent ? 'Curated Picks' : (hasAnySpecials ? 'Active Specials' : 'Nearby Venues')}
+                  </span>
                 </div>
 
                 {loading && <div className="p-10 text-center text-gray-500">Loading today's specials...</div>}
@@ -341,7 +391,15 @@ export default function Home() {
                   </div>
                 )}
 
-                {filteredVenues.map((item) => (
+                {filteredVenues.length > 0 && intent && (
+                  <div className="pt-2 pb-2">
+                    <p className="text-2xl font-black text-gray-900 dark:text-white leading-tight">
+                      Best for <span className="text-orange-500">{intent}</span>
+                    </p>
+                  </div>
+                )}
+
+                {filteredVenues.slice(0, intent ? 3 : filteredVenues.length).map((item) => (
                   <div
                     key={item.id}
                     onClick={() => setSelectedVenue(item)}
@@ -400,7 +458,17 @@ export default function Home() {
                       ) : (
                         <>
                           <h4 className="text-lg font-bold text-gray-400 dark:text-zinc-600 pr-8 italic">Awaiting today&apos;s specials</h4>
-                          {item.recommended_for && (
+                          {item.known_for_bullets && item.known_for_bullets.length > 0 ? (
+                            <div className="mt-2 space-y-1">
+                              <div className="text-[10px] text-orange-400 mb-1">✨</div>
+                              {item.known_for_bullets.map((point: string, idx: number) => (
+                                <p key={idx} className="text-[11px] leading-tight text-gray-400 dark:text-zinc-500 flex items-start gap-1.5 ml-0.5">
+                                  <span className="text-gray-300 dark:text-zinc-700 font-bold">•</span>
+                                  <span>{point}</span>
+                                </p>
+                              ))}
+                            </div>
+                          ) : item.recommended_for && (
                             <div className="mt-2 space-y-1">
                               <div className="text-[10px] text-orange-400 mb-1">✨</div>
                               {item.recommended_for.split(',').map((point: string, idx: number) => (
@@ -452,6 +520,65 @@ export default function Home() {
                     </div>
                   </div>
                 ))}
+
+                {intent && filteredVenues.length > 3 && (
+                  <>
+                    <div className="pt-8 pb-4">
+                      <div className="h-px bg-gray-100 dark:bg-zinc-800 w-full mb-6" />
+                      <h3 className="text-sm text-gray-400 font-bold px-1">Everything Else</h3>
+                    </div>
+                    {filteredVenues.slice(3).map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => setSelectedVenue(item)}
+                        className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 cursor-pointer active:scale-[0.98] transition-transform duration-100 opacity-60 grayscale-[0.2]"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-xl bg-gray-100 dark:bg-gray-800 overflow-hidden")}>
+                              {item.icon && item.icon.startsWith('/') ? (
+                                <img src={item.icon} alt={item.category} className="w-full h-full object-cover" />
+                              ) : (
+                                item.icon || '🍽️'
+                              )}
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-tight">{item.name}</h3>
+                              <div className="flex flex-col mt-0.5">
+                                <div className="flex items-center gap-1 text-xs text-gray-500">
+                                  <MapPin className="w-3 h-3" />
+                                  <span>{item.distance}</span>
+                                  <span className="text-gray-300">•</span>
+                                  <span>{item.category}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-3">
+                          {item.special ? (
+                            <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 pr-8">{item.special.title}</h4>
+                          ) : (
+                            item.known_for_bullets && item.known_for_bullets.length > 0 ? (
+                              <div className="mt-2 space-y-1">
+                                <div className="text-[10px] text-orange-400 mb-1 opacity-50">✨</div>
+                                {item.known_for_bullets.slice(0, 1).map((point: string, idx: number) => (
+                                  <p key={idx} className="text-[11px] leading-tight text-gray-400 flex items-start gap-1.5 ml-0.5">
+                                    <span className="text-gray-300 font-bold">•</span>
+                                    <span>{point}</span>
+                                  </p>
+                                ))}
+                              </div>
+                            ) : item.recommended_for && (
+                              <p className="text-[11px] text-gray-400 italic mt-1 line-clamp-1">{item.recommended_for}</p>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
                 {/* Spacer for bottom nav */}
                 <div className="h-16"></div>
               </div>
