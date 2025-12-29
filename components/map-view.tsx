@@ -10,11 +10,11 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 const NOOSA_COORDS: [number, number] = [153.0905, -26.3957]; // Lng, Lat
 
 interface MapViewProps {
-    specials: any[];
-    onSelectSpecial: (special: any) => void;
+    venues: any[];
+    onSelectVenue: (venue: any) => void;
 }
 
-export default function MapView({ specials, onSelectSpecial }: MapViewProps) {
+export default function MapView({ venues, onSelectVenue }: MapViewProps) {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<mapboxgl.Map | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -47,10 +47,10 @@ export default function MapView({ specials, onSelectSpecial }: MapViewProps) {
             );
 
             map.current.on('load', () => {
-                specials.forEach((special) => {
+                venues.forEach((venue) => {
                     let lngLat: [number, number] = NOOSA_COORDS;
-                    if (special.coordinates && special.coordinates.length === 2 && special.coordinates[0] !== null) {
-                        lngLat = special.coordinates;
+                    if (venue.lng && venue.lat) {
+                        lngLat = [venue.lng, venue.lat];
                     } else {
                         const offsetLat = (Math.random() - 0.5) * 0.02;
                         const offsetLng = (Math.random() - 0.5) * 0.02;
@@ -60,14 +60,13 @@ export default function MapView({ specials, onSelectSpecial }: MapViewProps) {
                     // Marker Element
                     const el = document.createElement('div');
                     el.className = 'marker';
-                    const icon = special.icon || '🍽️';
-                    el.innerHTML = `<div class="bg-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg border-2 border-white text-3xl hover:scale-110 transition-transform cursor-pointer transform -translate-y-1/2">${icon}</div>`;
+                    const icon = venue.icon || '🍽️';
+                    el.innerHTML = `<div class="bg-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg border-2 border-white text-3xl hover:scale-110 transition-transform cursor-pointer transform -translate-y-1/2">${icon}</div>`;
 
                     // Click Listener -> Set React State
                     el.addEventListener('click', (e) => {
                         e.stopPropagation(); // Prevent map click
-                        onSelectSpecial(special);
-
+                        onSelectVenue(venue);
                         // Optional: Pan to marker
                     });
 
@@ -79,7 +78,7 @@ export default function MapView({ specials, onSelectSpecial }: MapViewProps) {
 
             // Close modal on map click
             map.current.on('click', () => {
-                onSelectSpecial(null);
+                onSelectVenue(null);
             });
 
         } catch (err) {
@@ -87,7 +86,7 @@ export default function MapView({ specials, onSelectSpecial }: MapViewProps) {
             setError("Could not load map");
         }
 
-    }, [specials, onSelectSpecial]);
+    }, [venues, onSelectVenue]);
 
     if (error) {
         return (
