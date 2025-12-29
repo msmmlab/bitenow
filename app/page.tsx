@@ -219,7 +219,7 @@ export default function Home() {
               alt="BiteNow Logo"
               width={140}
               height={45}
-              className="h-32 w-auto object-contain"
+              className="h-32 w-auto object-contain dark:invert dark:grayscale"
               priority
             />
           </div>
@@ -282,7 +282,7 @@ export default function Home() {
             {/* Watermark Background (Fixed in Container) */}
             {/* Watermark Background (Fixed in Container) */}
             <div className="absolute inset-0 z-0 flex items-center justify-center opacity-5 pointer-events-none">
-              <Image src="/logo.png" width={300} height={300} alt="Watermark" />
+              <Image src="/logo.png" width={300} height={300} alt="Watermark" className="dark:invert dark:grayscale" />
             </div>
 
             {/* Scrollable Content Overlay */}
@@ -293,14 +293,14 @@ export default function Home() {
               <div className="p-4 space-y-4">
                 {/* Cold Start Banner */}
                 {!loading && !hasAnySpecials && (
-                  <div className="bg-[#FFF6EA] border border-[#F59E0B]/30 rounded-2xl p-4 mb-2 flex flex-col gap-3 shadow-sm">
+                  <div className="bg-[#FFF6EA] dark:bg-zinc-900/50 border border-[#F59E0B]/30 dark:border-[#F59E0B]/20 rounded-2xl p-4 mb-2 flex flex-col gap-3 shadow-sm">
                     <p className="text-[#F59E0B] text-sm font-bold leading-tight">
                       We’re new here — deals are rolling in.<br />
-                      <span className="opacity-90 font-medium text-xs">Can’t see your favourite spot yet? They can post specials instantly by text.</span>
+                      <span className="opacity-90 dark:opacity-70 font-medium text-xs">Can’t see your favourite spot yet? They can post specials instantly by text.</span>
                     </p>
                     <button
                       onClick={() => openSuggestModal(null)}
-                      className="bg-white border border-[#F59E0B] text-[#F59E0B] text-[10px] font-black uppercase tracking-widest py-2 px-4 rounded-xl transition-all active:scale-95 w-fit shadow-sm"
+                      className="bg-white dark:bg-zinc-800 border border-[#F59E0B] text-[#F59E0B] text-[10px] font-black uppercase tracking-widest py-2 px-4 rounded-xl transition-all active:scale-95 w-fit shadow-sm"
                     >
                       ⭐ Suggest a favourite
                     </button>
@@ -370,9 +370,15 @@ export default function Home() {
                         <>
                           <h4 className="text-lg font-bold text-gray-400 dark:text-zinc-600 pr-8 italic">Awaiting today&apos;s specials</h4>
                           {item.recommended_for && (
-                            <p className="mt-2 text-[11px] leading-relaxed text-gray-400 dark:text-zinc-500">
-                              <span className="font-bold text-gray-500 dark:text-zinc-400">Known for</span> {item.recommended_for}
-                            </p>
+                            <div className="mt-2 space-y-1">
+                              <div className="text-[10px] text-orange-400 mb-1">✨</div>
+                              {item.recommended_for.split(',').map((point: string, idx: number) => (
+                                <p key={idx} className="text-[11px] leading-tight text-gray-400 dark:text-zinc-500 flex items-start gap-1.5 ml-0.5">
+                                  <span className="text-gray-300 dark:text-zinc-700 font-bold">•</span>
+                                  <span>{point.trim()}</span>
+                                </p>
+                              ))}
+                            </div>
                           )}
                           <div className="flex items-center gap-1.5 mt-2 text-sm text-gray-400 dark:text-zinc-600">
                             <Clock className="w-3.5 h-3.5" />
@@ -388,7 +394,7 @@ export default function Home() {
                           e.stopPropagation();
                           setSelectedVenue(item);
                         }}
-                        className="w-full flex items-center justify-center gap-2 bg-black text-white dark:bg-white dark:text-black py-3 rounded-xl text-sm font-black uppercase tracking-wider shadow-lg active:scale-95 transition-all"
+                        className="w-full flex items-center justify-center gap-2 bg-black text-white dark:bg-zinc-800 dark:text-gray-100 py-3 rounded-xl text-sm font-black uppercase tracking-wider shadow-lg active:scale-95 transition-all"
                       >
                         <Navigation className="w-4 h-4" />
                         Navigate There

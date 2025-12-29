@@ -88,7 +88,7 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
             />
 
             {/* Modal Card */}
-            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden font-sans border border-gray-100 flex flex-col w-full max-w-sm max-h-[85vh] relative z-10 animate-in slide-in-from-bottom-4 zoom-in-95 duration-300">
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden font-sans border border-gray-100 dark:border-zinc-800 flex flex-col w-full max-w-sm max-h-[85vh] relative z-10 animate-in slide-in-from-bottom-4 zoom-in-95 duration-300">
 
                 {/* Close Button */}
                 <button
@@ -141,7 +141,7 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
 
                     {/* Deal Details */}
                     <div className="px-5 -mt-8 relative z-10 pb-4">
-                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 text-left space-y-4">
+                        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-800 p-6 text-left space-y-4">
                             {hasSpecial ? (
                                 <>
                                     {/* Structured Deal Info */}
@@ -150,14 +150,14 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
                                             <Tag className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                                         </div>
                                         <div>
-                                            <h3 className="font-black text-xl text-gray-900 leading-tight tracking-tight">
+                                            <h3 className="font-black text-xl text-gray-900 dark:text-white leading-tight tracking-tight">
                                                 {venue.special.title}
                                             </h3>
                                         </div>
                                     </div>
 
                                     <div className="space-y-3 pl-1">
-                                        <div className="flex items-center gap-3 text-gray-700 font-semibold text-sm">
+                                        <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300 font-semibold text-sm">
                                             <Clock className="w-4 h-4 text-gray-400" />
                                             <span>Today • 4–6pm</span>
                                         </div>
@@ -182,10 +182,16 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
                                         Check back later — venues can update their specials daily.
                                     </p>
                                     {venue.recommended_for && (
-                                        <div className="mt-4 p-4 bg-gray-50 dark:bg-zinc-800/50 rounded-xl text-left border border-gray-100 dark:border-zinc-800">
-                                            <p className="text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
-                                                <span className="font-bold text-gray-700 dark:text-zinc-300">Known for</span> {venue.recommended_for}
-                                            </p>
+                                        <div className="mt-4 p-5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl text-left border border-gray-100 dark:border-zinc-800 shadow-inner">
+                                            <div className="space-y-1.5">
+                                                <div className="text-xs text-orange-400 mb-2">✨</div>
+                                                {venue.recommended_for.split(',').map((point: string, idx: number) => (
+                                                    <p key={idx} className="text-xs leading-relaxed text-gray-500 dark:text-gray-400 flex items-start gap-2.5">
+                                                        <span className="text-gray-300 dark:text-zinc-700 font-bold">•</span>
+                                                        <span>{point.trim()}</span>
+                                                    </p>
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
 
@@ -224,11 +230,11 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-4 bg-gray-50 flex flex-col gap-3 shrink-0 border-t border-gray-100 mt-auto">
+                <div className="p-4 bg-gray-50 dark:bg-zinc-900 flex flex-col gap-3 shrink-0 border-t border-gray-100 dark:border-zinc-800 mt-auto">
                     {!showNavOptions ? (
                         <button
                             onClick={handleMainNavigate}
-                            className="w-full bg-black text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"
+                            className="w-full bg-black text-white dark:bg-zinc-800 dark:text-gray-100 font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"
                         >
                             <Navigation className="w-4 h-4" />
                             <span>Navigate There</span>
