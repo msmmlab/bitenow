@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { Crosshair } from 'lucide-react';
 
 // Ensure you set this in .env
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
@@ -12,12 +13,43 @@ const NOOSA_COORDS: [number, number] = [153.0905, -26.3957]; // Lng, Lat
 interface MapViewProps {
     venues: any[];
     onSelectVenue: (venue: any) => void;
+    userLocation: { lat: number; lng: number } | null;
 }
 
-export default function MapView({ venues, onSelectVenue }: MapViewProps) {
+export default function MapView({ venues, onSelectVenue, userLocation }: MapViewProps) {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<mapboxgl.Map | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    const handleRecenter = useCallback(() => {
+        if (!map.current) return;
+
+        // If we have user location, center on them first
+        if (userLocation) {
+            map.current.flyTo({
+                center: [userLocation.lng, userLocation.lat],
+                zoom: 14,
+                essential: true
+            });
+            return;
+        }
+
+        // Fallback: show all venues if no user location
+        if (venues.length === 0) return;
+        const bounds = new mapboxgl.LngLatBounds();
+        let hasValidCoords = false;
+
+        venues.forEach((venue) => {
+            if (venue.lng && venue.lat) {
+                bounds.extend([Number(venue.lng), Number(venue.lat)]);
+                hasValidCoords = true;
+            }
+        });
+
+        if (hasValidCoords) {
+            map.current.fitBounds(bounds, { padding: 80, maxZoom: 15 });
+        }
+    }, [venues, userLocation]);
 
     useEffect(() => {
         if (!mapContainer.current) return;
@@ -29,28 +61,31 @@ export default function MapView({ venues, onSelectVenue }: MapViewProps) {
 
         mapboxgl.accessToken = MAPBOX_TOKEN;
 
-        console.log("MapView: Initializing with venues:", venues.length);
-
         try {
+            const initialCenter: [number, number] = userLocation
+                ? [userLocation.lng, userLocation.lat]
+                : NOOSA_COORDS;
+
             const mapInstance = new mapboxgl.Map({
                 container: mapContainer.current!,
                 style: 'mapbox://styles/mapbox/streets-v12',
-                center: NOOSA_COORDS,
-                zoom: 13,
+                center: initialCenter,
+                zoom: userLocation ? 14 : 13,
             });
             map.current = mapInstance;
 
             mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
-            mapInstance.addControl(
-                new mapboxgl.GeolocateControl({
-                    positionOptions: { enableHighAccuracy: true },
-                    trackUserLocation: true,
-                    showUserHeading: true,
-                })
-            );
+
+            const geolocate = new mapboxgl.GeolocateControl({
+                positionOptions: { enableHighAccuracy: true },
+                trackUserLocation: true,
+                showUserHeading: true,
+                showUserLocation: true,
+            });
+
+            mapInstance.addControl(geolocate);
 
             mapInstance.on('load', () => {
-                console.log("MapView: Map loaded, adding markers");
                 if (venues.length === 0) return;
 
                 const bounds = new mapboxgl.LngLatBounds();
@@ -61,7 +96,6 @@ export default function MapView({ venues, onSelectVenue }: MapViewProps) {
                     if (venue.lng && venue.lat) {
                         lngLat = [Number(venue.lng), Number(venue.lat)];
                     } else {
-                        // Fallback to jittered Noosa center
                         const offsetLat = (Math.random() - 0.5) * 0.02;
                         const offsetLng = (Math.random() - 0.5) * 0.02;
                         lngLat = [NOOSA_COORDS[0] + offsetLng, NOOSA_COORDS[1] + offsetLat];
@@ -70,7 +104,6 @@ export default function MapView({ venues, onSelectVenue }: MapViewProps) {
                     bounds.extend(lngLat);
                     hasValidCoords = true;
 
-                    // Marker Element
                     const el = document.createElement('div');
                     el.className = 'marker';
                     const icon = venue.icon || '🍽️';
@@ -91,7 +124,7 @@ export default function MapView({ venues, onSelectVenue }: MapViewProps) {
                         .addTo(mapInstance);
                 });
 
-                if (hasValidCoords && venues.length > 1) {
+                if (!userLocation && hasValidCoords) {
                     mapInstance.fitBounds(bounds, { padding: 80, maxZoom: 15 });
                 }
             });
@@ -128,6 +161,18 @@ export default function MapView({ venues, onSelectVenue }: MapViewProps) {
     return (
         <div className="relative w-full h-full">
             <div ref={mapContainer} className="w-full h-full" />
+
+            {/* Custom Recenter Button */}
+            <button
+                onClick={() => {
+                    console.log("Recenter clicked - fitting bounds for venues");
+                    handleRecenter();
+                }}
+                className="absolute right-4 bottom-32 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-3 rounded-full shadow-2xl border border-gray-100 dark:border-zinc-800 text-black dark:text-white active:scale-90 transition-all z-10"
+                title="Recenter Map"
+            >
+                <Crosshair className="w-6 h-6" />
+            </button>
         </div>
     );
 }

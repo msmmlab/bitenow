@@ -407,6 +407,7 @@ export default function Home() {
           <MapView
             venues={venues}
             onSelectVenue={setSelectedVenue}
+            userLocation={userLocation}
           />
         )}
 
