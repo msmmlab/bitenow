@@ -165,7 +165,7 @@ export async function GET() {
             "+61XXXXXXXXX";
 
         // Restaurants
-        const restaurants: RestaurantSeed[] = [
+        const restaurants: RestaurantSeed[] = ([
             // -------------------------
             // NOOSA
             // -------------------------
@@ -222,7 +222,7 @@ export async function GET() {
                 name: "Locale Noosa",
                 slug: "locale-noosa",
                 category: "Italian (Fine)",
-                icon: "/icons/fancy_dinner.png",
+                icon: "/icons/wine.png",
                 lat: -26.3867,
                 lng: 153.0926,
                 address: "62 Hastings St, Noosa Heads QLD 4567",
@@ -263,7 +263,7 @@ export async function GET() {
                 name: "Sails",
                 slug: "sails-noosa",
                 category: "Seafood",
-                icon: "/icons/fancy_dinner.png",
+                icon: "/icons/wine.png",
                 lat: -26.3868,
                 lng: 153.0929,
                 address: "75 Hastings St, Noosa Heads QLD",
@@ -302,7 +302,7 @@ export async function GET() {
                 name: "Bistro C",
                 slug: "bistro-c",
                 category: "Beachside Bistro",
-                icon: "/icons/fancy_dinner.png",
+                icon: "/icons/wine.png",
                 lat: -26.3864,
                 lng: 153.0906,
                 address: "49 Hastings St, Noosa Heads QLD",
@@ -597,7 +597,7 @@ export async function GET() {
                 name: "Market Bistro",
                 slug: "market-bistro-maroochydore",
                 category: "Bistro",
-                icon: "/icons/fancy_dinner.png",
+                icon: "/icons/wine.png",
                 lat: jitter(TOWNS.MAROOCHYDORE.lat),
                 lng: jitter(TOWNS.MAROOCHYDORE.lng),
                 address: "8 Market Lane, Maroochydore QLD 4558",
@@ -682,7 +682,7 @@ export async function GET() {
                 name: "Canteen Kitchen + Bar",
                 slug: "canteen-kitchen-bar-coolum",
                 category: "Modern",
-                icon: "/icons/fancy_dinner.png",
+                icon: "/icons/wine.png",
                 lat: jitter(TOWNS.COOLUM.lat),
                 lng: jitter(TOWNS.COOLUM.lng),
                 address: "1750 David Low Way, Coolum Beach QLD 4573",
@@ -717,7 +717,7 @@ export async function GET() {
                 activation_phone: activatePhone,
                 known_for_bullets: ["Pub bistro meals", "Group-friendly", "Easy casual drinks"],
             },
-        ].map(mergeMeta);
+        ] as any[]).map(mergeMeta);
 
         // Optional legacy recommended_for (keep if your UI uses it)
         // If you want, you can drop this entirely and render known_for_bullets instead.
