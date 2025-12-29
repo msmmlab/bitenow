@@ -139,7 +139,18 @@ export default function Home() {
         recommended_for: v.recommended_for
       };
     }).sort((a, b) => {
-      if (a.distanceValue === undefined) return 0;
+      // 1. Prioritize Active Specials
+      const aHasSpecial = !!a.special;
+      const bHasSpecial = !!b.special;
+      if (aHasSpecial !== bHasSpecial) return aHasSpecial ? -1 : 1;
+
+      // 2. Prioritize venues with "Known for" content
+      const aHasRec = !!a.recommended_for;
+      const bHasRec = !!b.recommended_for;
+      if (aHasRec !== bHasRec) return aHasRec ? -1 : 1;
+
+      // 3. Fallback to Distance
+      if (a.distanceValue === undefined || b.distanceValue === undefined) return 0;
       return (a.distanceValue || 0) - (b.distanceValue || 0);
     });
   }, [venues, userLocation]);
@@ -296,18 +307,8 @@ export default function Home() {
                   </div>
                 )}
 
-                <div className="flex items-end justify-between px-1">
-                  <div className="flex flex-col">
-                    <span className="text-sm text-gray-500 font-bold">{hasAnySpecials ? 'Active Specials' : 'Nearby Venues'}</span>
-                    {!hasAnySpecials && (
-                      <span className="text-[10px] text-gray-400 font-medium leading-tight mt-0.5">
-                        No active specials yet — showing closest venues instead.
-                      </span>
-                    )}
-                  </div>
-                  <button className="flex items-center gap-1 text-black font-black text-xs dark:text-white uppercase tracking-tighter mb-0.5">
-                    Closest <Filter className="w-3 h-3" />
-                  </button>
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-sm text-gray-500 font-bold">{hasAnySpecials ? 'Active Specials' : 'Nearby Venues'}</span>
                 </div>
 
                 {loading && <div className="p-10 text-center text-gray-500">Loading today's specials...</div>}
