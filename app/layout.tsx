@@ -14,21 +14,44 @@ const geistMono = Geist_Mono({
 
 // SEO METADATA
 export const metadata: Metadata = {
-  title: "BiteNow Noosa | Best Happy Hours, Food Deals & Specials Today",
-  description: "Find the best food and drink specials in Noosa right now. Live happy hours, lunch deals, dinner offers, and family value. Save money and eat better with BiteNow.",
-  keywords: ["Noosa restaurants", "Noosa happy hour", "cheap eats Noosa", "food deals Sunshine Coast", "best burger Noosa", "kids eat free Noosa", "Noosa Junction", "Hastings Street"],
+  title:
+    "BiteNow Sunshine Coast | Live Food & Drink Specials in Noosa, Mooloolaba, Maroochydore & More",
+
+  description:
+    "Find live food and drink specials across the Sunshine Coast. Discover happy hours, lunch deals, dinner offers, and local favourites in Noosa, Mooloolaba, Maroochydore, Caloundra, Coolum Beach and nearby towns — updated daily.",
+
+  keywords: [
+    "Sunshine Coast food deals",
+    "Sunshine Coast happy hour",
+    "Noosa restaurants",
+    "Noosa happy hour",
+    "Mooloolaba restaurants",
+    "Mooloolaba happy hour",
+    "Maroochydore food deals",
+    "Caloundra restaurants",
+    "Coolum Beach restaurants",
+    "cheap eats Sunshine Coast",
+    "lunch specials Sunshine Coast",
+    "dinner deals Sunshine Coast",
+    "live food specials Sunshine Coast"
+  ],
+
   openGraph: {
-    title: "BiteNow Noosa | Eat Better, Pay Less",
-    description: "Real-time guide to Noosa's best restaurant deals and happy hours.",
+    title:
+      "BiteNow Sunshine Coast | Live Food & Drink Specials Near You",
+    description:
+      "A real-time guide to food and drink specials across the Sunshine Coast — from Noosa to Caloundra. Find happy hours, lunch deals and local favourites happening today.",
     type: "website",
     locale: "en_AU",
     siteName: "BiteNow",
   },
+
   robots: {
     index: true,
     follow: true,
   },
 };
+
 
 export const viewport: Viewport = {
   width: "device-width",

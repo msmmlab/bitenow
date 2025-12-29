@@ -167,7 +167,7 @@ import { supabase } from "@/lib/supabase";
 
 // Helper for approximate coords (good for seed/demo).
 // Later: replace with Google Places import so lat/lng are exact.
-const jitter = (base, amount = 0.006) =>
+const jitter = (base: number, amount: number = 0.006) =>
     Number((base + (Math.random() - 0.5) * amount).toFixed(6));
 
 export async function GET() {
