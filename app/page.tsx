@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import MapView from '@/components/map-view';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
+import SpecialModal from '@/components/special-modal';
 
 // TYPES
 interface Special {
@@ -30,6 +31,7 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [specials, setSpecials] = useState<Special[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSpecial, setSelectedSpecial] = useState<Special | null>(null);
 
   // VIBE SET FILTERS
   const FILTERS = ["All", "Lunch", "Dinner", "Live Music", "Family"];
@@ -109,7 +111,14 @@ export default function Home() {
       <header className={`fixed top-0 left-0 right-0 z-30 bg-white/95 dark:bg-black/95 backdrop-blur-md px-4 py-3 border-b border-gray-100 dark:border-zinc-800 shrink-0 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <h1 className="font-extrabold text-3xl tracking-tighter text-black dark:text-white">BiteNow</h1>
+            <Image
+              src="/logo.png"
+              alt="BiteNow Logo"
+              width={140}
+              height={45}
+              className="h-32 w-auto object-contain"
+              priority
+            />
           </div>
 
           {/* View Toggle (List/Map) - Top Right */}
@@ -142,7 +151,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Filters */}
+        {/* Filters - HIDDEN FOR MVP
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar">
           {FILTERS.map((f) => (
             <button
@@ -159,6 +168,7 @@ export default function Home() {
             </button>
           ))}
         </div>
+        */}
       </header>
 
       {/* Content Area */}
@@ -168,95 +178,110 @@ export default function Home() {
           <div className="h-full w-full relative group">
             {/* Watermark Background (Fixed in Container) */}
             {/* Watermark Background (Fixed in Container) */}
-            <div className="absolute inset-0 z-0 flex items-center justify-center opacity-20 pointer-events-none">
+            <div className="absolute inset-0 z-0 flex items-center justify-center opacity-5 pointer-events-none">
               <Image src="/logo.png" width={300} height={300} alt="Watermark" />
             </div>
 
             {/* Scrollable Content Overlay */}
             <div
               onScroll={handleScroll}
-              className="absolute inset-0 z-10 overflow-y-auto pb-20 pt-36 p-4 space-y-4"
+              className="absolute inset-0 z-10 overflow-y-auto pb-20 pt-36"
             >
-              <div className="flex items-center justify-between text-sm text-gray-500 px-1">
-                <span>Active Specials</span>
-                <button className="flex items-center gap-1 text-black font-medium text-xs dark:text-white">
-                  Closest <Filter className="w-3 h-3" />
-                </button>
-              </div>
-
-              {loading && <div className="p-10 text-center text-gray-500">Loading today's specials...</div>}
-
-              {!loading && specials.length === 0 && (
-                <div className="p-10 text-center text-gray-500">
-                  <p>No specials found for today.</p>
-                  <p className="text-xs mt-2">Try visiting /api/seed to populate data.</p>
+              <div className="p-4 space-y-4">
+                <div className="flex items-center justify-between text-sm text-gray-500 px-1">
+                  <span>Active Specials</span>
+                  <button className="flex items-center gap-1 text-black font-medium text-xs dark:text-white">
+                    Closest <Filter className="w-3 h-3" />
+                  </button>
                 </div>
-              )}
 
-              {filteredSpecials.map((item) => (
-                <div key={item.id} className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 cursor-pointer">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-xl bg-gray-100 dark:bg-gray-800")}>
-                        {item.restaurant.icon || '🍽️'}
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-tight">{item.restaurant.name}</h3>
-                        <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                          <MapPin className="w-3 h-3" />
-                          <span>{item.distance}</span>
-                          <span className="text-gray-300">•</span>
-                          <span>{item.restaurant.category}</span>
+                {loading && <div className="p-10 text-center text-gray-500">Loading today's specials...</div>}
+
+                {!loading && specials.length === 0 && (
+                  <div className="p-10 text-center text-gray-500">
+                    <p>No specials found for today.</p>
+                    <p className="text-xs mt-2">Try visiting /api/seed to populate data.</p>
+                  </div>
+                )}
+
+                {filteredSpecials.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => setSelectedSpecial(item)}
+                    className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 cursor-pointer active:scale-[0.98] transition-transform duration-100"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-xl bg-gray-100 dark:bg-gray-800")}>
+                          {item.restaurant.icon || '🍽️'}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-tight">{item.restaurant.name}</h3>
+                          <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                            <MapPin className="w-3 h-3" />
+                            <span>{item.distance}</span>
+                            <span className="text-gray-300">•</span>
+                            <span>{item.restaurant.category}</span>
+                          </div>
                         </div>
                       </div>
+                      <div className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-full text-xs font-bold">
+                        Open
+                      </div>
                     </div>
-                    <div className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-full text-xs font-bold">
-                      Open
-                    </div>
-                  </div>
 
-                  <div className="mt-3">
-                    <h4 className="text-lg font-bold text-gray-900 dark:text-white pr-8">{item.title}</h4>
-                    <div className="flex items-center gap-1.5 mt-1 text-sm text-gray-500 dark:text-gray-400">
-                      <Clock className="w-3.5 h-3.5" />
-                      {/* Description often contains time in our simpler model */}
-                      <span>{item.description || 'Today'}</span>
+                    <div className="mt-3">
+                      <h4 className="text-lg font-bold text-gray-900 dark:text-white pr-8">{item.title}</h4>
+                      <div className="flex items-center gap-1.5 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <Clock className="w-3.5 h-3.5" />
+                        {/* Description often contains time in our simpler model */}
+                        <span>{item.description || 'Today'}</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex gap-2">
+                      <button className="flex-1 flex items-center justify-center gap-2 bg-gray-50 dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+                        <Navigation className="w-4 h-4" />
+                        Directions
+                      </button>
+                      <button className="flex-1 flex items-center justify-center gap-2 bg-black text-white dark:bg-white dark:text-black py-2.5 rounded-xl text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity">
+                        <Phone className="w-4 h-4" />
+                        Call
+                      </button>
                     </div>
                   </div>
-
-                  <div className="mt-4 flex gap-2">
-                    <button className="flex-1 flex items-center justify-center gap-2 bg-gray-50 dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 py-2.5 rounded-xl text-sm font-semibold transition-colors">
-                      <Navigation className="w-4 h-4" />
-                      Directions
-                    </button>
-                    <button className="flex-1 flex items-center justify-center gap-2 bg-black text-white dark:bg-white dark:text-black py-2.5 rounded-xl text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity">
-                      <Phone className="w-4 h-4" />
-                      Call
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {/* Spacer for bottom nav */}
-              <div className="h-16"></div>
+                ))}
+                {/* Spacer for bottom nav */}
+                <div className="h-16"></div>
+              </div>
             </div>
           </div>
+
         ) : (
           <div className="h-full w-full">
-            <MapView specials={filteredSpecials.map(s => ({
-              id: s.id,
-              venue: s.restaurant.name,
-              title: s.title,
-              description: s.description,
-              category: s.restaurant.category,
-              coordinates: [s.restaurant.lng, s.restaurant.lat],
-              icon: s.restaurant.icon
-            }))} />
+            <MapView
+              specials={filteredSpecials.map(s => ({
+                id: s.id,
+                venue: s.restaurant.name,
+                title: s.title,
+                description: s.description,
+                category: s.restaurant.category,
+                coordinates: [s.restaurant.lng, s.restaurant.lat],
+                icon: s.restaurant.icon,
+                restaurant: s.restaurant // pass full restaurant object for modal
+              }))}
+              onSelectSpecial={(s: any) => setSelectedSpecial(s)}
+            />
           </div>
         )}
       </div>
 
+      {/* SHARED MODAL */}
+      <SpecialModal
+        special={selectedSpecial}
+        onClose={() => setSelectedSpecial(null)}
+      />
 
-
-    </main>
+    </main >
   );
 }
