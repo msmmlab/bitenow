@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { MapPin, Phone, Navigation, Clock, Search, Filter, List, Map as MapIcon, X } from 'lucide-react';
+import { MapPin, Phone, Navigation, Clock, Search, Filter, List, Map as MapIcon, X, HelpCircle, Mail, PlusCircle, MessageSquare, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import MapView from '@/components/map-view';
 import Image from 'next/image';
@@ -48,7 +48,9 @@ export default function Home() {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [showJoinUs, setShowJoinUs] = useState(false);
+  const [showFAQ, setShowFAQ] = useState(false);
+  const [showContact, setShowContact] = useState(false);
 
   // VIBE SET FILTERS
   const FILTERS = ["All", "Lunch", "Dinner", "Live Music", "Family"];
@@ -190,16 +192,9 @@ export default function Home() {
           {/* View Toggle (Pill Style) */}
           <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-full border border-gray-200 dark:border-zinc-700">
             <button
-              onClick={() => setShowHowItWorks(true)}
-              className="px-3 py-1.5 rounded-full text-xs font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors"
-            >
-              How it works
-            </button>
-            <div className="w-px h-4 bg-gray-300 dark:bg-zinc-600 my-auto mx-1"></div>
-            <button
               onClick={() => setViewMode('list')}
               className={cn(
-                "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200",
+                "flex items-center gap-1.5 px-6 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200",
                 viewMode === 'list'
                   ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm"
                   : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -211,7 +206,7 @@ export default function Home() {
             <button
               onClick={() => setViewMode('map')}
               className={cn(
-                "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200",
+                "flex items-center gap-1.5 px-6 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200",
                 viewMode === 'map'
                   ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm"
                   : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -364,48 +359,132 @@ export default function Home() {
             onSelectVenue={setSelectedVenue}
           />
         )}
-      </div>
 
-      {/* HOW IT WORKS MODAL */}
-      {showHowItWorks && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowHowItWorks(false)} />
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 relative z-10 w-full max-w-sm border border-gray-100 dark:border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200">
+        {/* FIXED BOTTOM MENU */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-4">
+          <div className="max-w-md mx-auto bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-2xl flex items-center justify-around py-3 px-2">
             <button
-              onClick={() => setShowHowItWorks(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-black dark:hover:text-white"
+              onClick={() => setShowJoinUs(true)}
+              className="flex flex-col items-center gap-1 group flex-1"
             >
-              <X className="w-6 h-6" />
+              <div className="bg-yellow-100 dark:bg-yellow-900/30 p-2 rounded-xl text-yellow-700 dark:text-yellow-500 group-active:scale-90 transition-transform">
+                <Store className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-tighter text-gray-600 dark:text-gray-400">Join Us</span>
             </button>
 
+            <button
+              onClick={() => setShowFAQ(true)}
+              className="flex flex-col items-center gap-1 group flex-1"
+            >
+              <div className="p-2 rounded-xl text-gray-400 group-hover:text-black dark:group-hover:text-white group-active:scale-90 transition-all">
+                <HelpCircle className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-tighter text-gray-600 dark:text-gray-400">FAQ</span>
+            </button>
+
+            <button
+              onClick={() => setShowContact(true)}
+              className="flex flex-col items-center gap-1 group flex-1"
+            >
+              <div className="p-2 rounded-xl text-gray-400 group-hover:text-black dark:group-hover:text-white group-active:scale-90 transition-all">
+                <MessageSquare className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-tighter text-gray-600 dark:text-gray-400">Contact</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* JOIN US MODAL */}
+      {showJoinUs && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowJoinUs(false)} />
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 relative z-10 w-full max-w-sm border border-gray-100 dark:border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200">
+            <button onClick={() => setShowJoinUs(false)} className="absolute top-4 right-4 text-gray-400"><X className="w-6 h-6" /></button>
             <div className="text-center space-y-4 py-4">
-              <div className="text-4xl">✨</div>
-              <h3 className="text-2xl font-black tracking-tight">How it works</h3>
+              <div className="text-4xl">🏢</div>
+              <h3 className="text-2xl font-black tracking-tight">Add Your Venue</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">No dashboards, no logins. Just text us your specials and we list them instantly.</p>
 
-              <div className="space-y-6 text-left pt-2">
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center shrink-0 text-orange-600 font-bold">1</div>
-                  <div>
-                    <h4 className="font-bold text-sm">For Users</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Find what&apos;s open nearby. Deals appear automatically when venues text them in.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0 text-green-600 font-bold">2</div>
-                  <div>
-                    <h4 className="font-bold text-sm">For Owners</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Text your specials to us. No apps, no logins, no fuss. We handle the rest.</p>
-                  </div>
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl p-5 text-left border border-yellow-100 dark:border-yellow-900/30">
+                <h4 className="font-black text-xs text-yellow-700 uppercase tracking-widest mb-2">How to start</h4>
+                <p className="text-sm text-yellow-900 dark:text-yellow-400 leading-relaxed font-bold">
+                  Text your special (or a photo of your board) to:
+                </p>
+                <p className="text-xl font-black text-yellow-900 dark:text-yellow-400 mt-1 underline">
+                  {process.env.NEXT_PUBLIC_ACTIVATION_PHONE || '+61 400 000 000'}
+                </p>
+                <div className="mt-4 space-y-2 opacity-75">
+                  <p className="text-[11px] italic">📝 Example: &quot;$15 Parma & Schooner 12–3&quot;</p>
+                  <p className="text-[11px] italic">📸 Or just text a photo of your specials board!</p>
                 </div>
               </div>
 
               <button
-                onClick={() => setShowHowItWorks(false)}
-                className="w-full bg-black dark:bg-white dark:text-black text-white font-bold py-3 rounded-xl mt-6 shadow-lg active:scale-95 transition-transform"
+                onClick={() => setShowJoinUs(false)}
+                className="w-full bg-black dark:bg-white dark:text-black text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-transform"
               >
-                Got it
+                Let&apos;s Go
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FAQ MODAL */}
+      {showFAQ && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowFAQ(false)} />
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 relative z-10 w-full max-w-sm border border-gray-100 dark:border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[80vh] overflow-y-auto">
+            <button onClick={() => setShowFAQ(false)} className="absolute top-4 right-4 text-gray-400"><X className="w-6 h-6" /></button>
+            <div className="space-y-6 py-4">
+              <h3 className="text-2xl font-black tracking-tight text-center">FAQ</h3>
+
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-bold text-sm mb-1">How much does it cost?</h4>
+                  <p className="text-xs text-gray-500 leading-relaxed">During our beta phase, BiteNow is 100% free for both venues and users.</p>
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm mb-1">How do I update a special?</h4>
+                  <p className="text-xs text-gray-500 leading-relaxed">Just send us another text! Each new text replaces your previous special for the day.</p>
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm mb-1">How long do specials last?</h4>
+                  <p className="text-xs text-gray-500 leading-relaxed">Specials naturally expire at the end of the day unless you text us a multi-day deal.</p>
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm mb-1">What if my venue isn&apos;t on the map?</h4>
+                  <p className="text-xs text-gray-500 leading-relaxed">Text us your venue name and address. We manually verify and add new spots within 24 hours.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONTACT MODAL */}
+      {showContact && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowContact(false)} />
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 relative z-10 w-full max-w-sm border border-gray-100 dark:border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200">
+            <button onClick={() => setShowContact(false)} className="absolute top-4 right-4 text-gray-400"><X className="w-6 h-6" /></button>
+            <div className="text-center space-y-6 py-4">
+              <div className="text-4xl">👋</div>
+              <h3 className="text-2xl font-black tracking-tight">Get in touch</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Questions, feedback, or just want to say hi? We&apos;d love to hear from you.</p>
+
+              <div className="space-y-3">
+                <a href="mailto:hello@bitenow.com.au" className="w-full flex items-center justify-center gap-3 bg-gray-50 dark:bg-zinc-800 py-4 rounded-xl font-bold hover:bg-gray-100 transition-colors">
+                  <Mail className="w-5 h-5" />
+                  <span>Email Support</span>
+                </a>
+                <a href="sms:+61400000000" className="w-full flex items-center justify-center gap-3 bg-gray-50 dark:bg-zinc-800 py-4 rounded-xl font-bold hover:bg-gray-100 transition-colors">
+                  <MessageSquare className="w-5 h-5" />
+                  <span>Text Us Directly</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>
