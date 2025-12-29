@@ -48,9 +48,16 @@ const getVenueSignal = (category: string) => {
   const hour = new Date().getHours();
   const lowerCat = category.toLowerCase();
 
+  // Simple logic for MVP: standard trading hours 10am-10pm unless cafe
+  if (lowerCat.includes('cafe')) {
+    if (hour < 7 || hour >= 16) return "Closed";
+    return "Open for coffee & food";
+  }
+
+  if (hour < 10 || hour >= 22) return "Closed";
+
   if (hour >= 11 && hour <= 14) return "Likely serving lunch";
   if (hour >= 17 && hour <= 21) return "Open for dinner";
-  if (lowerCat.includes('cafe') && hour >= 7 && hour <= 15) return "Open for coffee & food";
 
   return "Open now";
 };
@@ -65,6 +72,7 @@ export default function Home() {
   const [joinUsVenue, setJoinUsVenue] = useState<Venue | null>(null);
   const [suggestText, setSuggestText] = useState("");
   const [suggestSuccess, setSuggestSuccess] = useState(false);
+  const [timeFilter, setTimeFilter] = useState<'Now' | 'Later' | 'Tonight'>('Now');
   const [showFAQ, setShowFAQ] = useState(false);
   const [showContact, setShowContact] = useState(false);
 
@@ -157,10 +165,25 @@ export default function Home() {
 
   // Filter & Sort Logic
   const filteredVenues = venuesWithDistance.filter(v => {
-    // "All" shows everything (Venues + Specials)
-    if (activeFilter === "All") return true;
+    // 1. Time-Based Filtering
+    const hour = new Date().getHours();
 
-    // Specific filters currently only show venues WITH active specials that match
+    if (timeFilter === 'Now') {
+      // Show open venues or venues with currently active specials
+      const isOpen = getVenueSignal(v.category) !== "Closed"; // Simplified check
+      if (!isOpen && !v.special) return false;
+    } else if (timeFilter === 'Tonight') {
+      // Focus on dinner and evening categories
+      const isEveningVenue = ["Dinner", "Cocktails", "Pub", "Bar", "Brewery", "Pizza", "Asian Fusion"].includes(v.category);
+      const isNightSpecial = v.special && (v.special.title.toLowerCase().includes("dinner") || v.special.description.toLowerCase().includes("pm"));
+      if (!isEveningVenue && !isNightSpecial) return false;
+    } else if (timeFilter === 'Later') {
+      // Show everything that isn't strictly past its prime (e.g., if it's 2pm, show dinner/night stuff)
+      if (hour >= 20) return false; // Too late for "Later"
+    }
+
+    // 2. Vibe/Category Filtering
+    if (activeFilter === "All") return true;
     if (!v.special) return false;
 
     const lowerTitle = v.special.title.toLowerCase();
@@ -219,7 +242,7 @@ export default function Home() {
               alt="BiteNow Logo"
               width={140}
               height={45}
-              className="h-32 w-auto object-contain dark:invert dark:grayscale"
+              className="h-32 w-auto object-contain dark:[filter:invert(1)_hue-rotate(180deg)]"
               priority
             />
           </div>
@@ -254,24 +277,23 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Filters - HIDDEN FOR MVP
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar">
-          {FILTERS.map((f) => (
+        {/* Time filters */}
+        <div className="flex bg-gray-50/50 dark:bg-zinc-900/50 rounded-xl p-1 gap-1 mt-2 border border-gray-100 dark:border-zinc-800">
+          {(['Now', 'Later', 'Tonight'] as const).map((t) => (
             <button
-              key={f}
-              onClick={() => setActiveFilter(f)}
+              key={t}
+              onClick={() => setTimeFilter(t)}
               className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors",
-                activeFilter === f
-                  ? "bg-black text-white dark:bg-white dark:text-black shadow-sm"
-                  : "bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-300"
+                "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                timeFilter === t
+                  ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm"
+                  : "text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-gray-300"
               )}
             >
-              {f}
+              {t === 'Later' ? 'Later' : t}
             </button>
           ))}
         </div>
-        */}
       </header>
 
       {/* Content Area */}
@@ -282,7 +304,7 @@ export default function Home() {
             {/* Watermark Background (Fixed in Container) */}
             {/* Watermark Background (Fixed in Container) */}
             <div className="absolute inset-0 z-0 flex items-center justify-center opacity-5 pointer-events-none">
-              <Image src="/logo.png" width={300} height={300} alt="Watermark" className="dark:invert dark:grayscale" />
+              <Image src="/logo.png" width={300} height={300} alt="Watermark" className="dark:[filter:invert(1)_hue-rotate(180deg)]" />
             </div>
 
             {/* Scrollable Content Overlay */}
@@ -296,13 +318,13 @@ export default function Home() {
                   <div className="bg-[#FFF6EA] dark:bg-zinc-900/50 border border-[#F59E0B]/30 dark:border-[#F59E0B]/20 rounded-2xl p-4 mb-2 flex flex-col gap-3 shadow-sm">
                     <p className="text-[#F59E0B] text-sm font-bold leading-tight">
                       We’re new here — deals are rolling in.<br />
-                      <span className="opacity-90 dark:opacity-70 font-medium text-xs">Can’t see your favourite spot yet? They can post specials instantly by text.</span>
+
                     </p>
                     <button
                       onClick={() => openSuggestModal(null)}
                       className="bg-white dark:bg-zinc-800 border border-[#F59E0B] text-[#F59E0B] text-[10px] font-black uppercase tracking-widest py-2 px-4 rounded-xl transition-all active:scale-95 w-fit shadow-sm"
                     >
-                      ⭐ Suggest a favourite
+                      ⭐ Suggest new venue
                     </button>
                   </div>
                 )}
@@ -350,11 +372,20 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
-                      {item.special && (
-                        <div className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
-                          ON NOW
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {item.special && (
+                          <div className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                            ON NOW
+                          </div>
+                        )}
+                        {item.special && (
+                          <div className="text-[10px] text-gray-400 font-bold flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            Updated today
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="mt-3">

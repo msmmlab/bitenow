@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, MapPin, Navigation, Clock, Timer, Car, Footprints, Share2, Tag, Music, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { supabase } from '@/lib/supabase';
 
 interface SpecialModalProps {
     special: any | null; // This is now a Venue object
@@ -17,6 +18,9 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
 
     // Travel Times (Mocked for MVP based on random proximity to "user")
     const [travelTime, setTravelTime] = useState<{ walk: number, drive: number } | null>(null);
+    const [onMyWayStatus, setOnMyWayStatus] = useState<'idle' | 'linking' | 'confirmed'>('idle');
+    const [partySize, setPartySize] = useState<string>('1-2');
+    const [showPartySize, setShowPartySize] = useState(false);
 
     const calculateDistances = (lat1: number, lon1: number, lat2: number, lon2: number) => {
         const R = 6371; // Earth's radius in km
@@ -69,6 +73,31 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
         }
     };
 
+    const handleOnMyWay = async () => {
+        if (!showPartySize && onMyWayStatus === 'idle') {
+            setShowPartySize(true);
+            return;
+        }
+
+        setOnMyWayStatus('linking');
+
+        try {
+            // Store intent event
+            await supabase.from('venue_intents').insert({
+                restaurant_id: special.id,
+                party_size: partySize,
+                intent_type: 'on_my_way'
+            });
+        } catch (e) {
+            console.error("Failed to store intent", e);
+        }
+
+        setTimeout(() => {
+            setOnMyWayStatus('confirmed');
+            setShowPartySize(false);
+        }, 800);
+    };
+
     // Normalize data
     const venue = special;
     const icon = venue.icon || '🍽️';
@@ -101,7 +130,7 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
                 {/* Header / Badge */}
                 <div className="bg-black text-white px-4 py-2 text-center relative z-10 shrink-0">
                     <span className="text-xs font-black uppercase tracking-[0.2em] text-yellow-400">
-                        {hasSpecial ? 'ON NOW' : 'NOT LISTED'}
+                        {hasSpecial ? 'ON NOW' : 'AWAITING SPECIALS'}
                     </span>
                 </div>
 
@@ -231,6 +260,62 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
 
                 {/* Footer Actions */}
                 <div className="p-4 bg-gray-50 dark:bg-zinc-900 flex flex-col gap-3 shrink-0 border-t border-gray-100 dark:border-zinc-800 mt-auto">
+                    {/* On My Way Section */}
+                    {onMyWayStatus !== 'confirmed' ? (
+                        <div className="flex flex-col gap-2">
+                            {showPartySize && (
+                                <div className="flex items-center justify-between bg-white dark:bg-zinc-800 p-2 rounded-xl border border-gray-100 dark:border-zinc-700 animate-in slide-in-from-bottom-2">
+                                    <span className="text-[10px] font-black uppercase tracking-tighter ml-2 text-gray-500">Party size?</span>
+                                    <div className="flex gap-1">
+                                        {['1-2', '3-4', '5+'].map((size) => (
+                                            <button
+                                                key={size}
+                                                onClick={() => setPartySize(size)}
+                                                className={cn(
+                                                    "px-3 py-1 rounded-lg text-xs font-bold transition-all",
+                                                    partySize === size
+                                                        ? "bg-black text-white dark:bg-white dark:text-black"
+                                                        : "bg-gray-100 dark:bg-zinc-700 text-gray-400"
+                                                )}
+                                            >
+                                                {size}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            <button
+                                onClick={handleOnMyWay}
+                                disabled={onMyWayStatus === 'linking'}
+                                className={cn(
+                                    "w-full font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2",
+                                    onMyWayStatus === 'linking'
+                                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                        : "bg-orange-500 hover:bg-orange-600 text-white"
+                                )}
+                            >
+                                {onMyWayStatus === 'linking' ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        <Timer className="w-4 h-4" />
+                                        <span>{showPartySize ? 'Confirm & Go' : 'On my way'}</span>
+                                    </>
+                                )}
+                            </button>
+                            {!showPartySize && (
+                                <p className="text-[9px] text-center text-gray-400 font-medium">
+                                    Not a booking — just lets the venue know you&apos;re nearby.
+                                </p>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30 p-3 rounded-xl flex items-center justify-center gap-2 animate-in zoom-in-95">
+                            <div className="w-2 h-2 bg-green-500 rounded-full animate-ping" />
+                            <span className="text-xs font-bold text-green-700 dark:text-green-400">Signal sent! Enjoy your visit.</span>
+                        </div>
+                    )}
+
                     {!showNavOptions ? (
                         <button
                             onClick={handleMainNavigate}
