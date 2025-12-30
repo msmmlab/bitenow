@@ -752,6 +752,7 @@ export async function GET() {
             vibe_tags: r.vibe_tags,
             known_for_bullets: r.known_for_bullets,
             booking_likely: r.booking_likely,
+            activation_phone: r.activation_phone,
         }));
 
         const { data: createdRestaurants, error: rError } = await supabase

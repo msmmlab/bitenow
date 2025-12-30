@@ -1,60 +1,421 @@
-// locations/coolum.js
+// locations/coolum-beach.js
+
 module.exports = {
     town: {
-        slug: "coolum",
-        name: "Coolum",
+        slug: "coolum-beach",
+        name: "Coolum Beach",
         region: "Sunshine Coast",
-        center: { lat: -26.5284, lng: 153.0881 },
+        center: { lat: -26.5286, lng: 153.0900 },
     },
 
     venues: [
+        // -------------------------
+        // Cafés / Breakfast / Coffee
+        // -------------------------
         {
-            name: "Coolum Surf Club",
-            slug: "coolum-surf-club",
+            name: "Coolum Beach Surf Club Cafe",
+            slug: "coolum-beach-surf-club-cafe",
+            category: "Cafe",
+            icon: "/icons/coffee.png",
+            lat: -26.5289,
+            lng: 153.0914,
+            address: "David Low Way, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["breakfast", "coffee", "lunch"],
+            known_for_bullets: [
+                "Beachfront breakfast views",
+                "Reliable coffee stop",
+                "Easy post-swim feeds",
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["views", "casual", "locals"],
+        },
+
+        {
+            name: "Kafekult",
+            slug: "kafekult-coolum",
+            category: "Cafe",
+            icon: "/icons/coffee.png",
+            lat: -26.5282,
+            lng: 153.0897,
+            address: "7/1770 David Low Way, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["coffee", "breakfast", "lunch"],
+            known_for_bullets: [
+                "Local favourite for coffee",
+                "Healthy breakfast plates",
+                "Good weekday vibe",
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["locals", "casual", "healthy"],
+        },
+
+        {
+            name: "Coolum Beach Hotel Cafe",
+            slug: "coolum-beach-hotel-cafe",
+            category: "Cafe",
+            icon: "/icons/coffee.png",
+            lat: -26.5281,
+            lng: 153.0906,
+            address: "Cnr Margaret St & David Low Way, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["coffee", "breakfast"],
+            known_for_bullets: [
+                "Quick coffee stop",
+                "Good people-watching",
+                "Easy walk-in",
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "quick"],
+        },
+
+        // -------------------------
+        // Lunch / Casual Eats
+        // -------------------------
+        {
+            name: "Hot Chilli Bean Thai Cafe",
+            slug: "hot-chilli-bean-thai-coolum",
+            category: "Thai",
+            icon: "/icons/asian.png",
+            lat: -26.5279,
+            lng: 153.0899,
+            address: "1766 David Low Way, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["lunch", "dinner"],
+            known_for_bullets: [
+                "Well-known Thai flavours",
+                "Good lunch portions",
+                "Reliable casual dinner",
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["casual", "flavours"],
+        },
+
+        {
+            name: "Coolum Beach Bowls Club",
+            slug: "coolum-beach-bowls-club",
+            category: "Club / Bistro",
+            icon: "/icons/beer.png",
+            lat: -26.5275,
+            lng: 153.0891,
+            address: "7 Elizabeth St, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["lunch", "dinner", "beer"],
+            known_for_bullets: [
+                "Good-value club meals",
+                "Easy walk-ins",
+                "Local relaxed vibe",
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["locals", "casual", "value"],
+        },
+
+        // -------------------------
+        // Dinner / Beachside
+        // -------------------------
+        {
+            name: "Coolum Beach Surf Club",
+            slug: "coolum-beach-surf-club",
             category: "Surf Club",
             icon: "/icons/fish_chips.png",
-            lat: -26.5284,
-            lng: 153.0881,
-            address: "1775 David Low Way, Coolum Beach QLD 4573",
+            lat: -26.5290,
+            lng: 153.0915,
+            address: "David Low Way, Coolum Beach QLD 4573",
             is_active: true,
-            best_for: ["lunch", "afternoon", "dinner"],
-            known_for_bullets: ["Club classics & big portions", "Relaxed beachfront dining", "Easy for families"]
+            best_for: ["lunch", "afternoon", "dinner", "beer"],
+            known_for_bullets: [
+                "Classic surf club meals",
+                "Ocean views",
+                "Great sunset beers",
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["views", "casual", "family"],
+        },
+
+        {
+            name: "The Coolum Beach Hotel",
+            slug: "coolum-beach-hotel",
+            category: "Pub",
+            icon: "/icons/burger.png",
+            lat: -26.5282,
+            lng: 153.0906,
+            address: "Cnr Margaret St & David Low Way, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["beer", "dinner", "late_night"],
+            known_for_bullets: [
+                "Classic pub meals",
+                "Sports + beers",
+                "Easy group option",
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["pub", "groups", "casual"],
+        },
+
+        // -------------------------
+        // Takeaway / Quick Bites
+        // -------------------------
+        {
+            name: "Yiani's Greek Restaurant",
+            slug: "yianis-greek-coolum",
+            category: "Greek",
+            icon: "/icons/italian.png",
+            lat: -26.5278,
+            lng: 153.0898,
+            address: "1770 David Low Way, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["lunch", "dinner"],
+            known_for_bullets: [
+                "Greek classics",
+                "Good for sharing",
+                "Casual sit-down meals",
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "medium",
+            service_speed: "medium",
+            formality_level: 1,
+            vibe_tags: ["casual", "sharing"],
+        },
+
+        {
+            name: "Coolum Beach Bakery",
+            slug: "coolum-beach-bakery",
+            category: "Bakery",
+            icon: "/icons/coffee.png",
+            lat: -26.5280,
+            lng: 153.0896,
+            address: "1770 David Low Way, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["breakfast", "coffee", "lunch"],
+            known_for_bullets: [
+                "Classic Aussie bakery",
+                "Quick pies & pastries",
+                "Easy takeaway",
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["quick", "casual", "takeaway"],
         },
         {
             name: "Canteen Kitchen + Bar",
             slug: "canteen-kitchen-bar-coolum",
-            category: "Modern",
-            icon: "/icons/wine.png",
-            lat: -26.529,
-            lng: 153.089,
-            address: "1750 David Low Way, Coolum Beach QLD 4573",
+            category: "Modern Australian",
+            icon: "/icons/fancy_dinner.png",
+            lat: -26.5283,
+            lng: 153.0909,
+            address: "Shop 1/1740 David Low Way, Coolum Beach QLD 4573",
             is_active: true,
-            best_for: ["dinner", "lunch"],
-            known_for_bullets: ["All-day modern menu", "Casual but polished", "Good mixed groups"]
+            best_for: ["dinner", "fancy_dinner", "afternoon"],
+            known_for_bullets: [
+                "Modern casual dinner that feels ‘nice’",
+                "Great for couples or small groups",
+                "Good drinks list without being pretentious"
+            ],
+            price_risk: "high",
+            walk_in_friendliness: "medium",
+            service_speed: "slow",
+            formality_level: 2,
+            vibe_tags: ["date", "polished", "locals"],
+            booking_likely: true
         },
+
+        {
+            name: "Pavilion Restaurant",
+            slug: "pavilion-restaurant-coolum",
+            category: "Modern Australian",
+            icon: "/icons/fancy_dinner.png",
+            lat: -26.5296,
+            lng: 153.0912,
+            address: "Corner David Low Way & Boardwalk Blvd, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["dinner", "fancy_dinner"],
+            known_for_bullets: [
+                "Classic ‘special night’ vibe near the beach",
+                "Good for celebrations and date nights",
+                "Best when you want slow, sit-down dining"
+            ],
+            price_risk: "high",
+            walk_in_friendliness: "low",
+            service_speed: "slow",
+            formality_level: 3,
+            vibe_tags: ["special-occasion", "date", "quiet"],
+            booking_likely: true
+        },
+
         {
             name: "Coolum Thai Spice",
             slug: "coolum-thai-spice",
             category: "Thai",
             icon: "/icons/thai.png",
-            lat: -26.527,
-            lng: 153.087,
-            address: "1812 David Low Way, Coolum Beach QLD 4573",
+            lat: -26.5280,
+            lng: 153.0902,
+            address: "1790 David Low Way, Coolum Beach QLD 4573",
             is_active: true,
-            best_for: ["dinner"],
-            known_for_bullets: ["Curries & stir-fries", "Reliable Thai comfort", "Good value dinner"]
+            best_for: ["dinner", "late_night", "lunch"],
+            known_for_bullets: [
+                "Solid Thai dinner when you want comfort + flavour",
+                "Good portions and crowd-pleaser menu",
+                "Easy pick when you don’t want ‘fancy’"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["casual", "flavours"]
         },
+
         {
-            name: "Coolum Beach Hotel",
-            slug: "coolum-beach-hotel",
-            category: "Pub",
+            name: "Coolum Beach Bar (Seabreeze Resort)",
+            slug: "coolum-beach-bar-seabreeze",
+            category: "Bar",
             icon: "/icons/beer.png",
-            lat: -26.53,
-            lng: 153.086,
-            address: "David Low Way, Coolum Beach QLD 4573",
+            lat: -26.5294,
+            lng: 153.0910,
+            address: "1770 David Low Way, Coolum Beach QLD 4573",
             is_active: true,
-            best_for: ["beer", "lunch", "dinner"],
-            known_for_bullets: ["Pub bistro meals", "Group-friendly", "Easy casual drinks"]
-        }
-    ]
+            best_for: ["drinks", "beer", "afternoon", "late_night"],
+            known_for_bullets: [
+                "Easy drinks close to the beach",
+                "Good for a casual ‘one more’",
+                "Low-commitment walk-in vibe"
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "quick"]
+        },
+
+        {
+            name: "Yum Yum Tree Cafe",
+            slug: "yum-yum-tree-cafe-coolum",
+            category: "Cafe",
+            icon: "/icons/coffee.png",
+            lat: -26.5287,
+            lng: 153.0899,
+            address: "Shop 1/1790 David Low Way, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["breakfast", "coffee", "lunch", "afternoon"],
+            known_for_bullets: [
+                "Brunch-style cafe that’s easy to like",
+                "Good for slower breakfast mornings",
+                "Works well for families too"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["brunch", "casual", "family"]
+        },
+
+        {
+            name: "The Point Coolum Beach",
+            slug: "the-point-coolum-beach",
+            category: "Cafe / Restaurant",
+            icon: "/icons/coffee.png",
+            lat: -26.5276,
+            lng: 153.0895,
+            address: "1835 David Low Way, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["breakfast", "coffee", "lunch"],
+            known_for_bullets: [
+                "Bright daytime cafe meals",
+                "Reliable coffee + breakfast plates",
+                "Good ‘meet up’ spot"
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["casual", "daytime"]
+        },
+
+        {
+            name: "Coolum Beach Pizza (Local Takeaway)",
+            slug: "coolum-beach-pizza-takeaway",
+            category: "Pizza",
+            icon: "/icons/italian.png",
+            lat: -26.5281,
+            lng: 153.0898,
+            address: "David Low Way strip, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["dinner", "late_night"],
+            known_for_bullets: [
+                "Easy pizza dinner when you want zero thinking",
+                "Good for groups + kids",
+                "Reliable takeaway option"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "groups", "takeaway"]
+        },
+
+        {
+            name: "Coolum Beach Fish & Chips (Beachside)",
+            slug: "coolum-beach-fish-and-chips",
+            category: "Fish & Chips",
+            icon: "/icons/fish_chips.png",
+            lat: -26.5289,
+            lng: 153.0912,
+            address: "Near the beachfront strip, Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["lunch", "afternoon", "dinner"],
+            known_for_bullets: [
+                "Classic fish & chips by the beach",
+                "Perfect casual sunset takeaway",
+                "Good value for families"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "family", "takeaway"]
+        },
+
+        {
+            name: "The Surf Yard (Coolum)",
+            slug: "the-surf-yard-coolum",
+            category: "Bar",
+            icon: "/icons/craft_beer.png",
+            lat: -26.5284,
+            lng: 153.0901,
+            address: "Coolum Beach QLD 4573",
+            is_active: true,
+            best_for: ["beer", "afternoon", "late_night"],
+            known_for_bullets: [
+                "Casual beers + social vibe",
+                "Good for mates and groups",
+                "Easy ‘start here’ spot before dinner"
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["lively", "casual", "groups"]
+        },
+    ],
 };

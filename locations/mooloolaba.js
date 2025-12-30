@@ -123,7 +123,7 @@ module.exports = {
             name: "Bella Venezia",
             slug: "bella-venezia-mooloolaba",
             category: "Italian",
-            icon: "/icons/italian.png",
+            icon: "/icons/fancy_dinner.png",
             lat: -26.6810,
             lng: 153.1189,
             address: "95 Mooloolaba Esplanade, Mooloolaba QLD 4557",

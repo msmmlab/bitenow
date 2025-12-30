@@ -79,7 +79,7 @@ module.exports = {
             name: "Bottarga",
             slug: "bottarga-maroochydore",
             category: "Italian",
-            icon: "/icons/italian.png",
+            icon: "/icons/fancy_dinner.png",
             lat: -26.6499,
             lng: 153.0942,
             address: "1 Mundoo Blvd, Maroochydore QLD 4558",
