@@ -75,7 +75,7 @@ export default function MapView({ venues, onSelectVenue, userLocation }: MapView
                 container: mapContainer.current!,
                 style: 'mapbox://styles/mapbox/streets-v12',
                 center: initialCenter,
-                zoom: userLocation ? 14 : 13,
+                zoom: userLocation ? 16 : 15, // Increased from 14/13 for street-level detail
             });
             map.current = mapInstance;
 

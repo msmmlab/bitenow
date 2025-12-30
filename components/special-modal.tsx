@@ -159,11 +159,11 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
                             : "bg-gradient-to-br from-gray-500 to-gray-400"
                     )}>
                         <div className="text-6xl mb-3 drop-shadow-md flex justify-center">
-                            {icon && icon.startsWith('/') ? (
+                            {/* {icon && icon.startsWith('/') ? (
                                 <img src={icon} alt={venueName} className="w-20 h-20 object-contain" />
                             ) : (
                                 icon
-                            )}
+                            )} */}
                         </div>
                         <h2 className="font-extrabold text-3xl leading-none drop-shadow-md mb-1 text-center">{venueName}</h2>
                         <p className="text-xs font-bold uppercase tracking-widest opacity-90">{category}</p>
@@ -228,9 +228,9 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
                                     {venue.known_for_bullets && venue.known_for_bullets.length > 0 ? (
                                         <div className="mt-4 p-5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl text-left border border-gray-100 dark:border-zinc-800 shadow-inner">
                                             <div className="space-y-1.5">
-                                                <div className="text-xs text-orange-400 mb-2">✨</div>
+                                                {/* <div className="text-xs text-orange-400 mb-2">✨</div> */}
                                                 {venue.known_for_bullets.map((point: string, idx: number) => (
-                                                    <p key={idx} className="text-xs leading-relaxed text-gray-500 dark:text-gray-400 flex items-start gap-2.5">
+                                                    <p key={idx} className="text-[13px] leading-relaxed text-gray-500 dark:text-gray-400 flex items-start gap-2.5">
                                                         <span className="text-gray-300 dark:text-zinc-700 font-bold">•</span>
                                                         <span>{point}</span>
                                                     </p>
@@ -330,11 +330,7 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
                                     </>
                                 )}
                             </button>
-                            {!showPartySize && (
-                                <p className="text-[9px] text-center text-gray-400 font-medium">
-                                    Not a booking — just lets the venue know you&apos;re nearby.
-                                </p>
-                            )}
+
                         </div>
                     ) : (
                         <div className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30 p-3 rounded-xl flex items-center justify-center gap-2 animate-in zoom-in-95">

@@ -200,8 +200,84 @@ export default function Home() {
     });
   }, [venues, userLocation, timeFilter, intent]);
 
-  // Filter & Sort Logic
-  const filteredVenues = venuesWithDistance.filter(v => {
+  // Filter & Sort Logic for LIST VIEW (with distance limits)
+  const filteredVenuesForList = venuesWithDistance.filter(v => {
+    // 0. Distance-Based Filtering (ONLY FOR LIST VIEW)
+    if (v.distanceValue !== undefined) {
+      // For "Now" - only show venues within reasonable driving distance
+      if (timeFilter === 'Now' && v.distanceValue > 10) return false; // 10km max for immediate needs
+
+      // For "Tonight" and "Later" - allow further planning but still cap it
+      if ((timeFilter === 'Tonight' || timeFilter === 'Later') && v.distanceValue > 25) return false; // 25km max for planned visits
+    }
+
+    // 1. Time-Based Filtering
+    if (timeFilter === 'Tonight') {
+      const isEveningVenue = ["Dinner", "Cocktails", "Pub", "Bar", "Brewery", "Pizza", "Asian Fusion"].includes(v.category) ||
+        (v.best_for && (v.best_for.includes('dinner') || v.best_for.includes('late'))) ||
+        (v.best_times && (v.best_times.includes('dinner') || v.best_times.includes('late')));
+
+      const isNightSpecial = v.special && (v.special.title.toLowerCase().includes("dinner") || v.special.description.toLowerCase().includes("pm"));
+
+      if (!isEveningVenue && !isNightSpecial) return false;
+    }
+
+    // 2. Intent-Based "Hard" Filtering
+    if (intent) {
+      const cleanIntent = intent.replace(/[^\w\s]/gi, '').trim().toLowerCase();
+
+      if (cleanIntent === 'date night') {
+        const isFancy = (v.formality_level || 0) >= 2 || (v.best_for?.includes('fancy_dinner'));
+        if (!isFancy) return false;
+      }
+
+      if (cleanIntent === 'drinks') {
+        const lowerCat = v.category?.toLowerCase() || "";
+        const isDrinks = lowerCat.includes("brew") || lowerCat.includes("pub") || lowerCat.includes("bar") ||
+          v.best_for?.includes('beer') || v.best_for?.includes('afternoon') || v.best_for?.includes('drinks');
+        if (!isDrinks) return false;
+      }
+
+      if (cleanIntent === 'breakfast') {
+        const isBf = v.best_for?.includes('breakfast') || v.category?.toLowerCase().includes('cafe');
+        if (!isBf) return false;
+      }
+
+      if (cleanIntent === 'lunch') {
+        const isLunch = v.best_for?.includes('lunch');
+        if (!isLunch) return false;
+      }
+
+      if (cleanIntent === 'dinner') {
+        const isDinner = v.best_for?.includes('dinner') || v.best_for?.includes('fancy_dinner');
+        if (!isDinner) return false;
+      }
+
+      if (cleanIntent === 'coffee') {
+        const isCoffee = v.category?.toLowerCase().includes('cafe') || v.best_for?.includes('coffee');
+        if (!isCoffee) return false;
+      }
+    }
+
+    // 3. Vibe/Category Filtering
+    if (activeFilter === "All") return true;
+    if (!v.special) return false;
+
+    const lowerTitle = v.special.title.toLowerCase();
+    const lowerDesc = v.special.description.toLowerCase();
+
+    if (activeFilter === "Lunch") return lowerTitle.includes("lunch") || lowerTitle.includes("burger") || lowerDesc.includes("12pm");
+    if (activeFilter === "Dinner") return lowerTitle.includes("dinner") || lowerTitle.includes("steak") || lowerTitle.includes("pizza") || lowerTitle.includes("tacos") || lowerDesc.includes("5pm");
+    if (activeFilter === "Live Music") return lowerDesc.includes("live") || lowerDesc.includes("music") || lowerDesc.includes("tunes");
+    if (activeFilter === "Family") return lowerDesc.includes("kids") || lowerTitle.includes("family") || lowerTitle.includes("pizza");
+
+    return true;
+  });
+
+  // Filter for MAP VIEW (NO distance limits - show all venues)
+  const filteredVenuesForMap = venuesWithDistance.filter(v => {
+    // NO distance filtering for map - users should see everything when they zoom out
+
     // 1. Time-Based Filtering
     if (timeFilter === 'Tonight') {
       const isEveningVenue = ["Dinner", "Cocktails", "Pub", "Bar", "Brewery", "Pizza", "Asian Fusion"].includes(v.category) ||
@@ -449,13 +525,13 @@ export default function Home() {
                   </div>
                 )}
 
-                {!loading && filteredVenues.length === 0 && (
+                {!loading && filteredVenuesForList.length === 0 && (
                   <div className="p-10 text-center text-gray-500">
                     <p>No venues found matching your filter.</p>
                   </div>
                 )}
 
-                {filteredVenues.length > 0 && intent && (
+                {filteredVenuesForList.length > 0 && intent && (
                   <div className="pt-2 pb-2">
                     <p className="text-2xl font-black text-gray-900 dark:text-white leading-tight">
                       Best for <span className="text-orange-500">{intent}</span>
@@ -463,18 +539,10 @@ export default function Home() {
                   </div>
                 )}
 
-                {filteredVenues.slice(0, intent ? 3 : filteredVenues.length).map((item) => (
+                {filteredVenuesForList.slice(0, intent ? 3 : filteredVenuesForList.length).map((item) => (
                   <div
                     key={item.id}
-                    onClick={() => {
-                      setSelectedVenue(item);
-                      gtag.event({
-                        action: 'view_venue_detail',
-                        category: 'discovery',
-                        label: item.name
-                      });
-                    }}
-                    className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 cursor-pointer active:scale-[0.98] transition-transform duration-100"
+                    className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 active:scale-[0.98] transition-transform duration-100"
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-3">
@@ -535,9 +603,8 @@ export default function Home() {
                           )}
                           {item.known_for_bullets && item.known_for_bullets.length > 0 ? (
                             <div className="mt-2 space-y-1">
-                              <div className="text-[10px] text-orange-400 mb-1">✨</div>
                               {item.known_for_bullets.map((point: string, idx: number) => (
-                                <p key={idx} className="text-[11px] leading-tight text-gray-400 dark:text-zinc-500 flex items-start gap-1.5 ml-0.5">
+                                <p key={idx} className="text-[13px] leading-snug text-gray-500 dark:text-zinc-400 flex items-start gap-1.5">
                                   <span className="text-gray-300 dark:text-zinc-700 font-bold">•</span>
                                   <span>{point}</span>
                                 </p>
@@ -570,7 +637,7 @@ export default function Home() {
                           e.stopPropagation();
                           setSelectedVenue(item);
                         }}
-                        className="w-full flex items-center justify-center gap-2 bg-black text-white dark:bg-zinc-800 dark:text-gray-100 py-3 rounded-xl text-sm font-black uppercase tracking-wider shadow-lg active:scale-95 transition-all"
+                        className="w-full flex items-center justify-center gap-2 bg-black text-white dark:bg-zinc-800 dark:text-gray-100 py-2.5 rounded-xl text-sm font-black uppercase tracking-wider shadow-lg active:scale-95 transition-all"
                       >
                         <Navigation className="w-4 h-4" />
                         Navigate There
@@ -598,13 +665,13 @@ export default function Home() {
                   </div>
                 ))}
 
-                {intent && filteredVenues.length > 3 && (
+                {intent && filteredVenuesForList.length > 3 && (
                   <>
                     <div className="pt-8 pb-4">
                       <div className="h-px bg-gray-100 dark:bg-zinc-800 w-full mb-6" />
                       <h3 className="text-sm text-gray-400 font-bold px-1">Everything Else</h3>
                     </div>
-                    {filteredVenues.slice(3).map((item) => (
+                    {filteredVenuesForList.slice(3).map((item) => (
                       <div
                         key={item.id}
                         onClick={() => {
@@ -671,7 +738,7 @@ export default function Home() {
 
         ) : (
           <MapView
-            venues={filteredVenues}
+            venues={filteredVenuesForMap}
             onSelectVenue={setSelectedVenue}
             userLocation={userLocation}
           />
