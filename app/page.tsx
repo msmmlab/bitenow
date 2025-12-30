@@ -17,6 +17,7 @@ interface Venue {
   icon: string;
   lat: number;
   lng: number;
+  town?: string;
   activation_phone?: string;
   special?: {
     id: string;
@@ -32,6 +33,7 @@ interface Venue {
   service_speed?: 'fast' | 'medium' | 'slow';
   price_risk?: 'low' | 'medium' | 'high';
   best_times?: string[];
+  best_for?: string[];
   vibe_tags?: string[];
   known_for_bullets?: string[];
   booking_likely?: boolean;
