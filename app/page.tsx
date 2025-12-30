@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { MapPin, Phone, Navigation, Clock, Search, Filter, List, Map as MapIcon, X, HelpCircle, Mail, PlusCircle, MessageSquare, Store } from 'lucide-react';
+import { MapPin, Phone, Navigation, Clock, Search, Filter, List, Map as MapIcon, X, HelpCircle, Mail, PlusCircle, MessageSquare, Store, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import MapView from '@/components/map-view';
 import Image from 'next/image';
@@ -442,7 +442,12 @@ export default function Home() {
                   </span>
                 </div>
 
-                {loading && <div className="p-10 text-center text-gray-500">Loading today's specials...</div>}
+                {loading && (
+                  <div className="flex flex-col items-center justify-center py-20 animate-in fade-in duration-500">
+                    <Loader2 className="w-8 h-8 text-orange-500 animate-spin mb-4" />
+                    <p className="text-xs font-black uppercase tracking-widest text-gray-400">Finding fresh bites...</p>
+                  </div>
+                )}
 
                 {!loading && filteredVenues.length === 0 && (
                   <div className="p-10 text-center text-gray-500">
