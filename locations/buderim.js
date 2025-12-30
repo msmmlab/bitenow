@@ -1,0 +1,364 @@
+// locations/buderim.js
+// Batch 1 – Buderim core venues
+
+module.exports = {
+    town: {
+        slug: "buderim",
+        name: "Buderim",
+        region: "Sunshine Coast",
+        center: { lat: -26.6833, lng: 153.0550 }
+    },
+
+    venues: [
+        // -------------------------
+        // Cafes / Breakfast / Coffee
+        // -------------------------
+        {
+            name: "The Loose Goose Cafe",
+            slug: "loose-goose-cafe-buderim",
+            category: "Cafe",
+            icon: "/icons/coffee.png",
+            lat: -26.6840,
+            lng: 153.0555,
+            address: "6 Burnett St, Buderim QLD 4556",
+            is_active: true,
+            best_for: ["breakfast", "coffee", "lunch"],
+            known_for_bullets: [
+                "Popular local breakfast spot",
+                "Good coffee + generous meals",
+                "Busy on weekends (locals love it)"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "medium",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["locals", "brunch", "casual"]
+        },
+
+        {
+            name: "Goodlife Cafe",
+            slug: "goodlife-cafe-buderim",
+            category: "Cafe",
+            icon: "/icons/coffee.png",
+            lat: -26.6842,
+            lng: 153.0562,
+            address: "Buderim Marketplace, Buderim QLD 4556",
+            is_active: true,
+            best_for: ["breakfast", "coffee", "lunch"],
+            known_for_bullets: [
+                "Reliable cafe classics",
+                "Easy daytime meals",
+                "Good for a relaxed sit-down"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["casual", "daytime"]
+        },
+
+        {
+            name: "Bleu at Buderim",
+            slug: "bleu-at-buderim",
+            category: "Cafe",
+            icon: "/icons/coffee.png",
+            lat: -26.6836,
+            lng: 153.0548,
+            address: "Shop 4/106 King St, Buderim QLD 4556",
+            is_active: true,
+            best_for: ["breakfast", "coffee", "lunch"],
+            known_for_bullets: [
+                "French-inspired cafe",
+                "Good pastries + brunch",
+                "Nice slower breakfast option"
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 1,
+            vibe_tags: ["brunch", "relaxed", "local"]
+        },
+
+        // -------------------------
+        // Lunch / Casual Dining
+        // -------------------------
+        {
+            name: "Buderim Tavern",
+            slug: "buderim-tavern",
+            category: "Pub",
+            icon: "/icons/beer.png",
+            lat: -26.6882,
+            lng: 153.0558,
+            address: "King St, Buderim QLD 4556",
+            is_active: true,
+            best_for: ["beer", "lunch", "dinner", "afternoon"],
+            known_for_bullets: [
+                "Classic pub meals",
+                "Easy walk-in dining",
+                "Good for groups and families"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "locals", "groups"]
+        },
+
+        {
+            name: "Pavilion Restaurant (Buderim)",
+            slug: "pavilion-restaurant-buderim",
+            category: "Modern Australian",
+            icon: "/icons/wine.png",
+            lat: -26.6849,
+            lng: 153.0559,
+            address: "Main St, Buderim QLD 4556",
+            is_active: true,
+            best_for: ["lunch", "dinner"],
+            known_for_bullets: [
+                "Modern Australian menu",
+                "Good for long lunches",
+                "Relaxed but polished"
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "medium",
+            service_speed: "medium",
+            formality_level: 1,
+            vibe_tags: ["relaxed", "date", "locals"]
+        },
+
+        // -------------------------
+        // Dinner / Nice but easy
+        // -------------------------
+        {
+            name: "Buderim Thai Restaurant",
+            slug: "buderim-thai-restaurant",
+            category: "Thai",
+            icon: "/icons/thai.png",
+            lat: -26.6844,
+            lng: 153.0551,
+            address: "Buderim QLD 4556",
+            is_active: true,
+            best_for: ["dinner", "late_night"],
+            known_for_bullets: [
+                "Reliable Thai curries",
+                "Good takeaway or dine-in",
+                "Easy midweek dinner option"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "hearty"]
+        },
+
+        {
+            name: "Il Vento Italian Restaurant",
+            slug: "il-vento-italian-buderim",
+            category: "Italian",
+            icon: "/icons/italian.png",
+            lat: -26.6851,
+            lng: 153.0561,
+            address: "Buderim QLD 4556",
+            is_active: true,
+            best_for: ["dinner", "fancy_dinner"],
+            known_for_bullets: [
+                "Traditional Italian dining",
+                "Good for calm sit-down dinners",
+                "Popular with locals for celebrations"
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "medium",
+            service_speed: "slow",
+            formality_level: 1,
+            vibe_tags: ["date", "family", "italian"]
+        },
+
+        // -------------------------
+        // Bakery / Quick stops
+        // -------------------------
+        {
+            name: "Buderim Bakery",
+            slug: "buderim-bakery",
+            category: "Bakery",
+            icon: "/icons/salad.png",
+            lat: -26.6838,
+            lng: 153.0553,
+            address: "Burnett St, Buderim QLD 4556",
+            is_active: true,
+            best_for: ["breakfast", "coffee", "afternoon"],
+            known_for_bullets: [
+                "Fresh pies & pastries",
+                "Quick grab-and-go stop",
+                "Good for early mornings"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["quick", "casual", "locals"]
+        },
+        {
+            name: "The Burger Bar Cafe",
+            slug: "the-burger-bar-cafe-buderim",
+            category: "Cafe / Burgers",
+            icon: "/icons/burger.png",
+            lat: -26.6847,
+            lng: 153.0542,
+            address: "Burnett St, Buderim QLD 4556",
+            is_active: true,
+            best_for: ["lunch", "coffee", "afternoon"],
+            known_for_bullets: [
+                "Casual burgers + coffee",
+                "Good value local favourite",
+                "Easy walk-in meals"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "locals", "quick"]
+        },
+
+        {
+            name: "The Good Bar",
+            slug: "the-good-bar-buderim",
+            category: "Healthy Cafe",
+            icon: "/icons/salad.png",
+            lat: -26.6839,
+            lng: 153.0558,
+            address: "Buderim QLD 4556",
+            is_active: true,
+            best_for: ["breakfast", "coffee", "lunch"],
+            known_for_bullets: [
+                "Healthy bowls + smoothies",
+                "Light, fresh options",
+                "Good reset meal choice"
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["healthy", "light", "casual"]
+        },
+
+        // -------------------------
+        // Casual dinners / takeaway-friendly
+        // -------------------------
+        {
+            name: "Thai Pillows Restaurant",
+            slug: "thai-pillows-buderim",
+            category: "Thai",
+            icon: "/icons/thai.png",
+            lat: -26.6841,
+            lng: 153.0566,
+            address: "Buderim QLD 4556",
+            is_active: true,
+            best_for: ["dinner", "late_night"],
+            known_for_bullets: [
+                "Well-known Thai in Buderim",
+                "Good takeaway or dine-in",
+                "Reliable midweek dinner"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "hearty", "local"]
+        },
+
+        {
+            name: "Urban Lamb",
+            slug: "urban-lamb-buderim",
+            category: "Greek / Mediterranean",
+            icon: "/icons/asian.png",
+            lat: -26.6845,
+            lng: 153.0569,
+            address: "Buderim QLD 4556",
+            is_active: true,
+            best_for: ["dinner", "lunch"],
+            known_for_bullets: [
+                "Greek-style meats + wraps",
+                "Good casual sit-down or takeaway",
+                "Works well for groups"
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["casual", "groups", "hearty"]
+        },
+
+        // -------------------------
+        // Dessert / Treat stops
+        // -------------------------
+        {
+            name: "White Rabbit Coffee Co. (Buderim)",
+            slug: "white-rabbit-coffee-buderim",
+            category: "Cafe",
+            icon: "/icons/coffee.png",
+            lat: -26.6832,
+            lng: 153.0549,
+            address: "Buderim QLD 4556",
+            is_active: true,
+            best_for: ["coffee", "afternoon"],
+            known_for_bullets: [
+                "Strong coffee focus",
+                "Good for a quick caffeine stop",
+                "Popular with locals"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["coffee", "locals", "quick"]
+        },
+
+        {
+            name: "Crust Gourmet Pizza Bar (Buderim)",
+            slug: "crust-gourmet-pizza-buderim",
+            category: "Pizza",
+            icon: "/icons/italian.png",
+            lat: -26.6850,
+            lng: 153.0560,
+            address: "Buderim QLD 4556",
+            is_active: true,
+            best_for: ["dinner", "late_night"],
+            known_for_bullets: [
+                "Reliable gourmet pizza",
+                "Easy takeaway dinner",
+                "Good fallback option"
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "takeaway", "easy"]
+        },
+
+        // -------------------------
+        // Nice but relaxed dining
+        // -------------------------
+        {
+            name: "Sushi Katsu Buderim",
+            slug: "sushi-katsu-buderim",
+            category: "Japanese",
+            icon: "/icons/sushi.png",
+            lat: -26.6848,
+            lng: 153.0557,
+            address: "Buderim QLD 4556",
+            is_active: true,
+            best_for: ["lunch", "dinner"],
+            known_for_bullets: [
+                "Fresh sushi + Japanese dishes",
+                "Good sit-down or takeaway",
+                "Easy, reliable pick"
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "fresh", "local"]
+        }
+
+    ]
+};
