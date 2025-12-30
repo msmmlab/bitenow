@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import SpecialModal from '@/components/special-modal';
 import { getIntentOptions, scoreRestaurant } from '@/lib/recommendation';
+import * as gtag from '@/lib/gtag';
 
 // TYPES
 interface Venue {
@@ -202,27 +203,54 @@ export default function Home() {
   // Filter & Sort Logic
   const filteredVenues = venuesWithDistance.filter(v => {
     // 1. Time-Based Filtering
-    const hour = new Date().getHours();
-
-    if (timeFilter === 'Now') {
-      // Don't filter out entirely, just show everything as the scoring will handle the order.
-      // But for "Now", if it's super late (past midnight), maybe just return true to see everything.
-      return true;
-    } else if (timeFilter === 'Tonight') {
-      // For "Tonight", check against categories or best_times
+    if (timeFilter === 'Tonight') {
       const isEveningVenue = ["Dinner", "Cocktails", "Pub", "Bar", "Brewery", "Pizza", "Asian Fusion"].includes(v.category) ||
+        (v.best_for && (v.best_for.includes('dinner') || v.best_for.includes('late'))) ||
         (v.best_times && (v.best_times.includes('dinner') || v.best_times.includes('late')));
 
       const isNightSpecial = v.special && (v.special.title.toLowerCase().includes("dinner") || v.special.description.toLowerCase().includes("pm"));
 
-      // Be generous - if it fits the vibe, show it even if "Closed" just triggered.
-      return !!isEveningVenue || !!isNightSpecial;
-    } else if (timeFilter === 'Later') {
-      // Later should show anything that has a lunch or dinner presence later in the day
-      return true;
+      if (!isEveningVenue && !isNightSpecial) return false;
     }
 
-    // 2. Vibe/Category Filtering
+    // 2. Intent-Based "Hard" Filtering
+    if (intent) {
+      const cleanIntent = intent.replace(/[^\w\s]/gi, '').trim().toLowerCase();
+
+      if (cleanIntent === 'date night') {
+        const isFancy = (v.formality_level || 0) >= 2 || (v.best_for?.includes('fancy_dinner'));
+        if (!isFancy) return false;
+      }
+
+      if (cleanIntent === 'drinks') {
+        const lowerCat = v.category?.toLowerCase() || "";
+        const isDrinks = lowerCat.includes("brew") || lowerCat.includes("pub") || lowerCat.includes("bar") ||
+          v.best_for?.includes('beer') || v.best_for?.includes('afternoon') || v.best_for?.includes('drinks');
+        if (!isDrinks) return false;
+      }
+
+      if (cleanIntent === 'breakfast') {
+        const isBf = v.best_for?.includes('breakfast') || v.category?.toLowerCase().includes('cafe');
+        if (!isBf) return false;
+      }
+
+      if (cleanIntent === 'lunch') {
+        const isLunch = v.best_for?.includes('lunch');
+        if (!isLunch) return false;
+      }
+
+      if (cleanIntent === 'dinner') {
+        const isDinner = v.best_for?.includes('dinner') || v.best_for?.includes('fancy_dinner');
+        if (!isDinner) return false;
+      }
+
+      if (cleanIntent === 'coffee') {
+        const isCoffee = v.category?.toLowerCase().includes('cafe') || v.best_for?.includes('coffee');
+        if (!isCoffee) return false;
+      }
+    }
+
+    // 3. Vibe/Category Filtering
     if (activeFilter === "All") return true;
     if (!v.special) return false;
 
@@ -325,6 +353,11 @@ export default function Home() {
               onClick={() => {
                 setTimeFilter(t);
                 setIntent(null); // Reset intent when changing lens
+                gtag.event({
+                  action: 'change_time_lens',
+                  category: 'interaction',
+                  label: t
+                });
               }}
               className={cn(
                 "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
@@ -340,12 +373,22 @@ export default function Home() {
 
         {/* Intent Chips */}
         <div className="flex items-center gap-3 mt-3 px-1 overflow-x-auto no-scrollbar">
-          <span className="text-[10px] font-black uppercase tracking-tighter text-gray-400 shrink-0">Take me for…</span>
+          <span className="text-[10px] font-black uppercase tracking-tighter text-black-400 shrink-0">Take me for →</span>
           <div className="flex gap-2">
             {getIntentOptions(timeFilter.toLowerCase(), new Date()).map((option) => (
               <button
                 key={option}
-                onClick={() => setIntent(intent === option ? null : option)}
+                onClick={() => {
+                  const newIntent = intent === option ? null : option;
+                  setIntent(newIntent);
+                  if (newIntent) {
+                    gtag.event({
+                      action: 'select_intent',
+                      category: 'interaction',
+                      label: option
+                    });
+                  }
+                }}
                 className={cn(
                   "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border",
                   intent === option
@@ -418,7 +461,14 @@ export default function Home() {
                 {filteredVenues.slice(0, intent ? 3 : filteredVenues.length).map((item) => (
                   <div
                     key={item.id}
-                    onClick={() => setSelectedVenue(item)}
+                    onClick={() => {
+                      setSelectedVenue(item);
+                      gtag.event({
+                        action: 'view_venue_detail',
+                        category: 'discovery',
+                        label: item.name
+                      });
+                    }}
                     className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 cursor-pointer active:scale-[0.98] transition-transform duration-100"
                   >
                     <div className="flex justify-between items-start mb-2">
@@ -552,7 +602,14 @@ export default function Home() {
                     {filteredVenues.slice(3).map((item) => (
                       <div
                         key={item.id}
-                        onClick={() => setSelectedVenue(item)}
+                        onClick={() => {
+                          setSelectedVenue(item);
+                          gtag.event({
+                            action: 'view_venue_detail_list',
+                            category: 'discovery',
+                            label: item.name
+                          });
+                        }}
                         className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 cursor-pointer active:scale-[0.98] transition-transform duration-100 opacity-60 grayscale-[0.2]"
                       >
                         <div className="flex justify-between items-start mb-2">
@@ -609,7 +666,7 @@ export default function Home() {
 
         ) : (
           <MapView
-            venues={venues}
+            venues={filteredVenues}
             onSelectVenue={setSelectedVenue}
             userLocation={userLocation}
           />

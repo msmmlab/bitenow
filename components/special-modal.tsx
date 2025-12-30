@@ -5,6 +5,7 @@ import { X, MapPin, Navigation, Clock, Timer, Car, Footprints, Share2, Tag, Musi
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
+import * as gtag from '@/lib/gtag';
 
 interface SpecialModalProps {
     special: any | null; // This is now a Venue object
@@ -62,6 +63,13 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
         const url = type === 'google'
             ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
             : `http://maps.apple.com/?daddr=${lat},${lng}`;
+
+        gtag.event({
+            action: 'start_navigation',
+            category: 'conversion',
+            label: `${type} - ${special.name}`
+        });
+
         window.open(url, '_blank');
     };
 
@@ -87,6 +95,13 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
                 restaurant_id: special.id,
                 party_size: partySize,
                 intent_type: 'on_my_way'
+            });
+
+            gtag.event({
+                action: 'confirm_on_my_way',
+                category: 'conversion',
+                label: special.name,
+                value: parseInt(partySize) || 2
             });
         } catch (e) {
             console.error("Failed to store intent", e);

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Crosshair } from 'lucide-react';
+import * as gtag from '@/lib/gtag';
 
 // Ensure you set this in .env
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
@@ -20,6 +21,9 @@ export default function MapView({ venues, onSelectVenue, userLocation }: MapView
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<mapboxgl.Map | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    const markers = useRef<mapboxgl.Marker[]>([]);
+    const mapLoaded = useRef(false);
 
     const handleRecenter = useCallback(() => {
         if (!map.current) return;
@@ -51,6 +55,7 @@ export default function MapView({ venues, onSelectVenue, userLocation }: MapView
         }
     }, [venues, userLocation]);
 
+    // Initialize Map
     useEffect(() => {
         if (!mapContainer.current) return;
         if (map.current) return;
@@ -86,47 +91,8 @@ export default function MapView({ venues, onSelectVenue, userLocation }: MapView
             mapInstance.addControl(geolocate);
 
             mapInstance.on('load', () => {
-                if (venues.length === 0) return;
-
-                const bounds = new mapboxgl.LngLatBounds();
-                let hasValidCoords = false;
-
-                venues.forEach((venue) => {
-                    let lngLat: [number, number];
-                    if (venue.lng && venue.lat) {
-                        lngLat = [Number(venue.lng), Number(venue.lat)];
-                    } else {
-                        const offsetLat = (Math.random() - 0.5) * 0.02;
-                        const offsetLng = (Math.random() - 0.5) * 0.02;
-                        lngLat = [NOOSA_COORDS[0] + offsetLng, NOOSA_COORDS[1] + offsetLat];
-                    }
-
-                    bounds.extend(lngLat);
-                    hasValidCoords = true;
-
-                    const el = document.createElement('div');
-                    el.className = 'marker';
-                    const icon = venue.icon || '🍽️';
-                    const isImg = icon.startsWith('/');
-                    el.innerHTML = `
-                        <div class="bg-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg border-2 border-white text-3xl hover:scale-110 transition-transform cursor-pointer transform -translate-y-1/2 overflow-hidden">
-                            ${isImg ? `<img src="${icon}" class="w-full h-full object-cover" />` : icon}
-                        </div>
-                    `;
-
-                    el.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        onSelectVenue(venue);
-                    });
-
-                    new mapboxgl.Marker(el)
-                        .setLngLat(lngLat)
-                        .addTo(mapInstance);
-                });
-
-                if (!userLocation && hasValidCoords) {
-                    mapInstance.fitBounds(bounds, { padding: 80, maxZoom: 15 });
-                }
+                mapLoaded.current = true;
+                renderMarkers();
             });
 
             mapInstance.on('click', () => {
@@ -144,8 +110,72 @@ export default function MapView({ venues, onSelectVenue, userLocation }: MapView
                 map.current = null;
             }
         };
+    }, []);
 
+    // Render Markers
+    const renderMarkers = useCallback(() => {
+        if (!map.current || !mapLoaded.current) return;
+
+        // Clear existing markers
+        markers.current.forEach(m => m.remove());
+        markers.current = [];
+
+        if (venues.length === 0) return;
+
+        const bounds = new mapboxgl.LngLatBounds();
+        let hasValidCoords = false;
+
+        venues.forEach((venue) => {
+            let lngLat: [number, number];
+            if (venue.lng && venue.lat) {
+                lngLat = [Number(venue.lng), Number(venue.lat)];
+            } else {
+                return; // Skip if no coords
+            }
+
+            bounds.extend(lngLat);
+            hasValidCoords = true;
+
+            const el = document.createElement('div');
+            el.className = 'marker';
+            const icon = venue.icon || '🍽️';
+            const isImg = icon.startsWith('/');
+
+            // Subtle logic: If venue has a special, make the marker slightly more prominent or different
+            const hasSpecial = !!venue.special;
+
+            el.innerHTML = `
+                <div class="bg-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg border-2 ${hasSpecial ? 'border-orange-500' : 'border-white'} text-3xl hover:scale-110 transition-transform cursor-pointer transform -translate-y-1/2 overflow-hidden relative">
+                    ${isImg ? `<img src="${icon}" class="w-full h-full object-cover" />` : icon}
+                    ${hasSpecial ? '<div class="absolute top-0 right-0 w-4 h-4 bg-orange-500 rounded-full border-2 border-white animate-pulse"></div>' : ''}
+                </div>
+            `;
+
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                onSelectVenue(venue);
+                gtag.event({
+                    action: 'view_venue_detail_map_marker',
+                    category: 'discovery',
+                    label: venue.name
+                });
+            });
+
+            const marker = new mapboxgl.Marker(el)
+                .setLngLat(lngLat)
+                .addTo(map.current!);
+
+            markers.current.push(marker);
+        });
+
+        // Optionally refit camera if markers updated significantly 
+        // For now, let's only do it if the user just switched to map
     }, [venues, onSelectVenue]);
+
+    // Handle venue updates
+    useEffect(() => {
+        renderMarkers();
+    }, [venues, renderMarkers]);
 
     if (error) {
         return (
