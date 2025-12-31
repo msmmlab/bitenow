@@ -107,7 +107,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-100 dark:bg-zinc-900 min-h-screen flex justify-center`}
       >
-        <div className="w-full max-w-md bg-white dark:bg-black min-h-screen shadow-2xl relative flex flex-col">
+        <div className="w-full max-w-md md:max-w-none bg-white dark:bg-black min-h-screen shadow-2xl relative flex flex-col">
           {children}
         </div>
       </body>
