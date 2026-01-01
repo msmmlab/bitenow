@@ -23,42 +23,67 @@ if (!MAPBOX_TOKEN) {
 
 async function geocodeAddress(name, address) {
     try {
-        // 1. Try POI search with JUST THE NAME (biased by proximity)
-        // This is the best way to "Snap" to official map pins
-        const poiNameUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(name)}.json?access_token=${MAPBOX_TOKEN}&limit=1&country=au&types=poi&proximity=153.0906,-26.3968`;
-        let response = await fetch(poiNameUrl);
-        let data = await response.json();
+        // Standardize input
+        const cleanName = name.replace(/\(.*\)/, '').trim(); // Remove brackets like "(Noosa)"
+        const fullQuery = `${cleanName}, ${address}`;
+        const hasStreetNumber = /\d+\s+[A-Za-z]/.test(address);
 
-        if (data.features && data.features.length > 0) {
-            const [lng, lat] = data.features[0].center;
-            console.log(`    [POI Name Match] ${data.features[0].place_name}`);
-            return { lat, lng };
+        console.log(`    Searching for: "${fullQuery}" (Street Number: ${hasStreetNumber})`);
+
+        // Search with broad types
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(fullQuery)}.json?access_token=${MAPBOX_TOKEN}&autocomplete=false&limit=5&country=au&types=poi,address&proximity=153.0906,-26.3968`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (!data.features || data.features.length === 0) {
+            console.log(`    [No Results]`);
+            return null;
         }
 
-        // 2. Try POI search with name + address
-        const query = `${name}, ${address}`;
-        const poiUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&limit=1&country=au&types=poi&proximity=153.0906,-26.3968`;
-        response = await fetch(poiUrl);
-        data = await response.json();
+        // Smart Selection Logic
+        let selected = null;
+        let source = 'unknown';
 
-        if (data.features && data.features.length > 0) {
-            const [lng, lat] = data.features[0].center;
-            console.log(`    [POI Combined Match] ${data.features[0].place_name}`);
-            return { lat, lng };
+        if (hasStreetNumber) {
+            // Priority 1: Exact Address Match
+            const addressMatch = data.features.find(f => f.place_type.includes('address'));
+            if (addressMatch) {
+                selected = addressMatch;
+                source = 'address';
+                console.log(`    [Match] Address prioritized: ${selected.place_name}`);
+            }
         }
 
-        // 3. Fallback to standard address search
-        const addrUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&limit=1&country=au&proximity=153.0906,-26.3968`;
-        response = await fetch(addrUrl);
-        data = await response.json();
-
-        if (data.features && data.features.length > 0) {
-            const [lng, lat] = data.features[0].center;
-            console.log(`    [Address Match] ${data.features[0].place_name}`);
-            return { lat, lng };
+        // Priority 2: High relevance POI (only if we didn't find a mandatory address or address wasn't required)
+        if (!selected) {
+            const poiMatch = data.features.find(f => f.place_type.includes('poi') && f.relevance > 0.8);
+            if (poiMatch) {
+                selected = poiMatch;
+                source = 'poi';
+                console.log(`    [Match] POI found: ${selected.place_name}`);
+            }
         }
+
+        // Priority 3: Fallback to best relevant match if nothing specific
+        if (!selected && data.features[0].relevance > 0.6) {
+            selected = data.features[0];
+            source = selected.place_type[0];
+            console.log(`    [Match] Best guess (${source}): ${selected.place_name}`);
+        }
+
+        if (selected) {
+            const [lng, lat] = selected.center;
+            return {
+                lat,
+                lng,
+                source,
+                accuracy: source === 'address' ? 'high' : 'medium'
+            };
+        }
+
     } catch (error) {
-        console.error(`Failed to geocode address: ${address}`, error.message);
+        console.error(`Failed to geocode: ${address}`, error.message);
     }
     return null;
 }
@@ -67,70 +92,101 @@ async function processFile(filePath) {
     console.log(`Processing ${path.basename(filePath)}...`);
     let content = fs.readFileSync(filePath, 'utf8');
 
-    // We want to find each venue block and its address, then update its lat/lng
-    // This regex looks for individual venue objects in the venues array
-    const venueRegex = /\{\r?\n\s+name:\s+"([^"]+)",[\s\S]*?address:\s+"([^"]+)",[\s\S]*?\}/g;
+    // Matches the entire object block to replace coords
+    // Regex logic: Find name, then address, then capture the whole block until end of object
+    // This is tricky with regex. Simplified approach: replace specific lines within the block context?
+    // The previous regex was unstable. Let's use a simpler "Find venue object" approach or just replace coords line-by-line using a state machine reader?
+    // Actually, for this task, let's stick to the previous regex pattern but make it robust for the new fields.
+    // NOTE: The previous script used a regex that might miss complex objects. 
+    // Ideally we would parse AST, but for this "flat" JS file, regex is acceptable if careful.
+
+    // We will look for `name: "..." ... address: "..."` and then look for lat/lng in between or after.
+    const venueRegex = /\{\s*name:\s*"([^"]+)",[\s\S]*?address:\s*"([^"]+)",[\s\S]*?\}/g;
 
     let match;
     let modified = false;
+    // We can't use replacements array easily with overlapping regex. 
+    // We will build a new file content string or perform replacements carefully.
+    // Better: split file by lines and process? No, object is multi-line.
+
+    // Let's iterate matches, geocode, and perform string replacement on the MATCHED block.
+    // We need to re-read content or offset indices.
+
+    // To allow multiple replacements, we collect them and apply back-to-front.
     const replacements = [];
 
     while ((match = venueRegex.exec(content)) !== null) {
         const fullBlock = match[0];
         const name = match[1];
         const address = match[2];
+        const index = match.index;
 
-        // Skip if manual_coords is set to true
         if (fullBlock.includes('manual_coords: true')) {
-            console.log(`  Skipping: ${name} (manual_coords: true)`);
             continue;
         }
 
-        console.log(`  Geocoding: ${name} (${address})...`);
-        const coords = await geocodeAddress(name, address);
+        // Check if we already have a high-quality source?
+        // If the file already has 'coords_source: "address"', maybe skip?
+        // User asked to "Improve geocoding", implying we should run it to fix bad ones.
+        // Let's run it.
 
-        if (coords) {
-            let updatedBlock = fullBlock;
+        const result = await geocodeAddress(name, address);
 
-            // Update lat
-            updatedBlock = updatedBlock.replace(/lat:\s?-?\d+\.?\d*,/, `lat: ${coords.lat.toFixed(6)},`);
-            // Update lng
-            updatedBlock = updatedBlock.replace(/lng:\s?-?\d+\.?\d*,/, `lng: ${coords.lng.toFixed(6)},`);
+        if (result && result.lat && result.lng) {
+            // Replace lat/lng lines in the block
+            let newBlock = fullBlock;
 
-            if (updatedBlock !== fullBlock) {
+            // Safe replace ensuring we don't break simple integers or other fields
+            newBlock = newBlock.replace(/lat:\s*(-?\d+\.?\d*),/, `lat: ${result.lat.toFixed(6)},`);
+            newBlock = newBlock.replace(/lng:\s*(-?\d+\.?\d*),/, `lng: ${result.lng.toFixed(6)},`); // Added precision
+
+            // Add or Update Metadata
+            // If coords_source exists, replace it, else add it
+            if (newBlock.includes('coords_source:')) {
+                newBlock = newBlock.replace(/coords_source:\s*"[^"]+",/, `coords_source: "${result.source}",`);
+            } else {
+                // Insert after lng
+                newBlock = newBlock.replace(/(lng: [^,]+,)/, `$1\n            coords_source: "${result.source}",`);
+            }
+
+            if (newBlock.includes('coords_accuracy:')) {
+                newBlock = newBlock.replace(/coords_accuracy:\s*"[^"]+",/, `coords_accuracy: "${result.accuracy}",`);
+            } else {
+                newBlock = newBlock.replace(/(coords_source: "[^"]+",)/, `$1\n            coords_accuracy: "${result.accuracy}",`);
+            }
+
+            if (newBlock !== fullBlock) {
                 replacements.push({
-                    start: match.index,
-                    end: match.index + fullBlock.length,
-                    newText: updatedBlock
+                    start: index,
+                    end: index + fullBlock.length,
+                    newText: newBlock
                 });
-                modified = true;
             }
         }
-        // Small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 100));
+
+        await new Promise(r => setTimeout(r, 200)); // Rate limit
     }
 
-    // Apply replacements from back to front to keep indices valid
-    if (modified) {
+    if (replacements.length > 0) {
         let newContent = content;
-        for (let i = replacements.length - 1; i >= 0; i--) {
-            const r = replacements[i];
-            newContent = newContent.slice(0, r.start) + r.newText + newContent.slice(r.end);
+        // Sort reverse order
+        replacements.sort((a, b) => b.start - a.start);
+
+        for (const r of replacements) {
+            newContent = newContent.substring(0, r.start) + r.newText + newContent.substring(r.end);
         }
         fs.writeFileSync(filePath, newContent, 'utf8');
-        console.log(`  Updated ${replacements.length} venues in ${path.basename(filePath)}.`);
+        console.log(`  ✅ Updated ${replacements.length} venues.`);
     } else {
-        console.log(`  No changes needed for ${path.basename(filePath)}.`);
+        console.log(`  No changes.`);
     }
 }
 
 async function run() {
-    const files = fs.readdirSync(LOCATIONS_DIR).filter(f => f.endsWith('.js'));
-
+    const files = fs.readdirSync(LOCATIONS_DIR).filter(f => f.endsWith('.js') && f !== 'sampleTown.js');
     for (const file of files) {
         await processFile(path.join(LOCATIONS_DIR, file));
     }
-
     console.log('\nGeocoding complete! 🚀');
 }
 
