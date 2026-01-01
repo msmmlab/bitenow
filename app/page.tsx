@@ -7,40 +7,9 @@ import MapView from '@/components/map-view';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import SpecialModal from '@/components/special-modal';
+import VenueTile, { Venue } from '@/components/venue-tile';
 import { getIntentOptions, scoreRestaurant } from '@/lib/recommendation';
 import * as gtag from '@/lib/gtag';
-
-// TYPES
-interface Venue {
-  id: string; // restaurant id
-  name: string;
-  category: string;
-  icon: string;
-  lat: number;
-  lng: number;
-  town?: string;
-  activation_phone?: string;
-  special?: {
-    id: string;
-    title: string;
-    description: string;
-    updated_at: string;
-  } | null;
-  distance?: string;
-  distanceValue?: number;
-  recommended_for?: string | null;
-  formality_level?: number;
-  walk_in_friendliness?: 'low' | 'medium' | 'high';
-  service_speed?: 'fast' | 'medium' | 'slow';
-  price_risk?: 'low' | 'medium' | 'high';
-  best_times?: string[];
-  best_for?: string[];
-  vibe_tags?: string[];
-  known_for_bullets?: string[];
-  booking_likely?: boolean;
-}
-
-
 
 // Helper for real distance calculation
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -540,121 +509,28 @@ export default function Home() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredVenuesForList.slice(0, intent ? 3 : filteredVenuesForList.length).map((item) => (
-                    <div
+                    <VenueTile
                       key={item.id}
-                      className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 active:scale-[0.98] transition-transform duration-100 flex flex-col min-h-[380px]"
-                    >
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex items-center gap-4">
-                          <div className={cn("w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-gray-100 dark:bg-gray-800 overflow-hidden")}>
-                            {item.icon && item.icon.startsWith('/') ? (
-                              <img src={item.icon} alt={item.category} className="w-full h-full object-cover" />
-                            ) : (
-                              item.icon || '🍽️'
-                            )}
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-tight text-xl">{item.name}</h3>
-                            <div className="flex flex-col mt-1">
-                              <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                                <MapPin className="w-3.5 h-3.5" />
-                                <span>{item.distance}</span>
-                                <span className="text-gray-300">•</span>
-                                <span>{item.category}</span>
-                              </div>
-                              <div className="text-xs text-green-600 dark:text-green-500 font-bold uppercase tracking-tighter mt-1 flex items-center gap-1.5">
-                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                {getVenueSignal(item.category, timeFilter)}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {item.special && (
-                            <div className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider flex items-center gap-2">
-                              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                              ON NOW
-                            </div>
-                          )}
-                          {item.special && (
-                            <div className="text-[11px] text-gray-400 font-bold flex items-center gap-1.5">
-                              <Clock className="w-4 h-4" />
-                              Updated today
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="mt-2 flex-grow">
-                        {item.special ? (
-                          <>
-                            <h4 className="text-xl font-bold text-gray-900 dark:text-white pr-8">{item.special.title}</h4>
-                            <div className="flex items-center gap-2 mt-2 text-base text-gray-500 dark:text-gray-400">
-                              <Clock className="w-4 h-4" />
-                              <span>{item.special.description || 'Today'}</span>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <h4 className="text-xl font-bold text-gray-400 dark:text-zinc-600 pr-8">
-                              Popular for:
-                            </h4>
-                            {item.known_for_bullets && item.known_for_bullets.length > 0 ? (
-                              <div className="mt-3 space-y-2">
-                                {item.known_for_bullets.map((point: string, idx: number) => (
-                                  <p key={idx} className="text-[15px] leading-snug text-gray-500 dark:text-zinc-400 flex items-start gap-2">
-                                    <span className="text-gray-300 dark:text-zinc-700 font-bold">•</span>
-                                    <span>{point}</span>
-                                  </p>
-                                ))}
-                              </div>
-                            ) : item.recommended_for && (
-                              <div className="mt-3 space-y-2">
-                                <div className="text-xs text-orange-400 mb-1">✨</div>
-                                {item.recommended_for.split(',').map((point: string, idx: number) => (
-                                  <p key={idx} className="text-[13px] leading-tight text-gray-400 dark:text-zinc-500 flex items-start gap-2 ml-0.5">
-                                    <span className="text-gray-300 dark:text-zinc-700 font-bold">•</span>
-                                    <span>{point.trim()}</span>
-                                  </p>
-                                ))}
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-
-                      <div className="mt-4 flex flex-col gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedVenue(item);
-                          }}
-                          className="w-full flex items-center justify-center gap-2 bg-black text-white dark:bg-zinc-800 dark:text-gray-100 py-2.5 rounded-xl text-sm font-black uppercase tracking-wider shadow-lg active:scale-95 transition-all"
-                        >
-                          <Navigation className="w-4 h-4" />
-                          Navigate There
-                        </button>
-
-                        {!item.special && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openSuggestModal(item);
-                            }}
-                            className="w-full text-center text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 py-1 transition-colors"
-                          >
-                            Own this place? Activate specials
-                          </button>
-                        )}
-
-                        {item.special && (
-                          <button className="w-full flex items-center justify-center gap-2 bg-gray-50 dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 py-2.5 rounded-xl text-sm font-semibold transition-colors">
-                            <Phone className="w-4 h-4" />
-                            Call Venue
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                      venue={item}
+                      onClick={() => {
+                        setSelectedVenue(item);
+                        gtag.event({
+                          action: 'view_venue_detail_list',
+                          category: 'discovery',
+                          label: item.name
+                        });
+                      }}
+                      onNavigate={(e) => {
+                        e.stopPropagation();
+                        setSelectedVenue(item);
+                      }}
+                      onSuggest={(e) => {
+                        e.stopPropagation();
+                        openSuggestModal(item);
+                      }}
+                      timeFilter={timeFilter}
+                      getVenueSignal={getVenueSignal}
+                    />
                   ))}
                 </div>
 
@@ -666,8 +542,9 @@ export default function Home() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {filteredVenuesForList.slice(3).map((item) => (
-                        <div
+                        <VenueTile
                           key={item.id}
+                          venue={item}
                           onClick={() => {
                             setSelectedVenue(item);
                             gtag.event({
@@ -676,56 +553,17 @@ export default function Home() {
                               label: item.name
                             });
                           }}
-                          className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 cursor-pointer active:scale-[0.98] transition-transform duration-100 opacity-60 grayscale-[0.2] flex flex-col min-h-[280px]"
-                        >
-                          <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-center gap-4">
-                              <div className={cn("w-12 h-12 rounded-full flex items-center justify-center text-xl bg-gray-100 dark:bg-gray-800 overflow-hidden")}>
-                                {item.icon && item.icon.startsWith('/') ? (
-                                  <img src={item.icon} alt={item.category} className="w-full h-full object-cover" />
-                                ) : (
-                                  item.icon || '🍽️'
-                                )}
-                              </div>
-                              <div>
-                                <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-tight text-xl">{item.name}</h3>
-                                <div className="flex flex-col mt-1">
-                                  <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                                    <MapPin className="w-3.5 h-3.5" />
-                                    <span>{item.distance}</span>
-                                    <span className="text-gray-300">•</span>
-                                    <span>{item.category}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mt-2 flex-grow">
-                            {item.special ? (
-                              <h4 className="text-lg font-bold text-gray-700 dark:text-gray-300 pr-8">{item.special.title}</h4>
-                            ) : (
-                              <>
-                                <h4 className="text-lg font-bold text-gray-400 dark:text-zinc-600 pr-8">
-                                  Popular for:
-                                </h4>
-                                {item.known_for_bullets && item.known_for_bullets.length > 0 ? (
-                                  <div className="mt-3 space-y-2">
-                                    <div className="text-xs text-orange-400 mb-1 opacity-50">✨</div>
-                                    {item.known_for_bullets.slice(0, 1).map((point: string, idx: number) => (
-                                      <p key={idx} className="text-[14px] leading-tight text-gray-400 flex items-start gap-2 ml-0.5">
-                                        <span className="text-gray-300 font-bold">•</span>
-                                        <span>{point}</span>
-                                      </p>
-                                    ))}
-                                  </div>
-                                ) : item.recommended_for && (
-                                  <p className="text-[13px] text-gray-400 italic mt-2 line-clamp-2">{item.recommended_for}</p>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        </div>
+                          onNavigate={(e) => {
+                            e.stopPropagation();
+                            setSelectedVenue(item);
+                          }}
+                          onSuggest={(e) => {
+                            e.stopPropagation();
+                            openSuggestModal(item);
+                          }}
+                          timeFilter={timeFilter}
+                          getVenueSignal={getVenueSignal}
+                        />
                       ))}
                     </div>
                   </>
