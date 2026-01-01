@@ -385,9 +385,9 @@ export default function Home() {
               <Image
                 src="/logo.png"
                 alt="BiteNow Logo"
-                width={120}
-                height={40}
-                className="h-8 md:h-10 w-auto object-contain dark:[filter:invert(1)_hue-rotate(180deg)] transition-all duration-300"
+                width={160}
+                height={64}
+                className="h-16 w-auto object-contain dark:[filter:invert(1)_hue-rotate(180deg)] transition-all duration-300"
                 priority
               />
             </div>
@@ -542,11 +542,11 @@ export default function Home() {
                   {filteredVenuesForList.slice(0, intent ? 3 : filteredVenuesForList.length).map((item) => (
                     <div
                       key={item.id}
-                      className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 active:scale-[0.98] transition-transform duration-100"
+                      className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 active:scale-[0.98] transition-transform duration-100 flex flex-col min-h-[380px]"
                     >
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-xl bg-gray-100 dark:bg-gray-800 overflow-hidden")}>
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-4">
+                          <div className={cn("w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-gray-100 dark:bg-gray-800 overflow-hidden")}>
                             {item.icon && item.icon.startsWith('/') ? (
                               <img src={item.icon} alt={item.category} className="w-full h-full object-cover" />
                             ) : (
@@ -554,16 +554,16 @@ export default function Home() {
                             )}
                           </div>
                           <div>
-                            <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-tight">{item.name}</h3>
-                            <div className="flex flex-col mt-0.5">
-                              <div className="flex items-center gap-1 text-xs text-gray-500">
-                                <MapPin className="w-3 h-3" />
+                            <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-tight text-xl">{item.name}</h3>
+                            <div className="flex flex-col mt-1">
+                              <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                                <MapPin className="w-3.5 h-3.5" />
                                 <span>{item.distance}</span>
                                 <span className="text-gray-300">•</span>
                                 <span>{item.category}</span>
                               </div>
-                              <div className="text-[10px] text-green-600 dark:text-green-500 font-bold uppercase tracking-tighter mt-0.5 flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                              <div className="text-xs text-green-600 dark:text-green-500 font-bold uppercase tracking-tighter mt-1 flex items-center gap-1.5">
+                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                                 {getVenueSignal(item.category, timeFilter)}
                               </div>
                             </div>
@@ -571,60 +571,52 @@ export default function Home() {
                         </div>
                         <div className="flex items-center gap-2">
                           {item.special && (
-                            <div className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                            <div className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider flex items-center gap-2">
+                              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                               ON NOW
                             </div>
                           )}
                           {item.special && (
-                            <div className="text-[10px] text-gray-400 font-bold flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
+                            <div className="text-[11px] text-gray-400 font-bold flex items-center gap-1.5">
+                              <Clock className="w-4 h-4" />
                               Updated today
                             </div>
                           )}
                         </div>
                       </div>
 
-                      <div className="mt-3">
+                      <div className="mt-2 flex-grow">
                         {item.special ? (
                           <>
-                            <h4 className="text-lg font-bold text-gray-900 dark:text-white pr-8">{item.special.title}</h4>
-                            <div className="flex items-center gap-1.5 mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
-                              <Clock className="w-3.5 h-3.5" />
+                            <h4 className="text-xl font-bold text-gray-900 dark:text-white pr-8">{item.special.title}</h4>
+                            <div className="flex items-center gap-2 mt-2 text-base text-gray-500 dark:text-gray-400">
+                              <Clock className="w-4 h-4" />
                               <span>{item.special.description || 'Today'}</span>
                             </div>
                           </>
                         ) : (
                           <>
-                            {(timeFilter === 'Tonight' || new Date().getHours() < 13) && (
-                              <h4 className="text-lg font-bold text-gray-400 dark:text-zinc-600 pr-8 italic">
-                                {timeFilter === 'Tonight' ? 'No specials posted yet' : 'Awaiting today\'s specials'}
-                              </h4>
-                            )}
+                            <h4 className="text-xl font-bold text-gray-400 dark:text-zinc-600 pr-8">
+                              Popular for:
+                            </h4>
                             {item.known_for_bullets && item.known_for_bullets.length > 0 ? (
-                              <div className="mt-2 space-y-1">
+                              <div className="mt-3 space-y-2">
                                 {item.known_for_bullets.map((point: string, idx: number) => (
-                                  <p key={idx} className="text-[13px] leading-snug text-gray-500 dark:text-zinc-400 flex items-start gap-1.5">
+                                  <p key={idx} className="text-[15px] leading-snug text-gray-500 dark:text-zinc-400 flex items-start gap-2">
                                     <span className="text-gray-300 dark:text-zinc-700 font-bold">•</span>
                                     <span>{point}</span>
                                   </p>
                                 ))}
                               </div>
                             ) : item.recommended_for && (
-                              <div className="mt-2 space-y-1">
-                                <div className="text-[10px] text-orange-400 mb-1">✨</div>
+                              <div className="mt-3 space-y-2">
+                                <div className="text-xs text-orange-400 mb-1">✨</div>
                                 {item.recommended_for.split(',').map((point: string, idx: number) => (
-                                  <p key={idx} className="text-[11px] leading-tight text-gray-400 dark:text-zinc-500 flex items-start gap-1.5 ml-0.5">
+                                  <p key={idx} className="text-[13px] leading-tight text-gray-400 dark:text-zinc-500 flex items-start gap-2 ml-0.5">
                                     <span className="text-gray-300 dark:text-zinc-700 font-bold">•</span>
                                     <span>{point.trim()}</span>
                                   </p>
                                 ))}
-                              </div>
-                            )}
-                            {(timeFilter === 'Tonight' || new Date().getHours() < 13) && (
-                              <div className="flex items-center gap-1.5 mt-2 text-sm text-gray-400 dark:text-zinc-600">
-                                <Clock className="w-3.5 h-3.5" />
-                                <span>Check back later — venues update daily</span>
                               </div>
                             )}
                           </>
@@ -684,11 +676,11 @@ export default function Home() {
                               label: item.name
                             });
                           }}
-                          className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 cursor-pointer active:scale-[0.98] transition-transform duration-100 opacity-60 grayscale-[0.2]"
+                          className="group relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 cursor-pointer active:scale-[0.98] transition-transform duration-100 opacity-60 grayscale-[0.2] flex flex-col min-h-[280px]"
                         >
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex items-center gap-3">
-                              <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-xl bg-gray-100 dark:bg-gray-800 overflow-hidden")}>
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-4">
+                              <div className={cn("w-12 h-12 rounded-full flex items-center justify-center text-xl bg-gray-100 dark:bg-gray-800 overflow-hidden")}>
                                 {item.icon && item.icon.startsWith('/') ? (
                                   <img src={item.icon} alt={item.category} className="w-full h-full object-cover" />
                                 ) : (
@@ -696,10 +688,10 @@ export default function Home() {
                                 )}
                               </div>
                               <div>
-                                <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-tight">{item.name}</h3>
-                                <div className="flex flex-col mt-0.5">
-                                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                                    <MapPin className="w-3 h-3" />
+                                <h3 className="font-bold text-gray-900 dark:text-gray-100 leading-tight text-xl">{item.name}</h3>
+                                <div className="flex flex-col mt-1">
+                                  <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                                    <MapPin className="w-3.5 h-3.5" />
                                     <span>{item.distance}</span>
                                     <span className="text-gray-300">•</span>
                                     <span>{item.category}</span>
@@ -709,23 +701,28 @@ export default function Home() {
                             </div>
                           </div>
 
-                          <div className="mt-3">
+                          <div className="mt-2 flex-grow">
                             {item.special ? (
-                              <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 pr-8">{item.special.title}</h4>
+                              <h4 className="text-lg font-bold text-gray-700 dark:text-gray-300 pr-8">{item.special.title}</h4>
                             ) : (
-                              item.known_for_bullets && item.known_for_bullets.length > 0 ? (
-                                <div className="mt-2 space-y-1">
-                                  <div className="text-[10px] text-orange-400 mb-1 opacity-50">✨</div>
-                                  {item.known_for_bullets.slice(0, 1).map((point: string, idx: number) => (
-                                    <p key={idx} className="text-[11px] leading-tight text-gray-400 flex items-start gap-1.5 ml-0.5">
-                                      <span className="text-gray-300 font-bold">•</span>
-                                      <span>{point}</span>
-                                    </p>
-                                  ))}
-                                </div>
-                              ) : item.recommended_for && (
-                                <p className="text-[11px] text-gray-400 italic mt-1 line-clamp-1">{item.recommended_for}</p>
-                              )
+                              <>
+                                <h4 className="text-lg font-bold text-gray-400 dark:text-zinc-600 pr-8">
+                                  Popular for:
+                                </h4>
+                                {item.known_for_bullets && item.known_for_bullets.length > 0 ? (
+                                  <div className="mt-3 space-y-2">
+                                    <div className="text-xs text-orange-400 mb-1 opacity-50">✨</div>
+                                    {item.known_for_bullets.slice(0, 1).map((point: string, idx: number) => (
+                                      <p key={idx} className="text-[14px] leading-tight text-gray-400 flex items-start gap-2 ml-0.5">
+                                        <span className="text-gray-300 font-bold">•</span>
+                                        <span>{point}</span>
+                                      </p>
+                                    ))}
+                                  </div>
+                                ) : item.recommended_for && (
+                                  <p className="text-[13px] text-gray-400 italic mt-2 line-clamp-2">{item.recommended_for}</p>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
