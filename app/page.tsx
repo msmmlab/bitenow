@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { MapPin, Phone, Navigation, Clock, Search, Filter, List, Map as MapIcon, X, HelpCircle, Mail, PlusCircle, MessageSquare, Store, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import MapView from '@/components/map-view';
+import RadarView from '@/components/radar-view';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import SpecialModal from '@/components/special-modal';
@@ -67,7 +68,7 @@ const getVenueSignal = (category: string, timeLens: string = 'Now') => {
 
 export default function Home() {
   const [activeFilter, setActiveFilter] = useState("All");
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'radar'>('list');
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
@@ -137,6 +138,45 @@ export default function Home() {
   }, []);
 
   const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
+
+  // Initial Location Fetch
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLocation({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          });
+        },
+        (err) => console.log("Location access denied", err),
+        { enableHighAccuracy: true }
+      );
+    }
+  }, []);
+
+  // Update Location Handler (for Radar Teleport)
+  const handleUpdateLocation = useCallback((coords: { lat: number, lng: number } | null) => {
+    if (coords) {
+      // Teleport
+      setUserLocation(coords);
+    } else {
+      // Reset to GPS (Recenter)
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setUserLocation({
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude
+            });
+          },
+          (err) => console.log("Location access denied", err),
+          { enableHighAccuracy: true }
+        );
+      }
+    }
+  }, []);
+
 
   // Calculate distances and sort whenever venues or location changes
   const venuesWithDistance = useMemo(() => {
@@ -244,109 +284,126 @@ export default function Home() {
     return true;
   });
 
-  // Filter for MAP VIEW (NO distance limits - show all venues)
+  // Filter for MAP/RADAR VIEW
+  // Radar is stricter to reduce clutter, unless user explicitly filters.
   const filteredVenuesForMap = venuesWithDistance.filter(v => {
-    // NO distance filtering for map - users should see everything when they zoom out
 
-    // 1. Time-Based Filtering
-    if (timeFilter === 'Tonight') {
-      const lowerCat = v.category?.toLowerCase() || "";
-      const isEveningVenue = ["dinner", "cocktails", "pub", "bar", "brewery", "pizza", "asian"].some(c => lowerCat.includes(c)) ||
-        (v.best_for && (v.best_for.includes('dinner') || v.best_for.includes('late')));
+    // 1. If User has an Explicit Filter (Intent or Category), respect it 100%
+    if (intent || activeFilter !== "All" || timeFilter !== 'Now') {
+      // Reuse list logic? Or keep it broad?
+      // Let's reuse the list filtering logic roughly, but maybe slightly looser on distance?
+      // Actually, let's just use the same logic as the list for consistency when filtering is active.
 
-      const isNightSpecial = v.special && (v.special.title.toLowerCase().includes("dinner") || v.special.description.toLowerCase().includes("pm"));
+      // COPY from List Logic (Simpler to just refactor to reuse, but for now inline)
 
-      if (!isEveningVenue && !isNightSpecial) return false;
-    }
+      // Distance cap for Map/Radar when filtering?
+      // Radar: 20 min walk = 1.6km. 
+      // If user says "Tonight" (Planner Mode), we want to see further.
+      // If "Now", maybe just nearby?
+      // Let's just Apply filtering rules but IGNORE distance for Radar so you can teleport/scroll.
 
-    // 2. Intent-Based "Hard" Filtering
-    if (intent) {
-      const intentLabel = typeof intent === 'string' ? intent : intent.label;
-      const cleanIntent = intentLabel.replace(/[^\w\s]/gi, '').trim().toLowerCase();
-
-      if (cleanIntent === 'date night') {
-        const isFancy = (v.formality_level || 0) >= 2 || (v.best_for?.includes('fancy_dinner'));
-        if (!isFancy) return false;
+      // (A) Time-Based (Tonight)
+      if (timeFilter === 'Tonight') {
+        const lowerCat = v.category?.toLowerCase() || "";
+        const isEveningVenue = ["dinner", "cocktails", "pub", "bar", "brewery", "pizza", "asian"].some(c => lowerCat.includes(c)) ||
+          (v.best_for && (v.best_for.includes('dinner') || v.best_for.includes('late')));
+        const isNightSpecial = v.special && (v.special.title.toLowerCase().includes("dinner") || v.special.description.toLowerCase().includes("pm"));
+        if (!isEveningVenue && !isNightSpecial) return false;
       }
 
-      if (cleanIntent === 'drinks') {
-        const lowerCat = v.category?.toLowerCase() || "";
+      // (B) Intent
+      if (intent) {
+        const intentLabel = typeof intent === 'string' ? intent : intent.label;
+        const cleanIntent = intentLabel.replace(/[^\w\s]/gi, '').trim().toLowerCase();
 
-        // Exclude dessert shops
-        const isDessertShop = lowerCat.includes("dessert") ||
-          lowerCat.includes("gelat") ||
-          lowerCat.includes("ice cream") ||
-          lowerCat.includes("bakery");
-        if (isDessertShop) return false;
-
-        // Check if it's a drink-focused venue
-        const isDrinkVenue = lowerCat.includes("brew") ||
-          lowerCat.includes("pub") ||
-          lowerCat.includes("bar") ||
-          lowerCat.includes("cocktail") ||
-          v.best_for?.includes('beer') ||
-          v.best_for?.includes('drinks') ||
-          v.best_for?.includes('afternoon');
-
-        // Exclude cafes unless they explicitly serve drinks
-        const isCafe = lowerCat.includes("cafe");
-        if (isCafe && !v.best_for?.includes('beer') && !v.best_for?.includes('drinks') && !v.best_for?.includes('cocktails')) {
-          return false;
+        if (cleanIntent === 'date night') {
+          const isFancy = (v.formality_level || 0) >= 2 || (v.best_for?.includes('fancy_dinner'));
+          if (!isFancy) return false;
         }
-
-        if (!isDrinkVenue) return false;
+        if (cleanIntent === 'drinks') {
+          const lowerCat = v.category?.toLowerCase() || "";
+          // Exclude dessert
+          if (lowerCat.includes("dessert") || lowerCat.includes("ice cream") || lowerCat.includes("bakery")) return false;
+          // Must be drinky
+          const isDrinkVenue = lowerCat.includes("brew") || lowerCat.includes("pub") || lowerCat.includes("bar") || lowerCat.includes("cocktail") || v.best_for?.includes('beer') || v.best_for?.includes('drinks') || v.best_for?.includes('afternoon');
+          const isCafe = lowerCat.includes("cafe");
+          if (isCafe && !v.best_for?.includes('beer') && !v.best_for?.includes('drinks') && !v.best_for?.includes('cocktails')) return false;
+          if (!isDrinkVenue) return false;
+        }
+        if (cleanIntent === 'breakfast') {
+          const lowerCat = v.category?.toLowerCase() || "";
+          if (lowerCat.includes("bar") || lowerCat.includes("pub") || lowerCat.includes("brew") || lowerCat.includes("cocktail")) return false;
+          const isBf = v.best_for?.includes('breakfast') || lowerCat.includes('cafe');
+          if (!isBf) return false;
+        }
+        if (cleanIntent === 'lunch') {
+          const isLunch = v.best_for?.includes('lunch');
+          if (!isLunch) return false;
+        }
+        if (cleanIntent === 'dinner') {
+          const isDinner = v.best_for?.includes('dinner') || v.best_for?.includes('fancy_dinner');
+          if (!isDinner) return false;
+        }
+        if (cleanIntent === 'coffee') {
+          const lowerCat = v.category?.toLowerCase() || "";
+          if (lowerCat.includes("bar") || lowerCat.includes("pub") || lowerCat.includes("brew") || lowerCat.includes("cocktail")) return false;
+          const isCoffee = lowerCat.includes('cafe') || v.best_for?.includes('coffee');
+          if (!isCoffee) return false;
+        }
       }
 
-      if (cleanIntent === 'breakfast') {
-        const lowerCat = v.category?.toLowerCase() || "";
-
-        // Exclude bars/pubs
-        const isBar = lowerCat.includes("bar") ||
-          lowerCat.includes("pub") ||
-          lowerCat.includes("brew") ||
-          lowerCat.includes("cocktail");
-        if (isBar) return false;
-
-        const isBf = v.best_for?.includes('breakfast') || lowerCat.includes('cafe');
-        if (!isBf) return false;
+      // (C) Category
+      if (activeFilter !== "All") {
+        if (!v.special) return false;
+        const lowerTitle = v.special.title.toLowerCase();
+        const lowerDesc = v.special.description.toLowerCase();
+        if (activeFilter === "Lunch") return lowerTitle.includes("lunch") || lowerTitle.includes("burger") || lowerDesc.includes("12pm");
+        if (activeFilter === "Dinner") return lowerTitle.includes("dinner") || lowerTitle.includes("steak") || lowerTitle.includes("pizza") || lowerTitle.includes("tacos") || lowerDesc.includes("5pm");
+        if (activeFilter === "Live Music") return lowerDesc.includes("live") || lowerDesc.includes("music") || lowerDesc.includes("tunes");
+        if (activeFilter === "Family") return lowerDesc.includes("kids") || lowerTitle.includes("family") || lowerTitle.includes("pizza");
       }
 
-      if (cleanIntent === 'lunch') {
-        const isLunch = v.best_for?.includes('lunch');
-        if (!isLunch) return false;
-      }
-
-      if (cleanIntent === 'dinner') {
-        const isDinner = v.best_for?.includes('dinner') || v.best_for?.includes('fancy_dinner');
-        if (!isDinner) return false;
-      }
-
-      if (cleanIntent === 'coffee') {
-        const lowerCat = v.category?.toLowerCase() || "";
-
-        // Exclude bars/pubs
-        const isBar = lowerCat.includes("bar") ||
-          lowerCat.includes("pub") ||
-          lowerCat.includes("brew") ||
-          lowerCat.includes("cocktail");
-        if (isBar) return false;
-
-        const isCoffee = lowerCat.includes('cafe') || v.best_for?.includes('coffee');
-        if (!isCoffee) return false;
-      }
+      return true;
     }
 
-    // 3. Vibe/Category Filtering
-    if (activeFilter === "All") return true;
-    if (!v.special) return false;
+    // 2. NO Explicit Filter (Smart Curation)
+    // Reduce clutter based on Time of Day
+    const hour = new Date().getHours();
+    const lowerCat = v.category?.toLowerCase() || "";
+    const bestFor = v.best_for || [];
 
-    const lowerTitle = v.special.title.toLowerCase();
-    const lowerDesc = v.special.description.toLowerCase();
+    // MORNING (5am - 11am)
+    // Show: Cafe, Bakery, Breakfast spots
+    if (hour >= 5 && hour < 11) {
+      const isBreakfast = lowerCat.includes('cafe') || lowerCat.includes('bakery') || bestFor.includes('breakfast') || bestFor.includes('coffee');
+      return isBreakfast;
+    }
 
-    if (activeFilter === "Lunch") return lowerTitle.includes("lunch") || lowerTitle.includes("burger") || lowerDesc.includes("12pm");
-    if (activeFilter === "Dinner") return lowerTitle.includes("dinner") || lowerTitle.includes("steak") || lowerTitle.includes("pizza") || lowerTitle.includes("tacos") || lowerDesc.includes("5pm");
-    if (activeFilter === "Live Music") return lowerDesc.includes("live") || lowerDesc.includes("music") || lowerDesc.includes("tunes");
-    if (activeFilter === "Family") return lowerDesc.includes("kids") || lowerTitle.includes("family") || lowerTitle.includes("pizza");
+    // LUNCH (11am - 3pm)
+    // Show: Lunch, Cafe, Burgers, Ice Cream
+    if (hour >= 11 && hour < 15) {
+      const isLunch = bestFor.includes('lunch') || lowerCat.includes('cafe') || lowerCat.includes('burger') || lowerCat.includes('ice cream') || lowerCat.includes('gelato');
+      return isLunch;
+    }
+
+    // AFTERNOON (3pm - 5pm)
+    // Show: Drinks, Snacks, Gelato, Early Dinner spots?
+    if (hour >= 15 && hour < 17) {
+      const isArvo = bestFor.includes('drinks') || bestFor.includes('afternoon') || lowerCat.includes('ice cream') || lowerCat.includes('gelato') || lowerCat.includes('bar') || lowerCat.includes('brewery');
+      return isArvo;
+    }
+
+    // EVENING (5pm +)
+    // Show: Dinner, Drinks
+    // Hide: Cafes (unless they do dinner/drinks)
+    if (hour >= 17 || hour < 5) { // 5pm to 5am
+      const isNight = bestFor.includes('dinner') || bestFor.includes('fancy_dinner') || bestFor.includes('drinks') || bestFor.includes('cocktails') || bestFor.includes('beer') || lowerCat.includes('bar') || lowerCat.includes('pub') || lowerCat.includes('restaurant') || lowerCat.includes('pizza');
+
+      // Explicitly hide morning-only cafes
+      const isMorningCafe = lowerCat.includes('cafe') && !bestFor.includes('dinner') && !bestFor.includes('cocktails') && !bestFor.includes('beer');
+
+      return isNight && !isMorningCafe;
+    }
 
     return true;
   });
@@ -354,23 +411,6 @@ export default function Home() {
   const hasAnySpecials = venues.some(v => v.special);
 
   // Filters
-
-  useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserLocation({
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude
-          });
-        },
-        (err) => console.log("Location access denied", err),
-        { enableHighAccuracy: true }
-      );
-    }
-  }, []);
-
-
 
   // Scroll to top on filter change
   const contentRef = useRef<HTMLDivElement>(null);
@@ -380,6 +420,14 @@ export default function Home() {
       contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [timeFilter, intent]);
+
+  // Memoize map venues to prevent blinking on re-renders
+  const mapVenues = useMemo(() => {
+    return venuesWithDistance.map(v => ({
+      ...v,
+      isMatch: filteredVenuesForMap.some(fv => fv.id === v.id)
+    }));
+  }, [venuesWithDistance, filteredVenuesForMap]);
 
   return (
     <main className="flex flex-col min-h-screen bg-white dark:bg-black relative">
@@ -424,14 +472,14 @@ export default function Home() {
                         List
                       </button>
                       <button
-                        onClick={() => setViewMode('map')}
+                        onClick={() => setViewMode('radar')}
                         className={cn(
                           "flex items-center gap-2 px-5 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300",
                           "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                         )}
                       >
-                        <MapIcon className="w-3.5 h-3.5" />
-                        Map
+                        <Navigation className="w-3.5 h-3.5" />
+                        Radar
                       </button>
                     </div>
                   </div>
@@ -597,7 +645,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="h-full w-full relative">
-            {/* Map View Header - Needs to remain floating */}
+            {/* Radar View Header */}
             <div className="absolute top-0 left-0 right-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-gray-100 dark:border-zinc-800 shrink-0">
               <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -622,29 +670,26 @@ export default function Home() {
                     List
                   </button>
                   <button
-                    onClick={() => setViewMode('map')}
+                    onClick={() => setViewMode('radar')}
                     className={cn(
                       "flex items-center gap-2 px-5 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300",
                       "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-md scale-105"
                     )}
                   >
-                    <MapIcon className="w-3.5 h-3.5" />
-                    Map
+                    <Navigation className="w-3.5 h-3.5" />
+                    Radar
                   </button>
                 </div>
               </div>
             </div>
-            <div className="w-full h-full md:p-6 bg-gray-50 dark:bg-zinc-950 pt-20">
-              <div className="w-full h-full md:w-[90%] mx-auto rounded-3xl overflow-hidden shadow-2xl border border-gray-200 dark:border-zinc-800">
-                <MapView
-                  venues={venuesWithDistance.map(v => ({
-                    ...v,
-                    isMatch: filteredVenuesForMap.some(fv => fv.id === v.id)
-                  }))}
-                  onSelectVenue={setSelectedVenue}
-                  userLocation={userLocation}
-                />
-              </div>
+
+            {/* Radar View Container */}
+            <div className="w-full h-full bg-black pt-20">
+              <RadarView
+                venues={mapVenues}
+                userLocation={userLocation}
+                onUpdateLocation={handleUpdateLocation}
+              />
             </div>
           </div>
         )}
@@ -658,87 +703,55 @@ export default function Home() {
             <button onClick={() => setShowJoinUs(false)} className="absolute top-4 right-4 text-gray-400"><X className="w-6 h-6" /></button>
             {!suggestSuccess ? (
               <div className="text-center space-y-6 py-4">
-                <div className="space-y-2">
-                  <div className="text-4xl">{joinUsVenue ? '👋' : '⭐'}</div>
-                  <h3 className="text-2xl font-black tracking-tight">{joinUsVenue ? 'Claim this Place' : 'Suggest a Place'}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                <div className="w-16 h-16 bg-orange-100 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <Store className="w-8 h-8 text-orange-500" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-wide mb-2">
+                    {joinUsVenue ? "Spotted Something?" : "Know a hidden gem?"}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     {joinUsVenue
-                      ? "Are you the owner? Let us know and we'll get you set up."
-                      : "Missing your favourite spot? We'll reach out and let them know."}
+                      ? "If you know a special at this venue, let us know!"
+                      : "Tell us about a great venue or special we're missing."}
                   </p>
                 </div>
-                <input
-                  type="text"
-                  value={suggestText}
-                  onChange={(e) => setSuggestText(e.target.value)}
-                  placeholder="Venue name or address..."
-                  className="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white shadow-inner"
-                />
-                <button
-                  onClick={() => setSuggestSuccess(true)}
-                  className="w-full bg-black dark:bg-white dark:text-black text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-transform"
-                >
-                  Submit suggestion
-                </button>
+                <div className="space-y-3">
+                  <textarea
+                    className="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl border border-gray-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-sm min-h-[100px]"
+                    placeholder={joinUsVenue ? "e.g. $20 Pizza Night on Tuesdays..." : "Venue name and details..."}
+                    value={suggestText}
+                    onChange={(e) => setSuggestText(e.target.value)}
+                  />
+                  <button
+                    disabled={!suggestText.trim()}
+                    onClick={async () => {
+                      // Simple submit logic
+                      setSuggestSuccess(true);
+                      setTimeout(() => {
+                        setShowJoinUs(false);
+                      }, 2000);
+                    }}
+                    className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
+                  >
+                    Send it
+                  </button>
+                </div>
               </div>
             ) : (
-              <div className="text-center space-y-6 py-8 animate-in fade-in zoom-in duration-300">
-                <div className="text-5xl">✅</div>
-                <h3 className="text-2xl font-black tracking-tight text-black dark:text-white">Thank you!</h3>
-                <button
-                  onClick={() => setShowJoinUs(false)}
-                  className="w-full bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-white font-bold py-4 rounded-xl active:scale-95 transition-transform"
-                >
-                  Done
-                </button>
+              <div className="text-center py-10 space-y-4">
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-2 animate-in zoom-in duration-300">
+                  <MessageSquare className="w-8 h-8 text-green-600 dark:text-green-500" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-wide">Thanks Legend!</h3>
+                  <p className="text-sm text-gray-500 mt-2">We'll check it out.</p>
+                </div>
               </div>
             )}
           </div>
         </div>
       )}
-
-      {showFAQ && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowFAQ(false)} />
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 relative z-10 w-full max-w-sm border border-gray-100 dark:border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[80vh] overflow-y-auto">
-            <button onClick={() => setShowFAQ(false)} className="absolute top-4 right-4 text-gray-400"><X className="w-6 h-6" /></button>
-            <div className="space-y-6 py-4">
-              <h3 className="text-2xl font-black tracking-tight text-center">FAQ</h3>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-bold text-sm mb-1">How much does it cost?</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed">During our beta phase, BiteNow is 100% free.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showContact && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowContact(false)} />
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 relative z-10 w-full max-w-sm border border-gray-100 dark:border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200">
-            <button onClick={() => setShowContact(false)} className="absolute top-4 right-4 text-gray-400"><X className="w-6 h-6" /></button>
-            <div className="text-center space-y-6 py-4">
-              <div className="text-4xl">👋</div>
-              <h3 className="text-2xl font-black tracking-tight">Get in touch</h3>
-              <div className="space-y-3">
-                <a href="mailto:hello@bitenow.com.au" className="w-full flex items-center justify-center gap-3 bg-gray-50 dark:bg-zinc-800 py-4 rounded-xl font-bold hover:bg-gray-100 transition-colors">
-                  <Mail className="w-5 h-5" />
-                  <span>Email Support</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <SpecialModal
-        special={selectedVenue}
-        onClose={() => setSelectedVenue(null)}
-        userLocation={userLocation}
-      />
     </main>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -63,6 +64,7 @@ interface MapViewProps {
 }
 
 export default function MapView({ venues, onSelectVenue, userLocation }: MapViewProps) {
+    const router = useRouter();
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<mapboxgl.Map | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -218,9 +220,14 @@ export default function MapView({ venues, onSelectVenue, userLocation }: MapView
             }
 
             iconEl.addEventListener('click', (e) => {
-                e.preventDefault(); // Prevent map click
+                e.preventDefault();
                 e.stopPropagation();
-                onSelectVenue(venue);
+
+                // Navigate to Venue Profile
+                const town = venue.town_slug || 'noosa';
+                const url = `/venues/${town}/${venue.slug}`;
+                router.push(url);
+
                 gtag.event({
                     action: isMatch ? 'view_venue_detail_map_marker' : 'view_venue_context_marker',
                     category: 'discovery',
@@ -240,65 +247,6 @@ export default function MapView({ venues, onSelectVenue, userLocation }: MapView
             markers.current.push(iconMarker);
 
 
-            // 3. Label Marker (The text) - Only for matches or on hover?
-            // Existing logic showed context labels on hover. Matches always showed labels.
-            // Split label allows us to anchor it independently.
-
-            const labelEl = document.createElement('div');
-            // We want it clickable too, passing through to the same action
-            labelEl.className = 'marker-label cursor-pointer pointer-events-auto';
-
-            if (isMatch) {
-                // Always visible label for matches
-                // Clean pill style
-                labelEl.innerHTML = `
-                   <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm px-2 py-0.5 rounded-lg border border-gray-100 dark:border-zinc-800 shadow-sm transition-colors hover:bg-white dark:hover:bg-black">
-                        <span class="text-[11px] font-bold text-gray-900 dark:text-gray-100 whitespace-nowrap">${venue.name}</span>
-                   </div>
-               `;
-            } else {
-                // Hover-only label for context
-                // We implement this using 'group' usually, but separate DOM nodes make 'group-hover' tricky.
-                // We will use standard CSS classes and maybe just always show it but rely on CSS opacity?
-                // Or we can just render it. The previous code had opacity-0 group-hover:opacity-100.
-                // Since we split the markers, the 'group' (parent) is gone.
-                // We can re-implement basic hover logic via JS or just simplify to "Always visible but small" or "Hidden".
-                // The prompt said: "Label marker ... must not affect icon positioning"
-                // For context venues, maybe we skip the label to reduce noise? 
-                // Or we make it visible. The previous UI had it invisible until hover.
-                // Let's make it class 'opacity-0 hover:opacity-100' but that requires hovering the LABEL itself (which is invisible).
-                // To fix this properly: we would need a shared parent or JS event listeners.
-                // For now, to ensure stability, I will RENDER matching labels always.
-                // For context venues, I will render them but potentially hidden or tiny.
-                // Actually, let's keep it simple: Context venues get explicit labels? No, that clutters the map.
-                // I'll skip separate labels for context markers for now to avoid clutter, 
-                // as linking the hover state of two separate mapbox markers is complex without a shared reacting store.
-                // Users clicked the dot to see details anyway.
-                if (!isMatch) return;
-            }
-
-            labelEl.addEventListener('click', (e) => {
-                e.stopPropagation();
-                onSelectVenue(venue);
-            });
-
-            // Anchor label 'bottom' but offset UP by the icon height.
-            // Icon height is ~56px. Plus padding 4px. = 60px.
-            // Default offset [0, -60] moves the anchor point UP 60px.
-            // Then the label sits on top of that anchor point.
-            // Mapbox offset: positive is down. So negative is up.
-            const labelOffset: [number, number] = [0, -60];
-
-            if (isMatch) {
-                const labelMarker = new mapboxgl.Marker({
-                    element: labelEl,
-                    anchor: 'bottom', // Sit on top of the offset point
-                    offset: labelOffset as any
-                })
-                    .setLngLat(lngLat)
-                    .addTo(map.current!);
-                markers.current.push(labelMarker);
-            }
         });
 
         // Optionally refit camera if markers updated significantly 
