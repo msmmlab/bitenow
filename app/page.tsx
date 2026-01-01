@@ -383,111 +383,6 @@ export default function Home() {
 
   return (
     <main className="flex flex-col min-h-screen bg-white dark:bg-black relative">
-      {/* Smart Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-100 dark:border-zinc-800 shrink-0">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/logo.png"
-                alt="BiteNow Logo"
-                width={160}
-                height={64}
-                className="h-16 w-auto object-contain dark:[filter:invert(1)_hue-rotate(180deg)] transition-all duration-300"
-                priority
-              />
-            </div>
-
-            <div className="flex bg-gray-100/80 dark:bg-zinc-800/80 p-1 rounded-full border border-gray-200/50 dark:border-zinc-700/50 shadow-inner">
-              <button
-                onClick={() => setViewMode('list')}
-                className={cn(
-                  "flex items-center gap-2 px-5 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300",
-                  viewMode === 'list'
-                    ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-md scale-105"
-                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                )}
-              >
-                <List className="w-3.5 h-3.5" />
-                List
-              </button>
-              <button
-                onClick={() => setViewMode('map')}
-                className={cn(
-                  "flex items-center gap-2 px-5 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300",
-                  viewMode === 'map'
-                    ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-md scale-105"
-                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                )}
-              >
-                <MapIcon className="w-3.5 h-3.5" />
-                Map
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            {/* Time filters */}
-            <div className="flex-1 max-w-xl bg-gray-50/50 dark:bg-zinc-900/50 rounded-2xl p-1 gap-1 border border-gray-100/50 dark:border-zinc-800/50">
-              {(['Now', 'Later', 'Tonight'] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => {
-                    setTimeFilter(t);
-                    setIntent(null);
-                    gtag.event({
-                      action: 'change_time_lens',
-                      category: 'interaction',
-                      label: t
-                    });
-                  }}
-                  className={cn(
-                    "flex-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-200",
-                    timeFilter === t
-                      ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5"
-                      : "text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-gray-300"
-                  )}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-
-            {/* Intent Chips */}
-            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth">
-              <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 shrink-0 opacity-70">Take me for →</span>
-              <div className="flex gap-2">
-                {getIntentOptions(timeFilter.toLowerCase(), new Date()).map((option: any) => (
-                  <button
-                    key={option.type}
-                    onClick={() => {
-                      const isSame = intent?.type === option.type || intent === option.label;
-                      const newIntent = isSame ? null : option;
-                      setIntent(newIntent);
-                      if (newIntent) {
-                        gtag.event({
-                          action: 'select_intent',
-                          category: 'interaction',
-                          label: option.label
-                        });
-                      }
-                    }}
-                    className={cn(
-                      "px-4 py-2 rounded-xl text-[10px] font-bold transition-all duration-200 border whitespace-nowrap",
-                      (intent?.type === option.type || intent === option.label)
-                        ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-lg -translate-y-0.5"
-                        : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-100 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-500"
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Content Area */}
       <div className="flex-1 overflow-hidden relative">
         {viewMode === 'list' ? (
@@ -500,9 +395,110 @@ export default function Home() {
             {/* Scrollable Content Overlay */}
             <div
               ref={contentRef}
-              className="absolute inset-0 z-10 overflow-y-auto pb-6 pt-48"
+              className="absolute inset-0 z-10 overflow-y-auto pb-32"
             >
-              <div className="p-4 space-y-4 max-w-7xl mx-auto">
+              {/* Smart Header - Now relative so it scrolls away */}
+              <header className="relative top-0 left-0 right-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-gray-100 dark:border-zinc-800 shrink-0">
+                <div className="max-w-7xl mx-auto px-4 md:px-6 py-3">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src="/logo.png"
+                        alt="BiteNow Logo"
+                        width={160}
+                        height={64}
+                        className="h-16 w-auto object-contain dark:[filter:invert(1)_hue-rotate(180deg)] transition-all duration-300"
+                        priority
+                      />
+                    </div>
+
+                    <div className="flex bg-gray-100/80 dark:bg-zinc-800/80 p-1 rounded-full border border-gray-200/50 dark:border-zinc-700/50 shadow-inner">
+                      <button
+                        onClick={() => setViewMode('list')}
+                        className={cn(
+                          "flex items-center gap-2 px-5 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300",
+                          "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-md scale-105"
+                        )}
+                      >
+                        <List className="w-3.5 h-3.5" />
+                        List
+                      </button>
+                      <button
+                        onClick={() => setViewMode('map')}
+                        className={cn(
+                          "flex items-center gap-2 px-5 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300",
+                          "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                        )}
+                      >
+                        <MapIcon className="w-3.5 h-3.5" />
+                        Map
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col md:flex-row md:items-center gap-4">
+                    {/* Time filters */}
+                    <div className="flex-1 max-w-xl bg-gray-50/50 dark:bg-zinc-900/50 rounded-2xl p-1 gap-1 border border-gray-100/50 dark:border-zinc-800/50">
+                      {(['Now', 'Later', 'Tonight'] as const).map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => {
+                            setTimeFilter(t);
+                            setIntent(null);
+                            gtag.event({
+                              action: 'change_time_lens',
+                              category: 'interaction',
+                              label: t
+                            });
+                          }}
+                          className={cn(
+                            "flex-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-200",
+                            timeFilter === t
+                              ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5"
+                              : "text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-gray-300"
+                          )}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Intent Chips */}
+                    <div className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 shrink-0 opacity-70">Take me for →</span>
+                      <div className="flex gap-2">
+                        {getIntentOptions(timeFilter.toLowerCase(), new Date()).map((option: any) => (
+                          <button
+                            key={option.type}
+                            onClick={() => {
+                              const isSame = intent?.type === option.type || intent === option.label;
+                              const newIntent = isSame ? null : option;
+                              setIntent(newIntent);
+                              if (newIntent) {
+                                gtag.event({
+                                  action: 'select_intent',
+                                  category: 'interaction',
+                                  label: option.label
+                                });
+                              }
+                            }}
+                            className={cn(
+                              "px-4 py-2 rounded-xl text-[10px] font-bold transition-all duration-200 border whitespace-nowrap",
+                              (intent?.type === option.type || intent === option.label)
+                                ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-lg -translate-y-0.5"
+                                : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-100 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-500"
+                            )}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </header>
+
+              <div className="p-4 space-y-4 max-w-7xl mx-auto pt-6">
                 {/* Cold Start Banner */}
                 {!loading && !hasAnySpecials && (
                   <div className="bg-[#FFF6EA] dark:bg-zinc-900/50 border border-[#F59E0B]/30 dark:border-[#F59E0B]/20 rounded-2xl p-4 mb-2 flex flex-col gap-3 shadow-sm">
@@ -594,22 +590,61 @@ export default function Home() {
                     </div>
                   </>
                 )}
-                {/* Spacer for bottom nav */}
-                <div className="h-16"></div>
+                {/* Spacer for bottom nav - increased for Safari */}
+                <div className="h-32 md:h-24"></div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="w-full h-full md:p-6 bg-gray-50 dark:bg-zinc-950">
-            <div className="w-full h-full md:w-[90%] mx-auto rounded-3xl overflow-hidden shadow-2xl border border-gray-200 dark:border-zinc-800">
-              <MapView
-                venues={venuesWithDistance.map(v => ({
-                  ...v,
-                  isMatch: filteredVenuesForMap.some(fv => fv.id === v.id)
-                }))}
-                onSelectVenue={setSelectedVenue}
-                userLocation={userLocation}
-              />
+          <div className="h-full w-full relative">
+            {/* Map View Header - Needs to remain floating */}
+            <div className="absolute top-0 left-0 right-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-gray-100 dark:border-zinc-800 shrink-0">
+              <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/logo.png"
+                    alt="BiteNow Logo"
+                    width={120}
+                    height={48}
+                    className="h-12 w-auto object-contain dark:[filter:invert(1)_hue-rotate(180deg)] transition-all duration-300"
+                    priority
+                  />
+                </div>
+                <div className="flex bg-gray-100/80 dark:bg-zinc-800/80 p-1 rounded-full border border-gray-200/50 dark:border-zinc-700/50 shadow-inner">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={cn(
+                      "flex items-center gap-2 px-5 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300",
+                      "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                    )}
+                  >
+                    <List className="w-3.5 h-3.5" />
+                    List
+                  </button>
+                  <button
+                    onClick={() => setViewMode('map')}
+                    className={cn(
+                      "flex items-center gap-2 px-5 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300",
+                      "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-md scale-105"
+                    )}
+                  >
+                    <MapIcon className="w-3.5 h-3.5" />
+                    Map
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="w-full h-full md:p-6 bg-gray-50 dark:bg-zinc-950 pt-20">
+              <div className="w-full h-full md:w-[90%] mx-auto rounded-3xl overflow-hidden shadow-2xl border border-gray-200 dark:border-zinc-800">
+                <MapView
+                  venues={venuesWithDistance.map(v => ({
+                    ...v,
+                    isMatch: filteredVenuesForMap.some(fv => fv.id === v.id)
+                  }))}
+                  onSelectVenue={setSelectedVenue}
+                  userLocation={userLocation}
+                />
+              </div>
             </div>
           </div>
         )}

@@ -172,7 +172,25 @@ export default function VenueTile({
                         )}
                         {variant === 3 && (
                             <p className="text-sm font-bold text-gray-600 dark:text-zinc-400 flex items-center gap-1.5">
-                                Great for {best_for[0]}
+                                {(() => {
+                                    // Smart tag selection
+                                    let displayTag = best_for[0];
+                                    const lowerFilter = timeFilter.toLowerCase();
+
+                                    if (lowerFilter === 'tonight' || lowerFilter === 'later') {
+                                        const dinnerTag = best_for.find(t => ['dinner', 'date', 'drinks', 'cocktails', 'late'].some(k => t.toLowerCase().includes(k)));
+                                        if (dinnerTag) displayTag = dinnerTag;
+                                    } else if (lowerFilter === 'now') {
+                                        // If it's evening hours (after 5pm), prioritize dinner/drinks
+                                        const hour = new Date().getHours();
+                                        if (hour >= 17) {
+                                            const eveningTag = best_for.find(t => ['dinner', 'date', 'drinks', 'cocktails'].some(k => t.toLowerCase().includes(k)));
+                                            if (eveningTag) displayTag = eveningTag;
+                                        }
+                                    }
+
+                                    return `Great for ${displayTag}`;
+                                })()}
                             </p>
                         )}
                     </div>
