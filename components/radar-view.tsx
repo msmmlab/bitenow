@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ZoomIn, ZoomOut, RotateCcw, RotateCw, Search, Crosshair, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -31,6 +31,7 @@ interface RadarViewProps {
     venues: Venue[];
     userLocation: { lat: number; lng: number } | null;
     onUpdateLocation: (coords: { lat: number; lng: number } | null) => void;
+    initialSearchQuery?: string;
 }
 
 // Ensure you set this in .env
@@ -70,7 +71,7 @@ function getBearing(startLat: number, startLng: number, destLat: number, destLng
     return (brngDeg + 360) % 360;
 }
 
-export default function RadarView({ venues, userLocation, onUpdateLocation }: RadarViewProps) {
+export default function RadarView({ venues, userLocation, onUpdateLocation, initialSearchQuery }: RadarViewProps) {
     const router = useRouter();
 
     // Controls
@@ -78,9 +79,9 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
     const [rotation, setRotation] = useState(0); // Degrees offset
 
     // Search State
-    const [searchQuery, setSearchQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState(initialSearchQuery || "");
     const [isSearching, setIsSearching] = useState(false);
-    const [hasManuallySearched, setHasManuallySearched] = useState(false);
+    const [hasManuallySearched, setHasManuallySearched] = useState(!!initialSearchQuery);
 
     // Center logic
     const centerLat = userLocation?.lat || -26.3957; // Noosa default
@@ -89,8 +90,13 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
     // Max Ring = 15 mins walking (~1200m) for the edge
     const MAX_RADIUS_M = 1200;
 
-    const handleSearch = async () => {
-        if (!searchQuery.trim()) return;
+    const handleSearch = async (queryOverride?: string) => {
+        const query = (queryOverride || searchQuery).trim();
+        if (!query) return;
+
+        // Sync local input state if we're overriding (e.g. from URL)
+        if (queryOverride) setSearchQuery(queryOverride);
+
         if (!MAPBOX_TOKEN) {
             alert("Mapbox Token Missing");
             return;
@@ -98,7 +104,7 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
 
         setIsSearching(true);
         try {
-            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${MAPBOX_TOKEN}&country=au&limit=1`;
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=au&limit=1`;
             const res = await fetch(url);
             const data = await res.json();
 
@@ -124,6 +130,17 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
         setRotation(0);
         setZoom(1);
     };
+
+    // Auto-search if initial query provided
+    useEffect(() => {
+        if (initialSearchQuery && initialSearchQuery.trim()) {
+            // Small delay to ensure parent state and context are ready
+            const timer = setTimeout(() => {
+                handleSearch(initialSearchQuery);
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [initialSearchQuery]); // Run when initialSearchQuery changes (e.g. navigation)
 
     const mappedVenues = useMemo(() => {
         if (!venues.length) return [];
@@ -293,7 +310,8 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
                                     className="relative flex flex-col items-center justify-center cursor-pointer"
                                     onClick={() => {
                                         const town = venue.town_slug || 'noosa';
-                                        router.push(`/venues/${town}/${venue.slug}`);
+                                        const searchParam = searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : '';
+                                        router.push(`/venues/${town}/${venue.slug}?from=radar${searchParam}`);
                                     }}
                                 >
                                     <div className={cn(
@@ -370,7 +388,7 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
                             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         />
                         <button
-                            onClick={handleSearch}
+                            onClick={() => handleSearch()}
                             disabled={isSearching}
                             className="p-3 bg-orange-600 rounded-full text-white hover:bg-orange-500 transition-all active:scale-90 disabled:opacity-50"
                         >

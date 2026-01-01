@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Navigation, List, X, MessageSquare, Store, Loader2 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import RadarView from '@/components/radar-view';
 import Image from 'next/image';
@@ -71,8 +72,12 @@ const getVenueSignal = (category: string, timeLens: string = 'Now') => {
 };
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const viewParam = searchParams.get('view');
+  const queryParam = searchParams.get('q');
+
   const [activeFilter] = useState("All");
-  const [viewMode, setViewMode] = useState<'list' | 'radar'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'radar'>((viewParam as any) || 'list');
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [showJoinUs, setShowJoinUs] = useState(false);
@@ -81,6 +86,13 @@ export default function Home() {
   const [suggestSuccess, setSuggestSuccess] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'Now' | 'Later' | 'Tonight'>('Now');
   const [intent, setIntent] = useState<{ label: string;[key: string]: any } | null>(null);
+
+  // Sync viewMode with URL
+  useEffect(() => {
+    if (viewParam === 'radar') {
+      setViewMode('radar');
+    }
+  }, [viewParam]);
 
   const openSuggestModal = (venue: Venue | null = null) => {
     setJoinUsVenue(venue);
@@ -139,6 +151,9 @@ export default function Home() {
 
   // Initial Location Fetch
   useEffect(() => {
+    // If we're coming from a teleport/URL query, don't overwrite with GPS
+    if (queryParam) return;
+
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -645,6 +660,7 @@ export default function Home() {
                 venues={mapVenues}
                 userLocation={userLocation}
                 onUpdateLocation={handleUpdateLocation}
+                initialSearchQuery={queryParam || undefined}
               />
             </div>
           </div>

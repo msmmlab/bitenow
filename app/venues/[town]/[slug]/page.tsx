@@ -16,6 +16,7 @@ interface Props {
         town: string;
         slug: string;
     }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export async function generateStaticParams() {
@@ -40,9 +41,15 @@ async function getVenue(slug: string) {
     return data;
 }
 
-export default async function VenuePage({ params }: Props) {
-    const resolvedParams = await params;
+export default async function VenuePage(props: Props) {
+    const resolvedParams = await props.params;
+    const searchParams = await props.searchParams;
     const venue = await getVenue(resolvedParams.slug);
+
+    const from = searchParams.from as string;
+    const q = searchParams.q as string;
+    const backHref = from === 'radar' ? `/?view=radar${q ? `&q=${encodeURIComponent(q)}` : ''}` : '/';
+    const backText = from === 'radar' ? 'Back to Radar' : 'Back to feed';
 
     if (!venue) {
         notFound();
@@ -69,11 +76,11 @@ export default async function VenuePage({ params }: Props) {
             {/* Hero / Navigation */}
             <div className="max-w-4xl mx-auto px-6 pt-8 pb-12">
                 <Link
-                    href="/"
+                    href={backHref}
                     className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white transition-colors mb-12 group"
                 >
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                    Back to feed
+                    {backText}
                 </Link>
 
                 <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
