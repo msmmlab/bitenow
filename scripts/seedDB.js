@@ -48,8 +48,11 @@ async function seedByTown(townSlug) {
             // Prepare venue with town data
             const venueToUpsert = {
                 ...venue,
-                town: town.name
+                town: town.name,
+                town_slug: town.slug,
+                specials: venue.specials || []
             };
+            delete venueToUpsert.manual_coords;
 
             const { data: result, error } = await supabase
                 .from('restaurants')
@@ -69,16 +72,37 @@ async function seedByTown(townSlug) {
     console.log(`\n✨ Seeding for ${town.name} complete!`);
 }
 
+async function seedAll() {
+    console.log("🚀 Starting batch seed for all locations...\n");
+    const files = fs.readdirSync(path.join(__dirname, '../locations')).filter(f => f.endsWith('.js') && f !== 'sampleTown.js');
+
+    for (const file of files) {
+        const slug = path.basename(file, '.js');
+        await seedByTown(slug);
+        console.log("------------------------------------------");
+    }
+
+    console.log("\n🎊 All locations seeded successfully!");
+}
+
 // 3. Execution handle
 const townArg = process.argv[2];
 
 if (!townArg) {
-    console.error("Usage: node scripts/seedDB.js <town_slug>");
+    console.error("Usage: node scripts/seedDB.js <town_slug> | all");
     console.log("Example: node scripts/seedDB.js caloundra");
+    console.log("Example: node scripts/seedDB.js all");
     process.exit(1);
 }
 
-seedByTown(townArg).catch(err => {
-    console.error("Seed failed:", err);
-    process.exit(1);
-});
+if (townArg === 'all') {
+    seedAll().catch(err => {
+        console.error("Batch seed failed:", err);
+        process.exit(1);
+    });
+} else {
+    seedByTown(townArg).catch(err => {
+        console.error("Seed failed:", err);
+        process.exit(1);
+    });
+}

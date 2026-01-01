@@ -140,22 +140,39 @@ export default function MapView({ venues, onSelectVenue, userLocation }: MapView
             el.className = 'marker';
             const icon = venue.icon || '🍽️';
             const isImg = icon.startsWith('/');
-
-            // Subtle logic: If venue has a special, make the marker slightly more prominent or different
             const hasSpecial = !!venue.special;
+            const isMatch = venue.isMatch !== false; // Default to true if not provided
 
-            el.innerHTML = `
-                <div class="bg-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg border-2 ${hasSpecial ? 'border-orange-500' : 'border-white'} text-3xl hover:scale-110 transition-transform cursor-pointer transform -translate-y-1/2 overflow-hidden relative">
-                    ${isImg ? `<img src="${icon}" class="w-full h-full object-cover" />` : icon}
-                    ${hasSpecial ? '<div class="absolute top-0 right-0 w-4 h-4 bg-orange-500 rounded-full border-2 border-white animate-pulse"></div>' : ''}
-                </div>
-            `;
+            if (isMatch) {
+                el.innerHTML = `
+                    <div class="flex flex-col items-center">
+                        <div class="bg-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg border-2 ${hasSpecial ? 'border-orange-500' : 'border-white'} text-3xl hover:scale-110 transition-all cursor-pointer overflow-hidden relative mb-1">
+                            ${isImg ? `<img src="${icon}" class="w-full h-full object-cover" />` : icon}
+                            ${hasSpecial ? '<div class="absolute top-0 right-0 w-4 h-4 bg-orange-500 rounded-full border-2 border-white animate-pulse"></div>' : ''}
+                        </div>
+                        <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm px-2 py-0.5 rounded-lg border border-gray-100 dark:border-zinc-800 shadow-sm">
+                            <span class="text-[11px] font-bold text-gray-900 dark:text-gray-100 whitespace-nowrap">${venue.name}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Subtle "Context" Marker
+                el.innerHTML = `
+                    <div class="group flex flex-col items-center">
+                        <div class="bg-gray-300 dark:bg-zinc-700 rounded-full w-3 h-3 shadow-sm border border-white hover:w-6 hover:h-6 hover:bg-white transition-all cursor-pointer overflow-hidden relative">
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm px-1.5 py-0.5 rounded border border-gray-100 dark:border-zinc-800 shadow-sm mt-1 z-20 pointer-events-none">
+                            <span class="text-[9px] font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">${venue.name}</span>
+                        </div>
+                    </div>
+                `;
+            }
 
             el.addEventListener('click', (e) => {
                 e.stopPropagation();
                 onSelectVenue(venue);
                 gtag.event({
-                    action: 'view_venue_detail_map_marker',
+                    action: isMatch ? 'view_venue_detail_map_marker' : 'view_venue_context_marker',
                     category: 'discovery',
                     label: venue.name
                 });

@@ -58,11 +58,10 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
     if (!special) return null;
 
     const handleNavigate = (type: 'google' | 'apple') => {
-        const lat = special.lat;
-        const lng = special.lng;
+        const query = encodeURIComponent(`${special.name}, ${special.address}`);
         const url = type === 'google'
-            ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
-            : `http://maps.apple.com/?daddr=${lat},${lng}`;
+            ? `https://www.google.com/maps/dir/?api=1&destination=${query}`
+            : `http://maps.apple.com/?daddr=${query}`;
 
         gtag.event({
             action: 'start_navigation',

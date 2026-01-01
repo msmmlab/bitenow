@@ -76,7 +76,7 @@ export default function Home() {
   const [suggestText, setSuggestText] = useState("");
   const [suggestSuccess, setSuggestSuccess] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'Now' | 'Later' | 'Tonight'>('Now');
-  const [intent, setIntent] = useState<string | null>(null);
+  const [intent, setIntent] = useState<any | null>(null);
   const [showFAQ, setShowFAQ] = useState(false);
   const [showContact, setShowContact] = useState(false);
 
@@ -129,7 +129,7 @@ export default function Home() {
       });
 
       setVenues(mapped);
-      console.log('Fetched venues with recommendations:', mapped.map(v => ({ name: v.name, rec: v.recommended_for })));
+      console.log('Fetched venues with recommendations:', mapped.map(v => ({ name: v.name, rec: v.best_for })));
       setLoading(false);
     }
 
@@ -151,7 +151,6 @@ export default function Home() {
         ...v,
         distance: dist < 1 ? `${(dist * 1000).toFixed(0)}m` : `${dist.toFixed(1)}km`,
         distanceValue: dist,
-        recommended_for: v.recommended_for,
         isOpen
       };
     }).sort((a, b) => {
@@ -162,10 +161,10 @@ export default function Home() {
         distanceValue: a.distanceValue
       };
 
-      const scoreA = scoreRestaurant(a, context);
-      const scoreB = scoreRestaurant(b, { ...context, distanceValue: b.distanceValue });
+      const resultA = scoreRestaurant(a, context);
+      const resultB = scoreRestaurant(b, { ...context, distanceValue: b.distanceValue });
 
-      return scoreB - scoreA;
+      return resultB.score - resultA.score;
     });
   }, [venues, userLocation, timeFilter, intent]);
 
@@ -182,9 +181,9 @@ export default function Home() {
 
     // 1. Time-Based Filtering
     if (timeFilter === 'Tonight') {
-      const isEveningVenue = ["Dinner", "Cocktails", "Pub", "Bar", "Brewery", "Pizza", "Asian Fusion"].includes(v.category) ||
-        (v.best_for && (v.best_for.includes('dinner') || v.best_for.includes('late'))) ||
-        (v.best_times && (v.best_times.includes('dinner') || v.best_times.includes('late')));
+      const lowerCat = v.category?.toLowerCase() || "";
+      const isEveningVenue = ["dinner", "cocktails", "pub", "bar", "brewery", "pizza", "asian"].some(c => lowerCat.includes(c)) ||
+        (v.best_for && (v.best_for.includes('dinner') || v.best_for.includes('late')));
 
       const isNightSpecial = v.special && (v.special.title.toLowerCase().includes("dinner") || v.special.description.toLowerCase().includes("pm"));
 
@@ -193,7 +192,8 @@ export default function Home() {
 
     // 2. Intent-Based "Hard" Filtering
     if (intent) {
-      const cleanIntent = intent.replace(/[^\w\s]/gi, '').trim().toLowerCase();
+      const intentLabel = typeof intent === 'string' ? intent : intent.label;
+      const cleanIntent = intentLabel.replace(/[^\w\s]/gi, '').trim().toLowerCase();
 
       if (cleanIntent === 'date night') {
         const isFancy = (v.formality_level || 0) >= 2 || (v.best_for?.includes('fancy_dinner'));
@@ -203,6 +203,7 @@ export default function Home() {
       if (cleanIntent === 'drinks') {
         const lowerCat = v.category?.toLowerCase() || "";
         const isDrinks = lowerCat.includes("brew") || lowerCat.includes("pub") || lowerCat.includes("bar") ||
+          lowerCat.includes("cocktail") ||
           v.best_for?.includes('beer') || v.best_for?.includes('afternoon') || v.best_for?.includes('drinks');
         if (!isDrinks) return false;
       }
@@ -249,9 +250,9 @@ export default function Home() {
 
     // 1. Time-Based Filtering
     if (timeFilter === 'Tonight') {
-      const isEveningVenue = ["Dinner", "Cocktails", "Pub", "Bar", "Brewery", "Pizza", "Asian Fusion"].includes(v.category) ||
-        (v.best_for && (v.best_for.includes('dinner') || v.best_for.includes('late'))) ||
-        (v.best_times && (v.best_times.includes('dinner') || v.best_times.includes('late')));
+      const lowerCat = v.category?.toLowerCase() || "";
+      const isEveningVenue = ["dinner", "cocktails", "pub", "bar", "brewery", "pizza", "asian"].some(c => lowerCat.includes(c)) ||
+        (v.best_for && (v.best_for.includes('dinner') || v.best_for.includes('late')));
 
       const isNightSpecial = v.special && (v.special.title.toLowerCase().includes("dinner") || v.special.description.toLowerCase().includes("pm"));
 
@@ -260,7 +261,8 @@ export default function Home() {
 
     // 2. Intent-Based "Hard" Filtering
     if (intent) {
-      const cleanIntent = intent.replace(/[^\w\s]/gi, '').trim().toLowerCase();
+      const intentLabel = typeof intent === 'string' ? intent : intent.label;
+      const cleanIntent = intentLabel.replace(/[^\w\s]/gi, '').trim().toLowerCase();
 
       if (cleanIntent === 'date night') {
         const isFancy = (v.formality_level || 0) >= 2 || (v.best_for?.includes('fancy_dinner'));
@@ -269,13 +271,43 @@ export default function Home() {
 
       if (cleanIntent === 'drinks') {
         const lowerCat = v.category?.toLowerCase() || "";
-        const isDrinks = lowerCat.includes("brew") || lowerCat.includes("pub") || lowerCat.includes("bar") ||
-          v.best_for?.includes('beer') || v.best_for?.includes('afternoon') || v.best_for?.includes('drinks');
-        if (!isDrinks) return false;
+
+        // Exclude dessert shops
+        const isDessertShop = lowerCat.includes("dessert") ||
+          lowerCat.includes("gelat") ||
+          lowerCat.includes("ice cream") ||
+          lowerCat.includes("bakery");
+        if (isDessertShop) return false;
+
+        // Check if it's a drink-focused venue
+        const isDrinkVenue = lowerCat.includes("brew") ||
+          lowerCat.includes("pub") ||
+          lowerCat.includes("bar") ||
+          lowerCat.includes("cocktail") ||
+          v.best_for?.includes('beer') ||
+          v.best_for?.includes('drinks') ||
+          v.best_for?.includes('afternoon');
+
+        // Exclude cafes unless they explicitly serve drinks
+        const isCafe = lowerCat.includes("cafe");
+        if (isCafe && !v.best_for?.includes('beer') && !v.best_for?.includes('drinks') && !v.best_for?.includes('cocktails')) {
+          return false;
+        }
+
+        if (!isDrinkVenue) return false;
       }
 
       if (cleanIntent === 'breakfast') {
-        const isBf = v.best_for?.includes('breakfast') || v.category?.toLowerCase().includes('cafe');
+        const lowerCat = v.category?.toLowerCase() || "";
+
+        // Exclude bars/pubs
+        const isBar = lowerCat.includes("bar") ||
+          lowerCat.includes("pub") ||
+          lowerCat.includes("brew") ||
+          lowerCat.includes("cocktail");
+        if (isBar) return false;
+
+        const isBf = v.best_for?.includes('breakfast') || lowerCat.includes('cafe');
         if (!isBf) return false;
       }
 
@@ -290,7 +322,16 @@ export default function Home() {
       }
 
       if (cleanIntent === 'coffee') {
-        const isCoffee = v.category?.toLowerCase().includes('cafe') || v.best_for?.includes('coffee');
+        const lowerCat = v.category?.toLowerCase() || "";
+
+        // Exclude bars/pubs
+        const isBar = lowerCat.includes("bar") ||
+          lowerCat.includes("pub") ||
+          lowerCat.includes("brew") ||
+          lowerCat.includes("cocktail");
+        if (isBar) return false;
+
+        const isCoffee = lowerCat.includes('cafe') || v.best_for?.includes('coffee');
         if (!isCoffee) return false;
       }
     }
@@ -313,9 +354,6 @@ export default function Home() {
   const hasAnySpecials = venues.some(v => v.special);
 
   // Filters
-  // Smart Header Logic
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const lastScrollY = useRef(0);
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -332,22 +370,21 @@ export default function Home() {
     }
   }, []);
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const currentScrollY = e.currentTarget.scrollTop;
 
-    if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-      setIsHeaderVisible(false);
-    } else {
-      setIsHeaderVisible(true);
+
+  // Scroll to top on filter change
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    lastScrollY.current = currentScrollY;
-  };
-
+  }, [timeFilter, intent]);
 
   return (
     <main className="flex flex-col min-h-screen bg-white dark:bg-black relative">
       {/* Smart Header */}
-      <header className={`fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-100 dark:border-zinc-800 shrink-0 transition-transform duration-500 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-100 dark:border-zinc-800 shrink-0">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-3">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -420,28 +457,29 @@ export default function Home() {
             <div className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth">
               <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 shrink-0 opacity-70">Take me for →</span>
               <div className="flex gap-2">
-                {getIntentOptions(timeFilter.toLowerCase(), new Date()).map((option) => (
+                {getIntentOptions(timeFilter.toLowerCase(), new Date()).map((option: any) => (
                   <button
-                    key={option}
+                    key={option.type}
                     onClick={() => {
-                      const newIntent = intent === option ? null : option;
+                      const isSame = intent?.type === option.type || intent === option.label;
+                      const newIntent = isSame ? null : option;
                       setIntent(newIntent);
                       if (newIntent) {
                         gtag.event({
                           action: 'select_intent',
                           category: 'interaction',
-                          label: option
+                          label: option.label
                         });
                       }
                     }}
                     className={cn(
                       "px-4 py-2 rounded-xl text-[10px] font-bold transition-all duration-200 border whitespace-nowrap",
-                      intent === option
+                      (intent?.type === option.type || intent === option.label)
                         ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-lg -translate-y-0.5"
                         : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-100 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-500"
                     )}
                   >
-                    {option}
+                    {option.label}
                   </button>
                 ))}
               </div>
@@ -461,8 +499,8 @@ export default function Home() {
 
             {/* Scrollable Content Overlay */}
             <div
-              onScroll={handleScroll}
-              className="absolute inset-0 z-10 overflow-y-auto pb-6 pt-32"
+              ref={contentRef}
+              className="absolute inset-0 z-10 overflow-y-auto pb-6 pt-48"
             >
               <div className="p-4 space-y-4 max-w-7xl mx-auto">
                 {/* Cold Start Banner */}
@@ -502,7 +540,7 @@ export default function Home() {
                 {filteredVenuesForList.length > 0 && intent && (
                   <div className="pt-2 pb-2">
                     <p className="text-2xl font-black text-gray-900 dark:text-white leading-tight">
-                      Best for <span className="text-orange-500">{intent}</span>
+                      Best for <span className="text-orange-500">{typeof intent === 'string' ? intent : intent.label}</span>
                     </p>
                   </div>
                 )}
@@ -512,17 +550,11 @@ export default function Home() {
                     <VenueTile
                       key={item.id}
                       venue={item}
-                      onClick={() => {
-                        setSelectedVenue(item);
-                        gtag.event({
-                          action: 'view_venue_detail_list',
-                          category: 'discovery',
-                          label: item.name
-                        });
-                      }}
+                      onClick={() => { }}
                       onNavigate={(e) => {
                         e.stopPropagation();
-                        setSelectedVenue(item);
+                        const query = encodeURIComponent(`${item.name}, ${item.address}`);
+                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, '_blank');
                       }}
                       onSuggest={(e) => {
                         e.stopPropagation();
@@ -545,17 +577,11 @@ export default function Home() {
                         <VenueTile
                           key={item.id}
                           venue={item}
-                          onClick={() => {
-                            setSelectedVenue(item);
-                            gtag.event({
-                              action: 'view_venue_detail_list',
-                              category: 'discovery',
-                              label: item.name
-                            });
-                          }}
+                          onClick={() => { }}
                           onNavigate={(e) => {
                             e.stopPropagation();
-                            setSelectedVenue(item);
+                            const query = encodeURIComponent(`${item.name}, ${item.address}`);
+                            window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, '_blank');
                           }}
                           onSuggest={(e) => {
                             e.stopPropagation();
@@ -577,7 +603,10 @@ export default function Home() {
           <div className="w-full h-full md:p-6 bg-gray-50 dark:bg-zinc-950">
             <div className="w-full h-full md:w-[90%] mx-auto rounded-3xl overflow-hidden shadow-2xl border border-gray-200 dark:border-zinc-800">
               <MapView
-                venues={filteredVenuesForMap}
+                venues={venuesWithDistance.map(v => ({
+                  ...v,
+                  isMatch: filteredVenuesForMap.some(fv => fv.id === v.id)
+                }))}
                 onSelectVenue={setSelectedVenue}
                 userLocation={userLocation}
               />
@@ -595,10 +624,12 @@ export default function Home() {
             {!suggestSuccess ? (
               <div className="text-center space-y-6 py-4">
                 <div className="space-y-2">
-                  <div className="text-4xl">⭐</div>
-                  <h3 className="text-2xl font-black tracking-tight">Suggest a Place</h3>
+                  <div className="text-4xl">{joinUsVenue ? '👋' : '⭐'}</div>
+                  <h3 className="text-2xl font-black tracking-tight">{joinUsVenue ? 'Claim this Place' : 'Suggest a Place'}</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                    Missing your favourite spot? We&apos;ll reach out and let them know.
+                    {joinUsVenue
+                      ? "Are you the owner? Let us know and we'll get you set up."
+                      : "Missing your favourite spot? We'll reach out and let them know."}
                   </p>
                 </div>
                 <input

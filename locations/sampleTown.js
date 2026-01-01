@@ -3,7 +3,11 @@ module.exports = {
     town: {
         slug: "sampletown",
         name: "SampleTown",
+        slug: "sampletown",
+        name: "SampleTown",
         region: "Sunshine Coast",
+        slug: "sampletown",
+        name: "SampleTown",
         center: { lat: -26.0000, lng: 153.0000 },
     },
 
@@ -14,8 +18,8 @@ module.exports = {
             category: "Cafe",
             icon: "/icons/coffee.png",
             address: "123 Example St, SampleTown QLD",
-            lat: -26.0001,
-            lng: 153.0002,
+            lat: -28.855256,
+            lng: 152.027073,
 
             best_for: ["breakfast", "coffee", "lunch"],
 

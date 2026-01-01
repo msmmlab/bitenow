@@ -1,4 +1,4 @@
-import { MapPin, Bell, Clock, Navigation, ChevronRight, Wine, Sparkles, Phone, ArrowRight, Car, PersonStanding } from 'lucide-react';
+import { MapPin, Bell, Clock, Navigation, ChevronRight, Wine, Sparkles, Phone, ArrowRight, Car, PersonStanding, Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -23,6 +23,8 @@ export interface Venue {
     distance?: string;
     distanceValue?: number;
     isOpen?: boolean;
+    town_slug?: string;
+    specials_array?: any[]; // For the new jsonb column
     special?: {
         id: string;
         title: string;
@@ -97,17 +99,43 @@ export default function VenueTile({
 
     const renderBullets = (limit = 3) => {
         return known_for_bullets.slice(0, limit).map((bullet, idx) => (
-            <li key={idx} className="flex items-start gap-2 text-[15px] text-gray-500 dark:text-zinc-400 leading-snug">
-                <span className="text-gray-300 dark:text-zinc-700 font-bold mt-0.5">•</span>
+            <li key={idx} className="flex items-start gap-3 text-[15px] text-gray-500 dark:text-zinc-400 leading-snug">
+                <Image
+                    src="/icon-monster.png"
+                    alt=""
+                    width={18}
+                    height={18}
+                    className="mt-0.5 shrink-0"
+                />
                 <span>{bullet}</span>
             </li>
         ));
     };
 
+    const handleShare = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const shareText = `Hey! How about this place?`;
+        // Generate deep link: /venues/town-slug/venue-slug
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        const town = venue.town_slug || 'noosa';
+        const shareUrl = `${origin}/venues/${town}/${venue.slug}`;
+
+        if (navigator.share) {
+            navigator.share({
+                title: name,
+                text: shareText,
+                url: shareUrl,
+            }).catch(console.error);
+        } else {
+            // Fallback: WhatsApp direct link
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+    };
+
     return (
         <div
-            onClick={onClick}
-            className="group relative bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-[32px] shadow-sm hover:shadow-xl transition-all duration-300 p-6 cursor-pointer flex flex-col min-h-[480px] overflow-hidden"
+            className="group relative bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm border border-gray-100 dark:border-zinc-800 rounded-[32px] shadow-sm hover:shadow-xl transition-all duration-300 p-6 flex flex-col min-h-[480px] overflow-hidden"
         >
             {/* Visual Pill Label */}
             {pillLabel && (
@@ -139,12 +167,12 @@ export default function VenueTile({
                         )}
                         {variant === 2 && (
                             <p className="text-sm font-bold text-gray-600 dark:text-zinc-400 flex items-center gap-1.5">
-                                Best for a planned dinner <span className="text-lg">🍷</span>
+                                Best for a planned dinner
                             </p>
                         )}
                         {variant === 3 && (
                             <p className="text-sm font-bold text-gray-600 dark:text-zinc-400 flex items-center gap-1.5">
-                                Great for {best_for[0]} <span className="text-lg">✨</span>
+                                Great for {best_for[0]}
                             </p>
                         )}
                     </div>
@@ -265,6 +293,14 @@ export default function VenueTile({
                     Navigate There
                 </button>
 
+                <button
+                    onClick={handleShare}
+                    className="w-full flex items-center justify-center gap-3 bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] border border-gray-200/50 dark:border-zinc-700/50 hover:bg-gray-200 dark:hover:bg-zinc-700 active:scale-[0.98] transition-all"
+                >
+                    <Share2 className="w-4 h-4" />
+                    Take your friends
+                </button>
+
                 {variant === 2 && (
                     <button className="flex items-center justify-center gap-1 py-1 text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                         Good to know <ArrowRight className="w-4 h-4" />
@@ -275,7 +311,7 @@ export default function VenueTile({
                     onClick={onSuggest}
                     className="w-full text-center text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 py-2 group-hover:translate-x-1 transition-all flex items-center justify-center gap-1"
                 >
-                    Own this place? Draw in locals with your special <ArrowRight className="w-3.5 h-3.5" />
+                    Own this place? <ArrowRight className="w-3.5 h-3.5" />
                 </button>
             </div>
         </div>
