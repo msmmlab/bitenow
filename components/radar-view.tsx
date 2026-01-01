@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, ZoomIn, ZoomOut, RotateCcw, RotateCw, Search, Crosshair, Loader2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, RotateCw, Search, Crosshair, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface RadarViewProps {
     venues: any[];
@@ -20,14 +19,14 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
 // Distance in meters
 function getDist(lat1: number, lon1: number, lat2: number, lon2: number) {
-    var R = 6371;
-    var dLat = deg2rad(lat2 - lat1);
-    var dLon = deg2rad(lon2 - lon1);
-    var a =
+    const R = 6371;
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
         Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c * 1000;
 }
 
@@ -67,7 +66,6 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
     const centerLng = userLocation?.lng || 153.0905;
 
     // Max Ring = 15 mins walking (~1200m) for the edge
-    // We want 15 min to be near the edge (say 90% or 100%)
     const MAX_RADIUS_M = 1200;
 
     const handleSearch = async () => {
@@ -79,7 +77,6 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
 
         setIsSearching(true);
         try {
-            // Geocode US -> AU preference
             const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${MAPBOX_TOKEN}&country=au&limit=1`;
             const res = await fetch(url);
             const data = await res.json();
@@ -88,7 +85,6 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
                 const [lng, lat] = data.features[0].center;
                 onUpdateLocation({ lat, lng });
                 setHasManuallySearched(true);
-                // Don't clear query immediately so user sees what they searched
             } else {
                 alert("Location not found");
             }
@@ -101,7 +97,7 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
     };
 
     const handleRecenter = () => {
-        onUpdateLocation(null); // Reset to GPS
+        onUpdateLocation(null);
         setHasManuallySearched(false);
         setSearchQuery("");
         setRotation(0);
@@ -111,107 +107,238 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
     const mappedVenues = useMemo(() => {
         if (!venues.length) return [];
 
-        // 1. Initial Calculation (Distance & Bearing)
         let points = venues.map(venue => {
             if (!venue.lat || !venue.lng) return null;
 
             const dist = getDist(centerLat, centerLng, Number(venue.lat), Number(venue.lng));
             const bearing = getBearing(centerLat, centerLng, Number(venue.lat), Number(venue.lng));
 
-            // Non-Linear Scaling (Square Root-ish)
-            // This spreads out the center (nearby stuff) and squashes the edge.
-            // rRaw = 0..1
-            let rRaw = dist / MAX_RADIUS_M;
-            if (rRaw < 0.05) rRaw = 0.05; // clamp center
-
-            // Apply Power Curve: r^0.6 -> Grows fast initially (spreads center), slows down later.
-            let r = Math.pow(rRaw, 0.6);
-
-            // Clamp far items visually so they don't fly off screen instantly,
-            // but mark them as "far" if logic needs it.
+            const rRaw = Math.max(0.05, dist / MAX_RADIUS_M);
+            const r = Math.pow(rRaw, 0.6);
             const isFar = dist > MAX_RADIUS_M * 1.5;
 
             return {
                 ...venue,
                 dist,
                 originalBearing: bearing,
-                bearing, // We will nudge this
+                bearing,
                 r,
                 isFar
             };
         }).filter(v => v !== null && !v.isFar) as any[];
 
-        // 2. Collision Avoidance (Iterative Nudging)
-        // We want to push apart items that are visually too close.
-        // "Visually close" depends on r and bearing difference.
-        // Arc length ~ r * dTheta.
+        // 2. Pre-Spread Clusters (If bearings are too similar, nudge them)
+        points.sort((a, b) => a.bearing - b.bearing);
+        for (let i = 1; i < points.length; i++) {
+            const diff = Math.abs(points[i].bearing - points[i - 1].bearing);
+            if (diff < 5) {
+                // Nudge apart to give collision avoidance a head start
+                points[i].bearing += (5 - diff);
+            }
+        }
 
-        const ITERATIONS = 10;
-        const MIN_DIST_PCT = 0.12; // Min distance between items (as % of radius) ~ roughly icon size
+        // 3. Collision Avoidance (Iterative Nudging)
+        const ITERATIONS = 50;
+        const MIN_DIST_PCT = 0.22; // More breathing room
 
         for (let i = 0; i < ITERATIONS; i++) {
-            // Compare every pair
             for (let a = 0; a < points.length; a++) {
                 for (let b = a + 1; b < points.length; b++) {
                     const pA = points[a];
                     const pB = points[b];
 
-                    // Approximate polar distance
-                    // dr = radial difference
                     const dr = pA.r - pB.r;
-
-                    // da = angular difference (in radians for arc length calc)
                     let da = deg2rad(pA.bearing - pB.bearing);
-                    // Handle wrap around -180/180
                     if (da > Math.PI) da -= 2 * Math.PI;
                     if (da < -Math.PI) da += 2 * Math.PI;
 
-                    // Arc length distance along the "average" radius
                     const avgR = (pA.r + pB.r) / 2;
                     const arcLen = avgR * da;
+                    const visualDist = Math.sqrt((dr * dr) + (arcLen * arcLen));
 
-                    // Euclidian-ish distance in normalized polar space
-                    // Weight radial distance more (keep content in rings)
-                    // Nudge angular distance easily.
-                    const distSq = (dr * dr) + (arcLen * arcLen); // simplified
+                    if (visualDist < MIN_DIST_PCT) {
+                        const overlap = MIN_DIST_PCT - visualDist;
+                        const force = overlap * 0.6; // Stronger push
 
-                    if (distSq < (MIN_DIST_PCT * MIN_DIST_PCT)) {
-                        // Too close! Push apart angularly.
-                        const overlap = MIN_DIST_PCT - Math.sqrt(distSq);
-
-                        // Direction to push (angularly only to preserve rings)
-                        const push = overlap * 1500 * (1 / (avgR + 0.1)); // Empirical tuning
-
+                        // Push angularly
+                        const anglePush = (force / (avgR + 0.1)) * (180 / Math.PI);
                         if (da > 0) {
-                            pA.bearing += push;
-                            pB.bearing -= push;
+                            pA.bearing += anglePush;
+                            pB.bearing -= anglePush;
                         } else {
-                            pA.bearing -= push;
-                            pB.bearing += push;
+                            pA.bearing -= anglePush;
+                            pB.bearing += anglePush;
                         }
+
+                        // Push radially
+                        const rPush = force * (dr > 0 ? 1 : -1) * 0.3;
+                        pA.r = Math.min(1.05, Math.max(0.05, pA.r + rPush));
+                        pB.r = Math.min(1.05, Math.max(0.05, pB.r - rPush));
                     }
                 }
             }
+        }
+
+        const hasActiveFilter = venues.some(v => v.isMatch === false);
+        if (hasActiveFilter) {
+            points = points.filter(p => p.isMatch !== false);
         }
 
         return points;
     }, [venues, centerLat, centerLng]);
 
     return (
-        <div className="relative w-full h-full bg-black overflow-hidden flex flex-col items-center justify-center select-none shadow-[inset_0_0_100px_rgba(0,0,0,0.9)]">
+        <div className="relative w-full h-full bg-white dark:bg-black overflow-hidden flex flex-col select-none">
+            {/* RADAR CONTENT AREA */}
+            <div className="flex-1 relative flex items-center justify-center overflow-hidden bg-black">
+                {/* Cosmos Background */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-950/40 via-black to-black opacity-100" />
+                <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] mix-blend-screen pointer-events-none" />
 
-            {/* Cosmos Background */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-950/40 via-black to-black opacity-100" />
-            <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] mix-blend-screen" />
+                {/* --- SOLAR SYSTEM CONTAINER --- */}
+                <motion.div
+                    className="relative aspect-square w-full max-w-[min(800px,85vh)] flex items-center justify-center p-8 md:p-12"
+                    animate={{ scale: zoom, rotate: rotation }}
+                    transition={{ type: 'spring', stiffness: 80, damping: 15 }}
+                    style={{ transformOrigin: 'center center' }}
+                >
+                    {/* -- RINGS -- */}
+                    <div className="absolute w-[100%] h-[100%] rounded-full border border-dashed border-white/5" />
+                    <div className="absolute w-[78%] h-[78%] rounded-full border border-dashed border-white/5" />
+                    <div className="absolute w-[51%] h-[51%] rounded-full border border-dashed border-white/10" />
+                    <div className="absolute w-[30%] h-[30%] rounded-full border border-dotted border-white/20" />
 
-            {/* Controls Overlay */}
-            <div className="absolute bottom-28 md:bottom-32 left-0 right-0 z-50 flex flex-col items-center justify-center gap-4 pointer-events-none px-4">
+                    {/* Labels - Counter-rotating to stay upright */}
+                    <motion.div
+                        animate={{ rotate: -rotation }}
+                        className="absolute top-[0%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/20 z-10"
+                    >
+                        15m
+                    </motion.div>
+                    <motion.div
+                        animate={{ rotate: -rotation }}
+                        className="absolute top-[17%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/20 z-10"
+                    >
+                        10m
+                    </motion.div>
+                    <motion.div
+                        animate={{ rotate: -rotation }}
+                        className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/25 z-10"
+                    >
+                        5m
+                    </motion.div>
+
+                    {/* Radial Lines */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-10">
+                        <div className="w-[1px] h-full bg-white" />
+                        <div className="h-[1px] w-full bg-white" />
+                    </div>
+
+                    {/* -- PLANETS -- */}
+                    {mappedVenues.map((venue: any) => {
+                        const angleRad = deg2rad(venue.bearing - 90);
+                        const xPct = 50 + (venue.r * 50 * Math.cos(angleRad));
+                        const yPct = 50 + (venue.r * 50 * Math.sin(angleRad));
+
+                        const isMatch = venue.isMatch !== false;
+                        const cleanName = venue.name.replace(/\s*\(.*?\)\s*/g, '').trim();
+
+                        let PlanetIcon = <div className="w-2 h-2 rounded-full bg-white/50" />;
+                        const cat = (venue.category || "").toLowerCase();
+                        const bestFor = (venue.best_for || []).join(" ");
+
+                        if (cat.includes("coffee") || cat.includes("cafe")) PlanetIcon = <span className="text-xl">☕</span>;
+                        else if (cat.includes("burger")) PlanetIcon = <span className="text-xl">🍔</span>;
+                        else if (cat.includes("pizza")) PlanetIcon = <span className="text-xl">🍕</span>;
+                        else if (cat.includes("asian") || cat.includes("thai") || cat.includes("japanese")) PlanetIcon = <span className="text-xl">🥢</span>;
+                        else if (cat.includes("bar") || cat.includes("pub") || bestFor.includes("drinks")) PlanetIcon = <span className="text-xl">🍺</span>;
+                        else if (cat.includes("ice cream") || cat.includes("gelato")) PlanetIcon = <span className="text-xl">🍦</span>;
+                        else if (bestFor.includes("fancy")) PlanetIcon = <span className="text-xl">✨</span>;
+                        else PlanetIcon = <span className="text-xl">🍽️</span>;
+
+                        return (
+                            <motion.div
+                                key={venue.id}
+                                className="absolute w-0 h-0 flex items-center justify-center z-20 group"
+                                style={{ left: `${xPct}%`, top: `${yPct}%` }}
+                            >
+                                <motion.button
+                                    animate={{ rotate: -rotation, scale: 1 / Math.max(0.7, Math.sqrt(zoom)) }}
+                                    transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+                                    className="relative flex flex-col items-center justify-center cursor-pointer"
+                                    onClick={() => {
+                                        const town = venue.town_slug || 'noosa';
+                                        router.push(`/venues/${town}/${venue.slug}`);
+                                    }}
+                                >
+                                    <div className={cn(
+                                        "flex items-center justify-center drop-shadow-[0_0_10px_rgba(255,255,255,0.3)] filter grayscale-[0.3] hover:grayscale-0 transition-transform duration-300 hover:scale-150",
+                                    )}>
+                                        {PlanetIcon}
+                                    </div>
+                                    <div className={cn(
+                                        "absolute top-full -mt-1 flex flex-col items-center pointer-events-none -space-y-[2.5px] bg-black/90 px-2 py-1.5 rounded-xl border shadow-lg", // <-- mt-XX for icon distance, -space-y-[XX] for word density
+                                        isMatch ? "border-orange-500/30" : "border-white/10"
+                                    )}>
+                                        {cleanName.split(' ').map((word: string, i: number) => (
+                                            <span
+                                                key={i}
+                                                className={cn(
+                                                    "text-[0.42rem] font-black uppercase tracking-widest leading-tight whitespace-nowrap",
+                                                    isMatch ? "text-orange-100" : "text-gray-400"
+                                                )}
+                                            >
+                                                {word}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </motion.button>
+                            </motion.div>
+                        );
+                    })}
+                </motion.div>
+
+                {/* CENTER SUN (YOU) */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-none">
+                    <div className={cn(
+                        "w-4 h-4 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.9)] animate-pulse transition-colors duration-500",
+                        hasManuallySearched ? "bg-orange-500 shadow-orange-500/50" : "bg-white shadow-white/50"
+                    )} />
+                </div>
+            </div>
+
+            {/* FIXED BOTTOM MENU - MATCH HEADER STYLE (Top Menu -> Radar -> Bottom Menu) */}
+            <div className="shrink-0 bg-white/95 dark:bg-black/95 backdrop-blur-xl border-t border-gray-100 dark:border-zinc-800 px-4 pt-6 pb-12 md:pb-8 flex flex-col items-center gap-4 z-50">
+                {/* Interaction Box (Zoom/Rotate) */}
+                <div className="flex items-center gap-2 bg-gray-100/80 dark:bg-zinc-800/80 px-8 py-4 rounded-full border border-gray-200/50 dark:border-white/5 shadow-inner w-full max-w-sm justify-between">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => setRotation(r => (r - 45 + 360) % 360)} className="text-gray-900 dark:text-white hover:text-orange-500 transition-colors">
+                            <RotateCcw className="w-8 h-8" />
+                        </button>
+                        <span className="text-[10px] font-mono font-black text-gray-500 dark:text-white/50 w-10 text-center uppercase tracking-tighter">{Math.round(rotation)}°</span>
+                        <button onClick={() => setRotation(r => (r + 45) % 360)} className="text-gray-900 dark:text-white hover:text-orange-500 transition-colors">
+                            <RotateCw className="w-8 h-8" />
+                        </button>
+                    </div>
+
+                    <div className="w-px h-6 bg-gray-300 dark:bg-white/10 mx-2" />
+
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => setZoom(z => Math.max(0.2, z - 0.2))} className="text-gray-900 dark:text-white hover:text-orange-500 transition-colors">
+                            <ZoomOut className="w-8 h-8" />
+                        </button>
+                        <span className="text-[10px] font-mono font-black text-gray-500 dark:text-white/50 w-10 text-center uppercase tracking-tighter">{Math.round(zoom * 100)}%</span>
+                        <button onClick={() => setZoom(z => Math.min(4, z + 0.5))} className="text-gray-900 dark:text-white hover:text-orange-500 transition-colors">
+                            <ZoomIn className="w-8 h-8" />
+                        </button>
+                    </div>
+                </div>
 
                 {/* Search Bar - Teleport */}
-                <div className="flex items-center gap-2 pointer-events-auto w-full max-w-sm">
-                    <div className="flex-1 bg-black/60 backdrop-blur-md rounded-full border border-white/20 shadow-2xl flex items-center pr-1 transition-all focus-within:border-orange-500/50 focus-within:ring-1 focus-within:ring-orange-500/20">
+                <div className="flex items-center gap-2 w-full max-w-sm">
+                    <div className="flex-1 bg-gray-100/80 dark:bg-zinc-800/80 rounded-full border border-gray-200/50 dark:border-white/5 shadow-inner flex items-center pr-1 transition-all focus-within:ring-2 focus-within:ring-orange-500/30">
                         <input
-                            className="bg-transparent border-none text-white text-xs px-4 py-3 w-full focus:outline-none placeholder:text-white/30 font-mono"
+                            className="bg-transparent border-none text-gray-900 dark:text-white text-sm px-6 py-4 w-full focus:outline-none placeholder:text-gray-400 dark:placeholder:text-white/20 font-mono tracking-tight"
                             placeholder="Teleport: e.g. Hastings St..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -220,215 +347,21 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
                         <button
                             onClick={handleSearch}
                             disabled={isSearching}
-                            className="p-2 bg-orange-600 rounded-full text-white hover:bg-orange-500 transition-colors disabled:opacity-50"
+                            className="p-3 bg-orange-600 rounded-full text-white hover:bg-orange-500 transition-all active:scale-90 disabled:opacity-50"
                         >
                             {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                         </button>
                     </div>
-
-                    {/* Recenter Button */}
                     {hasManuallySearched && (
                         <button
                             onClick={handleRecenter}
-                            className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white border border-white/20 transition-all active:scale-95"
-                            title="Reset to my location"
+                            className="p-4 bg-gray-100 dark:bg-zinc-800 border border-gray-200/50 dark:border-white/5 rounded-full text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all active:scale-95"
                         >
                             <Crosshair className="w-5 h-5" />
                         </button>
                     )}
                 </div>
-
-                {/* Interaction Box (Zoom/Rotate) */}
-                <div className="flex items-center gap-4 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 shadow-2xl pointer-events-auto">
-
-                    {/* Rotation */}
-                    <div className="flex items-center gap-2 border-r border-white/10 pr-4">
-                        <button onClick={() => setRotation(r => r - 45)} className="p-2 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-colors">
-                            <RotateCcw className="w-5 h-5" />
-                        </button>
-                        <span className="text-[10px] font-mono text-white/50 w-8 text-center">{Math.round(rotation)}°</span>
-                        <button onClick={() => setRotation(r => r + 45)} className="p-2 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-colors">
-                            <RotateCw className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    {/* Zoom */}
-                    <div className="flex items-center gap-2">
-                        <button onClick={() => setZoom(z => Math.max(0.2, z - 0.2))} className="p-2 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-colors">
-                            <ZoomOut className="w-5 h-5" />
-                        </button>
-                        <span className="text-[10px] font-mono text-white/50 w-8 text-center">{Math.round(zoom * 100)}%</span>
-                        <button onClick={() => setZoom(z => Math.min(4, z + 0.5))} className="p-2 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-colors">
-                            <ZoomIn className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
             </div>
-
-            {/* --- SOLAR SYSTEM CONTAINER --- */}
-            {/* We rotate and scale this entire div */}
-            <motion.div
-                className="relative aspect-square w-full max-w-[800px] flex items-center justify-center p-12 md:p-0 cursor-grab active:cursor-grabbing"
-                animate={{ scale: zoom, rotate: rotation }}
-                transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-                style={{ transformOrigin: 'center center' }}
-                drag
-                dragMomentum={false}
-                onDragEnd={(e, info) => {
-                    // Calculate Panning Delta
-                    const dx = info.offset.x;
-                    const dy = info.offset.y;
-
-                    if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return; // Ignore clicks
-
-                    // We need to convert screen pixels -> meters -> lat/lng
-                    // 1. Zoom factor: Higher zoom = fewer meters per pixel.
-                    // At zoom 1, radius (400px typically) = MAX_RADIUS_M (1200m).
-                    // So pixels per meter = (containerWidth / 2) / MAX_RADIUS_M * zoom
-                    // OR meters per pixel = MAX_RADIUS_M / ((containerWidth / 2) * zoom)
-
-                    // Let's approximate containerWidth as 800px (max-w) or just use the radius logic.
-                    // Visual Radius = 50% of container.
-                    // Let's assume container is roughly 800px on desktop, maybe 400px on mobile.
-                    // A safe approximation for "Movement Feel" is:
-                    // 1200m / (300px * zoom) = ~4 meters per pixel at zoom 1.
-
-                    const metersPerPixel = MAX_RADIUS_M / (300 * zoom);
-
-                    // 2. Rotation Compensation
-                    // If rotated 90deg (bearing 90), "Up" (dy < 0) is actually "East".
-                    // We need to rotate the movement vector [dx, dy] by -rotation.
-                    const rotRad = deg2rad(-rotation);
-                    const rx = dx * Math.cos(rotRad) - dy * Math.sin(rotRad);
-                    const ry = dx * Math.sin(rotRad) + dy * Math.cos(rotRad);
-
-                    const dEastM = -rx * metersPerPixel;  // Drag Right -> Move Map Left -> Go East? Wait.
-                    // Dragging MAP to Right means viewing West.
-                    // So Delta Location is -Move.
-                    const dNorthM = ry * metersPerPixel; // Drag Down -> Move Map Up -> Go North
-
-                    // 3. Convert Meters to Lat/Lng
-                    // 1 deg Lat ~= 111,320m
-                    // 1 deg Lng ~= 111,320m * cos(lat)
-                    const dLat = dNorthM / 111320;
-                    const dLng = dEastM / (111320 * Math.cos(deg2rad(centerLat)));
-
-                    // Update Location
-                    onUpdateLocation({
-                        lat: centerLat + dLat,
-                        lng: centerLng + dLng
-                    });
-                    setHasManuallySearched(true);
-                }}
-            >
-
-                {/* -- RINGS (Distances) -- */}
-                {/* Based on MAX_RADIUS_M = 1200m (15 min) */}
-                {/* Using Power Curve: r_visual = (dist / 1200)^0.6 */}
-
-                {/* 15 min (1200m) -> 1.0^0.6 = 100% */}
-                <div className="absolute w-[100%] h-[100%] rounded-full border border-dashed border-white/5" />
-
-                {/* 10 min (800m) -> (800/1200)^0.6 = 0.66^0.6 = ~78% size */}
-                <div className="absolute w-[78%] h-[78%] rounded-full border border-dashed border-white/5" />
-
-                {/* 5 min (400m) -> (400/1200)^0.6 = 0.33^0.6 = ~51% size */}
-                <div className="absolute w-[51%] h-[51%] rounded-full border border-dashed border-white/10" />
-
-                {/* 2 min (160m) -> (160/1200)^0.6 = 0.133^0.6 = ~30% size */}
-                <div className="absolute w-[30%] h-[30%] rounded-full border border-dotted border-white/20" />
-
-
-                {/* Labels */}
-                <div className="absolute top-[0%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/20">15m</div>
-                <div className="absolute top-[11%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/20">10m</div>
-                <div className="absolute top-[24.5%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/25">5m</div>
-                <div className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8px] font-black tracking-widest text-white/30">2m</div>
-
-
-                {/* Radial Lines (Cardinal Directions) */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-10">
-                    <div className="w-[1px] h-full bg-white" />
-                    <div className="h-[1px] w-full bg-white" />
-                </div>
-
-                {/* -- PLANETS -- */}
-                {mappedVenues.map((venue: any) => {
-                    const angleRad = deg2rad(venue.bearing - 90);
-                    const xPct = 50 + (venue.r * 50 * Math.cos(angleRad));
-                    const yPct = 50 + (venue.r * 50 * Math.sin(angleRad));
-
-                    const isMatch = venue.isMatch !== false;
-
-                    // Name Trimming: Remove (...) content
-                    const cleanName = venue.name.replace(/\s*\(.*?\)\s*/g, '').trim();
-
-                    // Simple Category Icons (Lucide/Standard)
-                    // We use these INSTEAD of images for now to be "clean & transparent"
-                    let PlanetIcon = <div className="w-2 h-2 rounded-full bg-white/50" />;
-                    const cat = (venue.category || "").toLowerCase();
-                    const bestFor = (venue.best_for || []).join(" ");
-
-                    if (cat.includes("coffee") || cat.includes("cafe")) PlanetIcon = <span className="text-xl">☕</span>;
-                    else if (cat.includes("burger")) PlanetIcon = <span className="text-xl">🍔</span>;
-                    else if (cat.includes("pizza")) PlanetIcon = <span className="text-xl">🍕</span>;
-                    else if (cat.includes("asian") || cat.includes("thai") || cat.includes("japanese")) PlanetIcon = <span className="text-xl">🥢</span>;
-                    else if (cat.includes("bar") || cat.includes("pub") || bestFor.includes("drinks")) PlanetIcon = <span className="text-xl">🍺</span>;
-                    else if (cat.includes("ice cream") || cat.includes("gelato")) PlanetIcon = <span className="text-xl">🍦</span>;
-                    else if (bestFor.includes("fancy")) PlanetIcon = <span className="text-xl">✨</span>;
-                    else PlanetIcon = <span className="text-xl">🍽️</span>;
-
-                    return (
-                        <motion.div
-                            key={venue.id}
-                            className="absolute w-0 h-0 flex items-center justify-center z-20 group"
-                            style={{ left: `${xPct}%`, top: `${yPct}%` }}
-                        >
-
-                            <motion.button
-                                animate={{ rotate: -rotation, scale: 1 / Math.max(0.7, Math.sqrt(zoom)) }}
-                                transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                                className="relative flex flex-col items-center justify-center cursor-pointer"
-                                onClick={() => {
-                                    const town = venue.town_slug || 'noosa';
-                                    router.push(`/venues/${town}/${venue.slug}`);
-                                }}
-                            >
-                                {/* THE PLANET/STAR - Simple Transparent Emojis */}
-                                <div className={cn(
-                                    "transform transition-all duration-300 hover:scale-150 flex items-center justify-center drop-shadow-[0_0_10px_rgba(255,255,255,0.3)] filter grayscale-[0.3] hover:grayscale-0",
-                                )}>
-                                    {PlanetIcon}
-                                </div>
-
-                                {/* LABEL */}
-                                <div className="absolute top-full mt-1 whitespace-nowrap opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">
-                                    <span className={cn(
-                                        "px-1.5 py-0.5 text-[0.55rem] font-bold uppercase tracking-wider text-orange-200 shadow-black drop-shadow-md bg-black/40 rounded-sm border border-orange-500/10",
-                                        isMatch ? "text-orange-100" : "text-gray-400"
-                                    )}>
-                                        {cleanName}
-                                    </span>
-                                </div>
-                            </motion.button>
-
-                        </motion.div>
-                    );
-                })}
-
-            </motion.div>
-
-            {/* CENTER SUN (YOU) */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-none">
-                <div className={cn(
-                    "w-4 h-4 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.9)] animate-pulse transition-colors duration-500",
-                    hasManuallySearched ? "bg-orange-500 shadow-orange-500/50" : "bg-white shadow-white/50"
-                )} />
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 text-[10px] text-white font-mono tracking-widest opacity-50 whitespace-nowrap">
-                    {hasManuallySearched ? "SCOPED LOC" : "YOU"}
-                </div>
-            </div>
-
         </div>
     );
 }
