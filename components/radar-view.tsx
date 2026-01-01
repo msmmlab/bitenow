@@ -6,8 +6,29 @@ import { ZoomIn, ZoomOut, RotateCcw, RotateCw, Search, Crosshair, Loader2 } from
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
+interface Venue {
+    id: string | number;
+    name: string;
+    slug: string;
+    town_slug?: string;
+    lat?: string | number;
+    lng?: string | number;
+    category?: string;
+    best_for?: string[];
+    isMatch?: boolean;
+    [key: string]: any; // Allow for other properties
+}
+
+interface MappedVenue extends Venue {
+    dist: number;
+    originalBearing: number;
+    bearing: number;
+    r: number;
+    isFar: boolean;
+}
+
 interface RadarViewProps {
-    venues: any[];
+    venues: Venue[];
     userLocation: { lat: number; lng: number } | null;
     onUpdateLocation: (coords: { lat: number; lng: number } | null) => void;
 }
@@ -124,8 +145,8 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
                 bearing,
                 r,
                 isFar
-            };
-        }).filter(v => v !== null && !v.isFar) as any[];
+            } as MappedVenue;
+        }).filter((v): v is MappedVenue => v !== null && !v.isFar);
 
         // 2. Pre-Spread Clusters (If bearings are too similar, nudge them)
         points.sort((a, b) => a.bearing - b.bearing);
@@ -202,28 +223,32 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
                     transition={{ type: 'spring', stiffness: 80, damping: 15 }}
                     style={{ transformOrigin: 'center center' }}
                 >
+                    {/* -- ZONE SHADING (Concentric layered depth) -- */}
+                    <div className="absolute w-[100%] h-[100%] rounded-full bg-indigo-500/[0.03]" />
+                    <div className="absolute w-[78%] h-[78%] rounded-full bg-indigo-500/[0.04]" />
+                    <div className="absolute w-[51%] h-[51%] rounded-full bg-indigo-500/[0.05]" />
+
                     {/* -- RINGS -- */}
-                    <div className="absolute w-[100%] h-[100%] rounded-full border border-dashed border-white/5" />
-                    <div className="absolute w-[78%] h-[78%] rounded-full border border-dashed border-white/5" />
-                    <div className="absolute w-[51%] h-[51%] rounded-full border border-dashed border-white/10" />
-                    <div className="absolute w-[30%] h-[30%] rounded-full border border-dotted border-white/20" />
+                    <div className="absolute w-[100%] h-[100%] rounded-full border border-dashed border-white/30" />
+                    <div className="absolute w-[78%] h-[78%] rounded-full border border-dashed border-white/30" />
+                    <div className="absolute w-[51%] h-[51%] rounded-full border border-dotted border-white/40" />
 
                     {/* Labels - Counter-rotating to stay upright */}
                     <motion.div
                         animate={{ rotate: -rotation }}
-                        className="absolute top-[0%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/20 z-10"
+                        className="absolute top-[0%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/60 z-10 drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]"
                     >
                         15m
                     </motion.div>
                     <motion.div
                         animate={{ rotate: -rotation }}
-                        className="absolute top-[17%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/20 z-10"
+                        className="absolute top-[11%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/50 z-10 drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]"
                     >
                         10m
                     </motion.div>
                     <motion.div
                         animate={{ rotate: -rotation }}
-                        className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/25 z-10"
+                        className="absolute top-[24.5%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/40 z-10 drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]"
                     >
                         5m
                     </motion.div>
@@ -235,7 +260,7 @@ export default function RadarView({ venues, userLocation, onUpdateLocation }: Ra
                     </div>
 
                     {/* -- PLANETS -- */}
-                    {mappedVenues.map((venue: any) => {
+                    {mappedVenues.map((venue: MappedVenue) => {
                         const angleRad = deg2rad(venue.bearing - 90);
                         const xPct = 50 + (venue.r * 50 * Math.cos(angleRad));
                         const yPct = 50 + (venue.r * 50 * Math.sin(angleRad));

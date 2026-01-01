@@ -10,6 +10,12 @@ import VenueTile, { Venue } from '@/components/venue-tile';
 import { getIntentOptions, scoreRestaurant } from '@/lib/recommendation';
 import * as gtag from '@/lib/gtag';
 
+interface IntentOption {
+  type: string;
+  label: string;
+  [key: string]: any;
+}
+
 // Helper for real distance calculation
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const R = 6371; // Earth's radius in km
@@ -65,19 +71,16 @@ const getVenueSignal = (category: string, timeLens: string = 'Now') => {
 };
 
 export default function Home() {
-  const [activeFilter, setActiveFilter] = useState("All");
+  const [activeFilter] = useState("All");
   const [viewMode, setViewMode] = useState<'list' | 'radar'>('list');
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [showJoinUs, setShowJoinUs] = useState(false);
   const [joinUsVenue, setJoinUsVenue] = useState<Venue | null>(null);
   const [suggestText, setSuggestText] = useState("");
   const [suggestSuccess, setSuggestSuccess] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'Now' | 'Later' | 'Tonight'>('Now');
-  const [intent, setIntent] = useState<any | null>(null);
-  const [showFAQ, setShowFAQ] = useState(false);
-  const [showContact, setShowContact] = useState(false);
+  const [intent, setIntent] = useState<{ label: string;[key: string]: any } | null>(null);
 
   const openSuggestModal = (venue: Venue | null = null) => {
     setJoinUsVenue(venue);
@@ -85,9 +88,6 @@ export default function Home() {
     setSuggestSuccess(false);
     setShowJoinUs(true);
   };
-
-  // VIBE SET FILTERS
-  const FILTERS = ["All", "Lunch", "Dinner", "Live Music", "Family"];
 
   // FETCH DATA
   useEffect(() => {
@@ -119,7 +119,7 @@ export default function Home() {
       }
 
       // 3. Merge
-      const mapped = (restaurants || []).map((r: any) => {
+      const mapped = (restaurants || []).map((r: Venue) => {
         const special = specials?.find(s => s.restaurant_id === r.id);
         return {
           ...r,
@@ -207,7 +207,7 @@ export default function Home() {
   }, [venues, userLocation, timeFilter, intent]);
 
   // --- UNIFIED FILTERING LOGIC ---
-  const isVenueMatch = useCallback((v: any, isList: boolean) => {
+  const isVenueMatch = useCallback((v: Venue & { distanceValue?: number }, isList: boolean) => {
     // 0. Distance-Based Filtering (ONLY FOR LIST VIEW)
     if (isList && v.distanceValue !== undefined) {
       if (timeFilter === 'Now' && v.distanceValue > 10) return false;
@@ -414,11 +414,11 @@ export default function Home() {
                     <div className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth">
                       <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 shrink-0 opacity-70">Take me for</span>
                       <div className="flex gap-2">
-                        {getIntentOptions(timeFilter.toLowerCase(), new Date()).map((option: any) => (
+                        {getIntentOptions(timeFilter.toLowerCase(), new Date()).map((option: IntentOption) => (
                           <button
                             key={option.type}
                             onClick={() => {
-                              const isSame = intent?.type === option.type || intent === option.label;
+                              const isSame = intent?.type === option.type || intent?.label === option.label;
                               const newIntent = isSame ? null : option;
                               setIntent(newIntent);
                               if (newIntent) {
@@ -431,7 +431,7 @@ export default function Home() {
                             }}
                             className={cn(
                               "px-4 py-2 rounded-xl text-[10px] font-bold transition-all duration-200 border whitespace-nowrap",
-                              (intent?.type === option.type || intent === option.label)
+                              (intent?.type === option.type || intent?.label === option.label)
                                 ? "bg-black uppercase text-white dark:bg-white dark:text-black border-black dark:border-white shadow-lg -translate-y-0.5"
                                 : "bg-white uppercase dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-100 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-500"
                             )}
@@ -609,11 +609,11 @@ export default function Home() {
                   <div className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth">
                     <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 shrink-0 opacity-70">Take me for</span>
                     <div className="flex gap-2">
-                      {getIntentOptions(timeFilter.toLowerCase(), new Date()).map((option: any) => (
+                      {getIntentOptions(timeFilter.toLowerCase(), new Date()).map((option: IntentOption) => (
                         <button
                           key={option.type}
                           onClick={() => {
-                            const isSame = intent?.type === option.type || intent === option.label;
+                            const isSame = intent?.type === option.type || intent?.label === option.label;
                             const newIntent = isSame ? null : option;
                             setIntent(newIntent);
                             if (newIntent) {
@@ -626,7 +626,7 @@ export default function Home() {
                           }}
                           className={cn(
                             "px-4 py-2 rounded-xl text-[10px] font-bold transition-all duration-200 border whitespace-nowrap",
-                            (intent?.type === option.type || intent === option.label)
+                            (intent?.type === option.type || intent?.label === option.label)
                               ? "bg-black uppercase text-white dark:bg-white dark:text-black border-black dark:border-white shadow-lg -translate-y-0.5"
                               : "bg-white uppercase dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-100 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-500"
                           )}
