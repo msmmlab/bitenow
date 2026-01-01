@@ -362,7 +362,7 @@ export default function Home() {
               ref={contentRef}
               className="absolute inset-0 z-10 overflow-y-auto pb-32"
             >
-              <header className="relative top-0 left-0 right-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-gray-100 dark:border-zinc-800 shrink-0">
+              <header className="relative top-0 left-0 right-0 z-40 bg-white dark:bg-black/95 backdrop-blur-xl border-b border-gray-100 dark:border-zinc-800 shrink-0">
                 <div className="max-w-7xl mx-auto px-4 md:px-6 py-3">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
@@ -371,7 +371,7 @@ export default function Home() {
                         alt="BiteNow Logo"
                         width={160}
                         height={64}
-                        className="h-16 w-auto object-contain dark:[filter:invert(1)_hue-rotate(180deg)] transition-all duration-300"
+                        className="h-16 w-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:[filter:invert(1)_hue-rotate(180deg)] transition-all duration-300"
                         priority
                       />
                     </div>
@@ -558,7 +558,7 @@ export default function Home() {
         ) : (
           <div className="h-full w-full flex flex-col bg-black overflow-hidden animate-in fade-in duration-500">
             {/* Radar View Header - Flex Child */}
-            <header className="bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-gray-100 dark:border-zinc-800 shrink-0 z-50">
+            <header className="bg-white dark:bg-black/95 backdrop-blur-xl border-b border-gray-100 dark:border-zinc-800 shrink-0 z-50">
               <div className="max-w-7xl mx-auto px-4 md:px-6 py-3">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -567,7 +567,7 @@ export default function Home() {
                       alt="BiteNow Logo"
                       width={160}
                       height={64}
-                      className="h-16 w-auto object-contain dark:[filter:invert(1)_hue-rotate(180deg)] transition-all duration-300"
+                      className="h-16 w-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:[filter:invert(1)_hue-rotate(180deg)] transition-all duration-300"
                       priority
                     />
                   </div>
