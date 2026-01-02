@@ -360,20 +360,50 @@ export default function RadarView({ venues, userLocation, onUpdateLocation, init
                                         {PlanetIcon}
                                     </div>
                                     <div className={cn(
-                                        "absolute top-full -mt-1 flex flex-col items-center pointer-events-none -space-y-[2.5px] bg-black/90 px-2 py-1.5 rounded-xl border shadow-lg", // <-- mt-XX for icon distance, -space-y-[XX] for word density
+                                        "absolute top-full -mt-1 flex flex-col items-center pointer-events-none -space-y-[2px] bg-black/90 px-2.5 py-2 rounded-xl border shadow-lg",
                                         isMatch ? "border-orange-500/30" : "border-white/10"
                                     )}>
-                                        {cleanName.split(' ').map((word: string, i: number) => (
-                                            <span
-                                                key={i}
-                                                className={cn(
-                                                    "text-[0.42rem] font-black uppercase tracking-widest leading-tight whitespace-nowrap",
-                                                    isMatch ? "text-orange-100" : "text-gray-400"
-                                                )}
-                                            >
-                                                {word}
-                                            </span>
-                                        ))}
+                                        {/* Callout (Priority): Special or Known For */}
+                                        {(() => {
+                                            const specialTitle = venue.special?.title;
+                                            const firstBullet = venue.known_for_bullets?.[0];
+                                            const callout = specialTitle || firstBullet;
+
+                                            if (!callout) return null;
+
+                                            return (
+                                                <span className={cn(
+                                                    "text-[0.45rem] font-black uppercase tracking-wider text-center leading-[1.15] max-w-[90px] mb-1.5",
+                                                    specialTitle
+                                                        ? "text-orange-500"
+                                                        : (isMatch ? "text-orange-100" : "text-gray-300")
+                                                )}>
+                                                    {specialTitle ? `✨ ${callout}` : callout}
+                                                </span>
+                                            );
+                                        })()}
+
+                                        {/* Venue Name (Secondary) */}
+                                        <div className="flex flex-col items-center opacity-70">
+                                            {(() => {
+                                                const words = cleanName.split(' ');
+                                                const pairs = [];
+                                                for (let i = 0; i < words.length; i += 2) {
+                                                    pairs.push(words.slice(i, i + 2).join(' '));
+                                                }
+                                                return pairs.map((pair, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={cn(
+                                                            "text-[0.34rem] font-bold uppercase tracking-tighter leading-tight whitespace-nowrap",
+                                                            isMatch ? "text-orange-200" : "text-gray-500"
+                                                        )}
+                                                    >
+                                                        {pair}
+                                                    </span>
+                                                ));
+                                            })()}
+                                        </div>
                                     </div>
                                 </motion.button>
                             </motion.div>

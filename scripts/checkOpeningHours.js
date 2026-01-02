@@ -563,6 +563,10 @@ async function run() {
 
             const details = await placesGetDetails(placeId);
 
+            if (process.env.DEBUG_PLACES === "1") {
+                console.log("\n🧩 DETAILS RAW:\n" + JSON.stringify(details, null, 2));
+            }
+
             const rawPeriods =
                 details?.regularOpeningHours?.periods || details?.currentOpeningHours?.periods;
             if (rawPeriods) console.log(`    ↳ raw periods count: ${rawPeriods.length}`);
