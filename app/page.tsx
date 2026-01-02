@@ -140,7 +140,7 @@ function HomePageContent() {
       });
 
       setVenues(mapped);
-      console.log('Fetched venues with recommendations:', mapped.map(v => ({ name: v.name, rec: v.best_for })));
+
       setLoading(false);
     }
 
@@ -675,39 +675,85 @@ function HomePageContent() {
             <button onClick={() => setShowJoinUs(false)} className="absolute top-4 right-4 text-gray-400"><X className="w-6 h-6" /></button>
             {!suggestSuccess ? (
               <div className="text-center space-y-6 py-4">
-                <div className="w-16 h-16 bg-orange-100 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <Store className="w-8 h-8 text-orange-500" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-wide mb-2">
-                    {joinUsVenue ? "Spotted Something?" : "Know a hidden gem?"}
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {joinUsVenue
-                      ? "If you know a special at this venue, let us know!"
-                      : "Tell us about a great venue or special we're missing."}
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <textarea
-                    className="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl border border-gray-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-sm min-h-[100px]"
-                    placeholder={joinUsVenue ? "e.g. $20 Pizza Night on Tuesdays..." : "Venue name and details..."}
-                    value={suggestText}
-                    onChange={(e) => setSuggestText(e.target.value)}
-                  />
-                  <button
-                    disabled={!suggestText.trim()}
-                    onClick={async () => {
-                      setSuggestSuccess(true);
-                      setTimeout(() => {
-                        setShowJoinUs(false);
-                      }, 2000);
-                    }}
-                    className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
-                  >
-                    Send it
-                  </button>
-                </div>
+                {joinUsVenue ? (
+                  <div className="space-y-6">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl p-6 text-left border border-yellow-100 dark:border-yellow-900/30">
+                      <h4 className="font-black text-[10px] text-yellow-700 dark:text-yellow-500 uppercase tracking-[0.2em] mb-3">Own this place?</h4>
+                      <p className="text-lg text-yellow-900 dark:text-yellow-400 font-black leading-tight mb-2">
+                        Activate specials in seconds
+                      </p>
+                      <p className="text-sm text-yellow-800 dark:text-yellow-500/80 leading-relaxed mb-6">
+                        No logins, no dashboards. Just text us your deal or a photo of today&apos;s specials board.
+                      </p>
+
+                      <div className="bg-white dark:bg-black/40 rounded-xl p-4 mb-6 font-mono text-center border border-yellow-200 dark:border-yellow-900/50 shadow-sm relative group overflow-hidden">
+                        <span className="text-[10px] text-yellow-700 font-bold uppercase tracking-wider block mb-1">Text your special to:</span>
+                        <a
+                          href={`tel:${joinUsVenue?.system_sms_number || process.env.NEXT_PUBLIC_ACTIVATION_PHONE || '+61 400 000 000'}`}
+                          className="font-black text-xl text-yellow-900 dark:text-yellow-400 break-all underline decoration-2 underline-offset-4 hover:text-orange-600 transition-colors"
+                        >
+                          {joinUsVenue?.system_sms_number || process.env.NEXT_PUBLIC_ACTIVATION_PHONE || '+61 400 000 000'}
+                        </a>
+                      </div>
+
+                      <div className="space-y-2 opacity-80">
+                        <p className="text-xs text-yellow-700 italic font-medium leading-tight">&quot;$19 Lunch schnitzel $9 IPA schooner 30% off kids menu 3–4PM&quot;</p>
+                        <p className="text-xs text-yellow-700 italic font-medium leading-tight">Or just text a photo of your specials board</p>
+                      </div>
+
+                      <div className="mt-6 pt-4 border-t border-yellow-200 dark:border-yellow-900/30 flex items-center gap-2">
+                        <p className="text-[10px] font-bold text-yellow-800 dark:text-yellow-600 uppercase tracking-tight">
+                          That&apos;s all you need to do and we&apos;ll turn it into a live deal card for nearby tourists.
+                        </p>
+                      </div>
+
+                    </div>
+                    <button
+                      onClick={() => setShowJoinUs(false)}
+                      className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl"
+                    >
+                      Got it
+                    </button>
+                    <p className="text-[10px] font-bold text-yellow-800 dark:text-yellow-600 uppercase tracking-tight">
+                      Local pilot — free while we test in Noosa.
+                    </p>
+
+                  </div>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 bg-orange-100 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Store className="w-8 h-8 text-orange-500" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-wide mb-2">
+                        Know a hidden gem?
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Tell us about a great venue or special we&apos;re missing.
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      <textarea
+                        className="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl border border-gray-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-sm min-h-[100px]"
+                        placeholder="Venue name and details..."
+                        value={suggestText}
+                        onChange={(e) => setSuggestText(e.target.value)}
+                      />
+                      <button
+                        disabled={!suggestText.trim()}
+                        onClick={async () => {
+                          setSuggestSuccess(true);
+                          setTimeout(() => {
+                            setShowJoinUs(false);
+                          }, 2000);
+                        }}
+                        className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
+                      >
+                        Send it
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <div className="text-center py-10 space-y-4">

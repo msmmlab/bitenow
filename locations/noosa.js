@@ -34,6 +34,7 @@ module.exports = {
             service_speed: "medium",
             formality_level: 1,
             vibe_tags: ["casual", "lively"],
+            venue_mobile_number: "+61413500710",
         },
 
 

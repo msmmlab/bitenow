@@ -120,7 +120,7 @@ export default function SpecialModal({ special, onClose, userLocation }: Special
     const hasSpecial = !!venue.special;
 
     // Fallback activation phone
-    const activationPhone = venue.activation_phone || process.env.NEXT_PUBLIC_ACTIVATION_PHONE || '+61 400 000 000';
+    const activationPhone = venue.system_sms_number || process.env.NEXT_PUBLIC_ACTIVATION_PHONE || '+61 400 000 000';
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

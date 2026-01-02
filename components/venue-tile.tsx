@@ -24,13 +24,15 @@ export interface Venue {
     distanceValue?: number;
     isOpen?: boolean;
     town_slug?: string;
-    specials_array?: any[]; // For the new jsonb column
+    specials_array?: any[]; // For the new    public_phone?: string;
     special?: {
         id: string;
         title: string;
         description: string;
         updated_at: string;
     } | null;
+    system_sms_number?: string;
+    venue_mobile_number?: string;
 }
 
 interface VenueTileProps {

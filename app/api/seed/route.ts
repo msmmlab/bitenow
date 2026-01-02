@@ -21,7 +21,9 @@ type RestaurantSeed = {
     address: string;
     is_active: boolean;
     town?: string;
-    activation_phone?: string;
+    public_phone?: string;
+    system_sms_number?: string;
+    venue_mobile_number?: string;
 
     // New decision metadata
     formality_level?: 0 | 1 | 2 | 3;
@@ -179,7 +181,8 @@ export async function GET() {
                 address: "19 Venture Drive, Noosaville QLD",
                 is_active: true,
                 town: "Noosa",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
+                venue_mobile_number: "+61413500710",
                 known_for_bullets: ["Small-batch craft beers", "Relaxed brewery lunches", "Casual post-beach sessions"],
                 price_risk: "low",
                 walk_in_friendliness: "high",
@@ -194,7 +197,7 @@ export async function GET() {
                 address: "10 Hastings St, Noosa Heads QLD",
                 is_active: true,
                 town: "Noosa",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Big burgers & loaded sides", "Fast casual feeds", "Easy takeaway option"],
                 service_speed: "fast",
                 price_risk: "low",
@@ -210,7 +213,7 @@ export async function GET() {
                 address: "5 Hastings St, Noosa Heads QLD",
                 is_active: true,
                 town: "Noosa",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Fresh sushi rolls", "Quick lunch bites", "Light Japanese options"],
                 service_speed: "fast",
                 price_risk: "low",
@@ -228,7 +231,7 @@ export async function GET() {
                 address: "62 Hastings St, Noosa Heads QLD 4567",
                 is_active: true,
                 town: "Noosa",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 formality_level: 3,
                 walk_in_friendliness: "low",
                 service_speed: "slow",
@@ -250,7 +253,7 @@ export async function GET() {
                 address: "69 Hastings St, Noosa Heads QLD 4567",
                 is_active: true,
                 town: "Noosa",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Beachfront club meals", "Great views over Main Beach", "Easy walk-in dining"],
                 formality_level: 0,
                 walk_in_friendliness: "high",
@@ -269,7 +272,7 @@ export async function GET() {
                 address: "75 Hastings St, Noosa Heads QLD",
                 is_active: true,
                 town: "Noosa",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Premium seafood", "Long lunches by the beach", "Special occasion meals"],
                 formality_level: 3,
                 walk_in_friendliness: "low",
@@ -289,7 +292,7 @@ export async function GET() {
                 address: "2 Quamby Pl, Noosa Heads QLD",
                 is_active: true,
                 town: "Noosa",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Riverside dining", "Modern plates", "Cocktails at sunset"],
                 formality_level: 2,
                 walk_in_friendliness: "medium",
@@ -308,7 +311,7 @@ export async function GET() {
                 address: "49 Hastings St, Noosa Heads QLD",
                 is_active: true,
                 town: "Noosa",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Beachside bistro classics", "Seafood & cocktails", "Great for sunset meals"],
                 formality_level: 2,
                 walk_in_friendliness: "medium",
@@ -327,7 +330,7 @@ export async function GET() {
                 address: "205 Weyba Rd, Noosaville QLD",
                 is_active: true,
                 town: "Noosa",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Share plates & bold flavours", "Busy dinner vibe", "Often worth booking"],
                 formality_level: 2,
                 walk_in_friendliness: "low",
@@ -346,7 +349,7 @@ export async function GET() {
                 address: "6 Hastings St, Noosa Heads QLD",
                 is_active: true,
                 town: "Noosa",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Cocktails & late-night energy", "Bar snacks", "Good pre/post-dinner stop"],
                 formality_level: 1,
                 walk_in_friendliness: "medium",
@@ -365,7 +368,7 @@ export async function GET() {
                 address: "Sunshine Beach Rd, Noosa Junction QLD 4567",
                 is_active: true,
                 town: "Noosa",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Great tap selection", "Burgers that hit the spot", "Easy casual vibe"],
                 formality_level: 1,
                 walk_in_friendliness: "high",
@@ -383,7 +386,7 @@ export async function GET() {
                 address: "Sunshine Beach Rd, Noosa Junction QLD 4567",
                 is_active: true,
                 town: "Noosa",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Kitchen-driven bar food", "Great vibe", "Regular live music nights"],
                 formality_level: 1,
                 walk_in_friendliness: "medium",
@@ -403,7 +406,7 @@ export async function GET() {
                 address: "Corner of Duke St & Belmore Terrace, Sunshine Beach QLD 4567",
                 is_active: true,
                 town: "Sunshine Beach",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Big ocean views", "Classic club meals & drinks", "Great casual sunset stop"],
                 formality_level: 0,
                 walk_in_friendliness: "high",
@@ -425,7 +428,7 @@ export async function GET() {
                 address: "Happy Valley Playground, Caloundra QLD 4551",
                 is_active: true,
                 town: "Caloundra",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Coffee by the water", "Easy breakfasts", "Casual daytime meals"],
             },
             {
@@ -438,7 +441,7 @@ export async function GET() {
                 address: "16 Bulcock St, Caloundra QLD 4551",
                 is_active: true,
                 town: "Caloundra",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Classic pizzas", "Hearty pastas", "Family-friendly dinner"],
             },
             {
@@ -451,7 +454,7 @@ export async function GET() {
                 address: "30 The Esplanade, Bulcock Beach, Caloundra QLD 4551",
                 is_active: true,
                 town: "Caloundra",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Beachside drinks", "Light meals", "Easy afternoon sessions"],
             },
             {
@@ -464,7 +467,7 @@ export async function GET() {
                 address: "32 Bowman Rd, Caloundra QLD 4551",
                 is_active: true,
                 town: "Caloundra",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Pub classics", "Cold beers", "Group-friendly meals"],
             },
 
@@ -479,7 +482,7 @@ export async function GET() {
                 address: "1 Spender Ln, Kings Beach QLD 4551",
                 is_active: true,
                 town: "Caloundra",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Beachfront club meals", "Relaxed walk-in dining", "Great value for groups"],
                 formality_level: 0,
                 walk_in_friendliness: "high",
@@ -501,7 +504,7 @@ export async function GET() {
                 address: "123 Parkyn Parade, Mooloolaba QLD 4557",
                 is_active: true,
                 town: "Mooloolaba",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Grill favourites", "Marina-side meals", "Good for groups"],
             },
             {
@@ -514,7 +517,7 @@ export async function GET() {
                 address: "The Wharf, Mooloolaba QLD 4557",
                 is_active: true,
                 town: "Mooloolaba",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Bold flavours", "Casual bowls & share plates", "Great quick dinner option"],
             },
             {
@@ -527,7 +530,7 @@ export async function GET() {
                 address: "95 Mooloolaba Esplanade, Mooloolaba QLD 4557",
                 is_active: true,
                 town: "Mooloolaba",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Traditional Italian", "Long relaxed meals", "Solid date-night choice"],
             },
             {
@@ -540,7 +543,7 @@ export async function GET() {
                 address: "2/121 Mooloolaba Esplanade, Mooloolaba QLD 4557",
                 is_active: true,
                 town: "Mooloolaba",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Beachfront bistro meals", "Daytime cocktails", "Great afternoon vibe"],
             },
             {
@@ -553,7 +556,7 @@ export async function GET() {
                 address: "20 Brisbane Rd, Mooloolaba QLD 4557",
                 is_active: true,
                 town: "Mooloolaba",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Specialty coffee", "Quick stop", "Easy takeaway"],
             },
 
@@ -568,7 +571,7 @@ export async function GET() {
                 address: "1 The Esplanade, Mooloolaba QLD 4557",
                 is_active: true,
                 town: "Mooloolaba",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Beachfront dining & drinks", "All-day casual meals", "Big views over the beach"],
                 formality_level: 0,
                 walk_in_friendliness: "high",
@@ -590,7 +593,7 @@ export async function GET() {
                 address: "8 Market Lane, Maroochydore QLD 4558",
                 is_active: true,
                 town: "Maroochydore",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Modern Japanese fusion", "Share plates", "Good dinner spot"],
             },
             {
@@ -603,7 +606,7 @@ export async function GET() {
                 address: "8 Market Lane, Maroochydore QLD 4558",
                 is_active: true,
                 town: "Maroochydore",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Seasonal bistro dishes", "Casual sit-down meals", "Good for couples"],
             },
             {
@@ -616,7 +619,7 @@ export async function GET() {
                 address: "52 Duporth Ave, Maroochydore QLD 4558",
                 is_active: true,
                 town: "Maroochydore",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Hearty pub meals", "Easy group dining", "No-fuss value"],
             },
             {
@@ -629,7 +632,7 @@ export async function GET() {
                 address: "1 Mundoo Blvd, Maroochydore QLD 4558",
                 is_active: true,
                 town: "Maroochydore",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Modern Italian flavours", "Fresh pasta focus", "Refined dinner option"],
                 formality_level: 2,
                 price_risk: "high",
@@ -645,7 +648,7 @@ export async function GET() {
                 address: "17 Duporth Ave, Maroochydore QLD",
                 is_active: true,
                 town: "Maroochydore",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Quality coffee", "Light bites", "Quick takeaway"],
             },
             {
@@ -658,7 +661,7 @@ export async function GET() {
                 address: "Plaza Parade, Maroochydore QLD 4558",
                 is_active: true,
                 town: "Maroochydore",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Pub meals & beers", "Sports-friendly vibe", "Easygoing catch-ups"],
             },
 
@@ -675,7 +678,7 @@ export async function GET() {
                 address: "1775 David Low Way, Coolum Beach QLD 4573",
                 is_active: true,
                 town: "Coolum Beach",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Club classics & big portions", "Relaxed beachfront dining", "Easy for families"],
             },
             {
@@ -688,7 +691,7 @@ export async function GET() {
                 address: "1750 David Low Way, Coolum Beach QLD 4573",
                 is_active: true,
                 town: "Coolum Beach",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["All-day modern menu", "Casual but polished", "Good mixed groups"],
             },
             {
@@ -701,7 +704,7 @@ export async function GET() {
                 address: "1812 David Low Way, Coolum Beach QLD 4573",
                 is_active: true,
                 town: "Coolum Beach",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Curries & stir-fries", "Reliable Thai comfort", "Good value dinner"],
             },
             {
@@ -714,7 +717,7 @@ export async function GET() {
                 address: "David Low Way, Coolum Beach QLD 4573",
                 is_active: true,
                 town: "Coolum Beach",
-                activation_phone: activatePhone,
+                system_sms_number: activatePhone,
                 known_for_bullets: ["Pub bistro meals", "Group-friendly", "Easy casual drinks"],
             },
         ] as any[]).map(mergeMeta);
@@ -752,7 +755,8 @@ export async function GET() {
             vibe_tags: r.vibe_tags,
             known_for_bullets: r.known_for_bullets,
             booking_likely: r.booking_likely,
-            activation_phone: r.activation_phone,
+            system_sms_number: r.system_sms_number,
+            venue_mobile_number: r.venue_mobile_number,
         }));
 
         const { data: createdRestaurants, error: rError } = await supabase

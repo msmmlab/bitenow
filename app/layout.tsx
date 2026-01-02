@@ -51,6 +51,10 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  icons: {
+    icon: "/icon-monster.png",
+    apple: "/icon-monster.png",
+  },
 };
 
 
