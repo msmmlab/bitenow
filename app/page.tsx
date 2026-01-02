@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import { Navigation, List, X, MessageSquare, Store, Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -71,7 +71,7 @@ const getVenueSignal = (category: string, timeLens: string = 'Now') => {
   return "Open now";
 };
 
-export default function Home() {
+function HomePageContent() {
   const searchParams = useSearchParams();
   const viewParam = searchParams.get('view');
   const queryParam = searchParams.get('q');
@@ -724,5 +724,17 @@ export default function Home() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen w-screen flex items-center justify-center bg-black">
+        <Loader2 className="w-8 h-8 text-white animate-spin" />
+      </div>
+    }>
+      <HomePageContent />
+    </Suspense>
   );
 }
