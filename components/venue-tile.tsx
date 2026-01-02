@@ -33,6 +33,10 @@ export interface Venue {
     } | null;
     system_sms_number?: string;
     venue_mobile_number?: string;
+    google_place_id?: string;
+    opening_hours_json?: {
+        [key: string]: Array<{ open: string, close: string }>;
+    };
 }
 
 interface VenueTileProps {
@@ -41,7 +45,7 @@ interface VenueTileProps {
     onNavigate: (e: React.MouseEvent) => void;
     onSuggest: (e: React.MouseEvent) => void;
     timeFilter: string;
-    getVenueSignal: (category: string, timeFilter: string) => string;
+    getVenueSignal: (venue: Venue, timeFilter: string) => string;
 }
 
 export default function VenueTile({
@@ -223,9 +227,15 @@ export default function VenueTile({
             </div>
 
             {/* Availability/Signal */}
-            <div className="flex items-center gap-2 mt-2 text-sm text-green-600 dark:text-green-500 font-bold">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span>{getVenueSignal(category, timeFilter)}</span>
+            <div className={cn(
+                "flex items-center gap-2 mt-2 text-sm font-bold",
+                venue.isOpen ? "text-green-600 dark:text-green-500" : "text-orange-600 dark:text-orange-500"
+            )}>
+                <span className={cn(
+                    "w-2 h-2 rounded-full",
+                    venue.isOpen ? "bg-green-500 animate-pulse" : "bg-orange-500"
+                )} />
+                <span>{getVenueSignal(venue, timeFilter)}</span>
             </div>
 
             {/* Body Content */}

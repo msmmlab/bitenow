@@ -13,6 +13,7 @@
     "update-coords": "node scripts/update-coords.js"
   },
   "dependencies": {
+    "@babel/parser": "^7.28.5",
     "@google/generative-ai": "^0.24.1",
     "@react-spring/web": "^10.0.3",
     "@supabase/supabase-js": "^2.89.0",
@@ -26,6 +27,7 @@
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "recast": "^0.23.11",
     "tailwind-merge": "^3.4.0",
     "twilio": "^5.11.1"
   },

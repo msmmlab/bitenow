@@ -67,7 +67,16 @@ export default async function VenuePage(props: Props) {
         vibe_tags = [],
         booking_likely,
         specials = [],
+        opening_hours_json,
     } = venue;
+
+    const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    const todayKey = days[new Date().getDay()];
+
+    const formatHours = (hours: any) => {
+        if (!hours || !hours[todayKey] || hours[todayKey].length === 0) return 'Closed today';
+        return hours[todayKey].map((p: any) => `${p.open.slice(0, 2)}:${p.open.slice(2)} - ${p.close.slice(0, 2)}:${p.close.slice(2)}`).join(', ');
+    };
 
     const isImg = icon && icon.startsWith('/');
 
@@ -186,9 +195,9 @@ export default async function VenuePage(props: Props) {
                                 <Clock className="w-5 h-5 text-gray-400" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Vibe</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Hours Today</p>
                                 <p className="text-sm font-bold dark:text-white">
-                                    {service_speed === 'fast' ? 'Quick & Snappy' : 'Relaxed Pace'}
+                                    {opening_hours_json ? formatHours(opening_hours_json) : (service_speed === 'fast' ? 'Quick & Snappy' : 'Relaxed Pace')}
                                 </p>
                             </div>
                         </div>

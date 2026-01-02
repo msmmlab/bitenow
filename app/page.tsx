@@ -30,12 +30,72 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 };
 
+// Helper for checking opening hours
+const isOpenAccurate = (venue: Venue, now: Date): { status: 'open' | 'closed_today' | 'opens_later' | 'closed_for_day' | 'closing_soon', time?: string } | null => {
+  if (!venue.opening_hours_json) return null;
+
+  const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  const dayKey = days[now.getDay()];
+  const periods = venue.opening_hours_json[dayKey];
+
+  if (!periods || periods.length === 0) return { status: 'closed_today' };
+
+  const hours = now.getHours();
+  const mins = now.getMinutes();
+  const currentHHMM = hours.toString().padStart(2, '0') + mins.toString().padStart(2, '0');
+  const currentTotalMins = hours * 60 + mins;
+
+  // Check if open now
+  const activePeriod = periods.find(p => currentHHMM >= p.open && currentHHMM <= p.close);
+  if (activePeriod) {
+    // Check if closing soon (within 60 mins)
+    const closeTotalMins = parseInt(activePeriod.close.slice(0, 2)) * 60 + parseInt(activePeriod.close.slice(2));
+    let diff = closeTotalMins - currentTotalMins;
+
+    // Handle midnight wrap if necessary
+    if (diff < 0 && parseInt(activePeriod.close) < parseInt(activePeriod.open)) {
+      diff += 1440;
+    }
+
+    if (diff > 0 && diff <= 60) {
+      return { status: 'closing_soon', time: activePeriod.close };
+    }
+    return { status: 'open' };
+  }
+
+  // Check if opens later today
+  const laterPeriod = periods.find(p => p.open > currentHHMM);
+  if (laterPeriod) return { status: 'opens_later', time: laterPeriod.open };
+
+  return { status: 'closed_for_day' };
+};
+
 // Helper for utility signals
-const getVenueSignal = (category: string, timeLens: string = 'Now') => {
-  const hour = new Date().getHours();
-  const lowerCat = category.toLowerCase();
+const getVenueSignal = (venue: Venue, timeLens: string = 'Now') => {
+  const now = new Date();
+  const hour = now.getHours();
+  const lowerCat = venue.category.toLowerCase();
   const lowerLens = timeLens.toLowerCase();
 
+  // 1. TRY ACCURATE OPENING HOURS FIRST
+  const accurate = isOpenAccurate(venue, now);
+  if (accurate) {
+    if (accurate.status === 'open') {
+      if (hour >= 11 && hour <= 14) return "Serving lunch";
+      if (hour >= 17 && hour <= 21) return "Open for dinner";
+      return "Open now";
+    }
+    if (accurate.status === 'closing_soon' && accurate.time) {
+      return `Closing soon (${accurate.time.slice(0, 2)}:${accurate.time.slice(2)})`;
+    }
+    if (accurate.status === 'opens_later' && accurate.time) {
+      return `Opens at ${accurate.time.slice(0, 2)}:${accurate.time.slice(2)}`;
+    }
+    if (accurate.status === 'closed_today') return "Closed today";
+    return "Open tomorrow";
+  }
+
+  // 2. FALLBACK TO HEURISTIC LOGIC
   // Simple logic for MVP: standard trading hours 10am-10pm unless cafe
   if (lowerCat.includes('cafe')) {
     if (hour < 7 || hour >= 16) {
@@ -197,8 +257,8 @@ function HomePageContent() {
       if (!userLocation) return { ...v, distance: "..." };
 
       const dist = calculateDistance(userLocation.lat, userLocation.lng, v.lat, v.lng);
-      const signal = getVenueSignal(v.category, timeFilter);
-      const isOpen = !signal.includes("Closed") && !signal.includes("Opens") && !signal.includes("Likely");
+      const signal = getVenueSignal(v, timeFilter);
+      const isOpen = signal.includes("Open now") || signal.includes("Serving") || signal.includes("Closing soon") || signal.includes("coffee & food");
 
       return {
         ...v,
@@ -222,7 +282,7 @@ function HomePageContent() {
   }, [venues, userLocation, timeFilter, intent]);
 
   // --- UNIFIED FILTERING LOGIC ---
-  const isVenueMatch = useCallback((v: Venue & { distanceValue?: number }, isList: boolean) => {
+  const isVenueMatch = useCallback((v: Venue & { distanceValue?: number; isOpen?: boolean }, isList: boolean) => {
     // 0. Distance-Based Filtering (ONLY FOR LIST VIEW)
     if (isList && v.distanceValue !== undefined) {
       if (timeFilter === 'Now' && v.distanceValue > 10) return false;
@@ -518,7 +578,7 @@ function HomePageContent() {
                         openSuggestModal(item);
                       }}
                       timeFilter={timeFilter}
-                      getVenueSignal={getVenueSignal}
+                      getVenueSignal={getVenueSignal as any}
                     />
                   ))}
                 </div>
@@ -545,7 +605,7 @@ function HomePageContent() {
                             openSuggestModal(item);
                           }}
                           timeFilter={timeFilter}
-                          getVenueSignal={getVenueSignal}
+                          getVenueSignal={getVenueSignal as any}
                         />
                       ))}
                     </div>
