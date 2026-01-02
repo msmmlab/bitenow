@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ZoomIn, ZoomOut, RotateCcw, RotateCw, Search, Crosshair, Loader2 } from 'lucide-react';
+import { useGesture } from '@use-gesture/react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -77,6 +78,27 @@ export default function RadarView({ venues, userLocation, onUpdateLocation, init
     // Controls
     const [zoom, setZoom] = useState(1); // 1 = View whole 20min ring. >1 = zoom in.
     const [rotation, setRotation] = useState(0); // Degrees offset
+    const [offset, setOffset] = useState({ x: 0, y: 0 }); // Pan offset
+
+    // Gesture Handling
+    const bind = useGesture(
+        {
+            onDrag: ({ offset: [x, y] }) => {
+                setOffset({ x, y });
+            },
+            onPinch: ({ offset: [d, r] }) => {
+                setZoom(d);
+                setRotation(r);
+            },
+        },
+        {
+            drag: { from: () => [offset.x, offset.y] },
+            pinch: {
+                from: () => [zoom, rotation],
+                scaleBounds: { min: 0.5, max: 5 },
+            }
+        }
+    );
 
     // Search State
     const [searchQuery, setSearchQuery] = useState(initialSearchQuery || "");
@@ -129,6 +151,7 @@ export default function RadarView({ venues, userLocation, onUpdateLocation, init
         setSearchQuery("");
         setRotation(0);
         setZoom(1);
+        setOffset({ x: 0, y: 0 });
     };
 
     // Auto-search if initial query provided
@@ -235,9 +258,15 @@ export default function RadarView({ venues, userLocation, onUpdateLocation, init
 
                 {/* --- SOLAR SYSTEM CONTAINER --- */}
                 <motion.div
-                    className="relative aspect-square w-full max-w-[min(800px,85vh)] flex items-center justify-center p-8 md:p-12"
-                    animate={{ scale: zoom, rotate: rotation }}
-                    transition={{ type: 'spring', stiffness: 80, damping: 15 }}
+                    {...(bind() as any)}
+                    className="relative aspect-square w-full max-w-[min(800px,85vh)] flex items-center justify-center p-8 md:p-12 touch-none cursor-grab active:cursor-grabbing"
+                    animate={{
+                        scale: zoom,
+                        rotate: rotation,
+                        x: offset.x,
+                        y: offset.y
+                    }}
+                    transition={{ type: 'spring', stiffness: 80, damping: 20 }}
                     style={{ transformOrigin: 'center center' }}
                 >
                     {/* -- ZONE SHADING (Concentric layered depth) -- */}
@@ -250,25 +279,36 @@ export default function RadarView({ venues, userLocation, onUpdateLocation, init
                     <div className="absolute w-[78%] h-[78%] rounded-full border border-dashed border-white/30" />
                     <div className="absolute w-[51%] h-[51%] rounded-full border border-dotted border-white/40" />
 
-                    {/* Labels - Counter-rotating to stay upright */}
-                    <motion.div
-                        animate={{ rotate: -rotation }}
-                        className="absolute top-[0%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/60 z-10 drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]"
-                    >
-                        15m
-                    </motion.div>
-                    <motion.div
-                        animate={{ rotate: -rotation }}
-                        className="absolute top-[11%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/50 z-10 drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]"
-                    >
-                        10m
-                    </motion.div>
-                    <motion.div
-                        animate={{ rotate: -rotation }}
-                        className="absolute top-[24.5%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-white/40 z-10 drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]"
-                    >
-                        5m
-                    </motion.div>
+                    {/* Labels - Counter-rotating to stay upright, on all 4 axes */}
+                    {[
+                        { axis: 'top', pos: 'top-[0%] left-1/2 -translate-x-1/2 -translate-y-1/2', dist: '15m', opacity: 'text-white/60' },
+                        { axis: 'top', pos: 'top-[11%] left-1/2 -translate-x-1/2 -translate-y-1/2', dist: '10m', opacity: 'text-white/50' },
+                        { axis: 'top', pos: 'top-[24.5%] left-1/2 -translate-x-1/2 -translate-y-1/2', dist: '5m', opacity: 'text-white/40' },
+
+                        { axis: 'bottom', pos: 'bottom-[0%] left-1/2 -translate-x-1/2 translate-y-1/2', dist: '15m', opacity: 'text-white/60' },
+                        { axis: 'bottom', pos: 'bottom-[11%] left-1/2 -translate-x-1/2 translate-y-1/2', dist: '10m', opacity: 'text-white/50' },
+                        { axis: 'bottom', pos: 'bottom-[24.5%] left-1/2 -translate-x-1/2 translate-y-1/2', dist: '5m', opacity: 'text-white/40' },
+
+                        { axis: 'right', pos: 'right-[0%] top-1/2 translate-x-1/2 -translate-y-1/2', dist: '15m', opacity: 'text-white/60' },
+                        { axis: 'right', pos: 'right-[11%] top-1/2 translate-x-1/2 -translate-y-1/2', dist: '10m', opacity: 'text-white/50' },
+                        { axis: 'right', pos: 'right-[24.5%] top-1/2 translate-x-1/2 -translate-y-1/2', dist: '5m', opacity: 'text-white/40' },
+
+                        { axis: 'left', pos: 'left-[0%] top-1/2 -translate-x-1/2 -translate-y-1/2', dist: '15m', opacity: 'text-white/60' },
+                        { axis: 'left', pos: 'left-[11%] top-1/2 -translate-x-1/2 -translate-y-1/2', dist: '10m', opacity: 'text-white/50' },
+                        { axis: 'left', pos: 'left-[24.5%] top-1/2 -translate-x-1/2 -translate-y-1/2', dist: '5m', opacity: 'text-white/40' },
+                    ].map((label, idx) => (
+                        <motion.div
+                            key={idx}
+                            animate={{ rotate: -rotation }}
+                            className={cn(
+                                "absolute text-[9px] font-black tracking-widest z-10 drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]",
+                                label.pos,
+                                label.opacity
+                            )}
+                        >
+                            {label.dist}
+                        </motion.div>
+                    ))}
 
                     {/* Radial Lines */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-10">
@@ -355,11 +395,13 @@ export default function RadarView({ venues, userLocation, onUpdateLocation, init
                 {/* Interaction Box (Zoom/Rotate) */}
                 <div className="flex items-center gap-2 bg-gray-100/80 dark:bg-zinc-800/80 px-8 py-4 rounded-full border border-gray-200/50 dark:border-white/5 shadow-inner w-full max-w-sm justify-between">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setRotation(r => (r - 45 + 360) % 360)} className="text-gray-900 dark:text-white hover:text-orange-500 transition-colors">
+                        <button onClick={() => setRotation(r => r - 45)} className="text-gray-900 dark:text-white hover:text-orange-500 transition-colors">
                             <RotateCcw className="w-8 h-8" />
                         </button>
-                        <span className="text-[10px] font-mono font-black text-gray-500 dark:text-white/50 w-10 text-center uppercase tracking-tighter">{Math.round(rotation)}°</span>
-                        <button onClick={() => setRotation(r => (r + 45) % 360)} className="text-gray-900 dark:text-white hover:text-orange-500 transition-colors">
+                        <span className="text-[10px] font-mono font-black text-gray-500 dark:text-white/50 w-10 text-center uppercase tracking-tighter">
+                            {Math.round(((rotation % 360) + 360) % 360)}°
+                        </span>
+                        <button onClick={() => setRotation(r => r + 45)} className="text-gray-900 dark:text-white hover:text-orange-500 transition-colors">
                             <RotateCw className="w-8 h-8" />
                         </button>
                     </div>
