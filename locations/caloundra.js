@@ -3,11 +3,7 @@ module.exports = {
     town: {
         slug: "caloundra",
         name: "Caloundra",
-        slug: "caloundra",
-        name: "Caloundra",
         region: "Sunshine Coast",
-        slug: "caloundra",
-        name: "Caloundra",
         center: { lat: -26.8066, lng: 153.1282 },
     },
 
@@ -20,7 +16,7 @@ module.exports = {
             category: "Cafe / Brunch",
             icon: "/icons/coffee.png",
             lat: -26.804653,
-            lng: 153.126700,
+            lng: 153.1267,
             coords_source: "address",
             coords_accuracy: "high",
             address: "140 Bulcock St, Caloundra QLD 4551",
@@ -31,7 +27,7 @@ module.exports = {
             walk_in_friendliness: "high",
             service_speed: "medium",
             formality_level: 0,
-            vibe_tags: ["brunch", "casual", "central"]
+            vibe_tags: ["brunch", "casual", "central"],
         },
 
         {
@@ -39,7 +35,7 @@ module.exports = {
             slug: "coffee-cat-kings-beach",
             category: "Beachfront Cafe",
             icon: "/icons/coffee.png",
-            lat: -26.804220,
+            lat: -26.80422,
             lng: 153.139789,
             coords_source: "address",
             coords_accuracy: "high",
@@ -51,7 +47,7 @@ module.exports = {
             walk_in_friendliness: "high",
             service_speed: "medium",
             formality_level: 0,
-            vibe_tags: ["views", "beach", "casual"]
+            vibe_tags: ["views", "beach", "casual"],
         },
 
         {
@@ -60,7 +56,7 @@ module.exports = {
             category: "Vietnamese / Pho",
             icon: "/icons/asian.png",
             lat: -26.804885,
-            lng: 153.129030,
+            lng: 153.12903,
             coords_source: "address",
             coords_accuracy: "high",
             address: "110 Bulcock St, Caloundra QLD 4551",
@@ -71,15 +67,16 @@ module.exports = {
             walk_in_friendliness: "high",
             service_speed: "fast",
             formality_level: 0,
-            vibe_tags: ["casual", "quick", "no-bookings"]
+            vibe_tags: ["casual", "quick", "no-bookings"],
         },
 
+        // --- FIX: keep this one (Bulcock Beach). We'll remove the duplicate "Tides" further down. ---
         {
             name: "Tides Waterfront Dining",
             slug: "tides-waterfront-dining-caloundra",
             category: "Seafood / Waterfront",
             icon: "/icons/fancy_dinner.png",
-            lat: -26.806840,
+            lat: -26.80684,
             lng: 153.134191,
             address: "Cnr Minchinton St & The Esplanade, Bulcock Beach QLD 4551",
             is_active: true,
@@ -90,7 +87,7 @@ module.exports = {
             service_speed: "slow",
             formality_level: 2,
             vibe_tags: ["views", "date", "special-occasion"],
-            booking_likely: true
+            booking_likely: true,
         },
 
         {
@@ -98,7 +95,7 @@ module.exports = {
             slug: "three-bar-and-grill-caloundra",
             category: "Modern Australian / Grill",
             icon: "/icons/fancy_dinner.png",
-            lat: -26.804280,
+            lat: -26.80428,
             lng: 153.127932,
             coords_source: "address",
             coords_accuracy: "high",
@@ -111,7 +108,7 @@ module.exports = {
             service_speed: "slow",
             formality_level: 2,
             vibe_tags: ["date", "polished", "steak"],
-            booking_likely: true
+            booking_likely: true,
         },
 
         {
@@ -130,7 +127,7 @@ module.exports = {
             service_speed: "slow",
             formality_level: 2,
             vibe_tags: ["steak", "date", "buzz"],
-            booking_likely: true
+            booking_likely: true,
         },
 
         {
@@ -138,7 +135,7 @@ module.exports = {
             slug: "bamboo-garden-caloundra",
             category: "Chinese",
             icon: "/icons/asian.png",
-            lat: -26.804360,
+            lat: -26.80436,
             lng: 153.129389,
             coords_source: "address",
             coords_accuracy: "high",
@@ -150,7 +147,7 @@ module.exports = {
             walk_in_friendliness: "high",
             service_speed: "medium",
             formality_level: 0,
-            vibe_tags: ["family", "groups", "casual"]
+            vibe_tags: ["family", "groups", "casual"],
         },
 
         {
@@ -170,7 +167,7 @@ module.exports = {
             walk_in_friendliness: "high",
             service_speed: "medium",
             formality_level: 0,
-            vibe_tags: ["waterfront", "casual", "family"]
+            vibe_tags: ["waterfront", "casual", "family"],
         },
 
         {
@@ -190,8 +187,9 @@ module.exports = {
             walk_in_friendliness: "high",
             service_speed: "medium",
             formality_level: 0,
-            vibe_tags: ["locals", "brunch", "casual"]
+            vibe_tags: ["locals", "brunch", "casual"],
         },
+
         {
             name: "Cafe Sisily",
             slug: "cafe-sisily-caloundra",
@@ -204,16 +202,12 @@ module.exports = {
             address: "111 Bulcock St, Caloundra QLD 4551",
             is_active: true,
             best_for: ["breakfast", "coffee", "lunch"],
-            known_for_bullets: [
-                "Classic café breakfasts",
-                "Good coffee + fast service",
-                "Reliable daytime option"
-            ],
+            known_for_bullets: ["Classic café breakfasts", "Good coffee + fast service", "Reliable daytime option"],
             price_risk: "low",
             walk_in_friendliness: "high",
             service_speed: "fast",
             formality_level: 0,
-            vibe_tags: ["casual", "quick", "locals"]
+            vibe_tags: ["casual", "quick", "locals"],
         },
 
         {
@@ -228,16 +222,12 @@ module.exports = {
             address: "81 Bulcock St, Caloundra QLD 4551",
             is_active: true,
             best_for: ["dinner", "late_night"],
-            known_for_bullets: [
-                "Proper curry house",
-                "Great for takeaway or sit-down",
-                "Good spice levels + value"
-            ],
+            known_for_bullets: ["Proper curry house", "Great for takeaway or sit-down", "Good spice levels + value"],
             price_risk: "medium",
             walk_in_friendliness: "high",
             service_speed: "medium",
             formality_level: 0,
-            vibe_tags: ["casual", "hearty", "comfort-food"]
+            vibe_tags: ["casual", "hearty", "comfort-food"],
         },
 
         {
@@ -252,16 +242,12 @@ module.exports = {
             address: "78 Bulcock St, Caloundra QLD 4551",
             is_active: true,
             best_for: ["lunch", "dinner"],
-            known_for_bullets: [
-                "Classic Thai favourites",
-                "Fast casual dinner pick",
-                "Good for groups"
-            ],
+            known_for_bullets: ["Classic Thai favourites", "Fast casual dinner pick", "Good for groups"],
             price_risk: "medium",
             walk_in_friendliness: "high",
             service_speed: "fast",
             formality_level: 0,
-            vibe_tags: ["casual", "groups", "quick"]
+            vibe_tags: ["casual", "groups", "quick"],
         },
 
         {
@@ -276,16 +262,12 @@ module.exports = {
             address: "4/8 Levuka Ave, Kings Beach QLD 4551",
             is_active: true,
             best_for: ["breakfast", "coffee", "lunch"],
-            known_for_bullets: [
-                "Popular Kings Beach brunch spot",
-                "Good coffee + modern plates",
-                "Often busy on weekends"
-            ],
+            known_for_bullets: ["Popular Kings Beach brunch spot", "Good coffee + modern plates", "Often busy on weekends"],
             price_risk: "medium",
             walk_in_friendliness: "medium",
             service_speed: "medium",
             formality_level: 0,
-            vibe_tags: ["brunch", "beach", "locals"]
+            vibe_tags: ["brunch", "beach", "locals"],
         },
 
         {
@@ -300,16 +282,12 @@ module.exports = {
             address: "1 Ormonde Tce, Kings Beach QLD 4551",
             is_active: true,
             best_for: ["beer", "afternoon", "late_night"],
-            known_for_bullets: [
-                "Beachside bar energy",
-                "Good for sunset beers",
-                "Casual drop-in vibe"
-            ],
+            known_for_bullets: ["Beachside bar energy", "Good for sunset beers", "Casual drop-in vibe"],
             price_risk: "medium",
             walk_in_friendliness: "high",
             service_speed: "medium",
             formality_level: 0,
-            vibe_tags: ["views", "casual", "sunset"]
+            vibe_tags: ["views", "casual", "sunset"],
         },
 
         {
@@ -317,24 +295,20 @@ module.exports = {
             slug: "mets-on-kings",
             category: "Modern Australian",
             icon: "/icons/fancy_dinner.png",
-            lat: -26.804220,
+            lat: -26.80422,
             lng: 153.139789,
             coords_source: "address",
             coords_accuracy: "high",
             address: "2/10 Levuka Ave, Kings Beach QLD 4551",
             is_active: true,
             best_for: ["dinner", "fancy_dinner"],
-            known_for_bullets: [
-                "Modern Australian sit-down dining",
-                "Good for date nights",
-                "Quieter than Bulcock Street"
-            ],
+            known_for_bullets: ["Modern Australian sit-down dining", "Good for date nights", "Quieter than Bulcock Street"],
             price_risk: "high",
             walk_in_friendliness: "low",
             service_speed: "slow",
             formality_level: 2,
             vibe_tags: ["date", "calm", "polished"],
-            booking_likely: true
+            booking_likely: true,
         },
 
         {
@@ -349,16 +323,12 @@ module.exports = {
             address: "32 Buderim St, Currimundi QLD 4551",
             is_active: true,
             best_for: ["beer", "lunch", "dinner"],
-            known_for_bullets: [
-                "Classic pub meals",
-                "Good for families & groups",
-                "Easy walk-in option"
-            ],
+            known_for_bullets: ["Classic pub meals", "Good for families & groups", "Easy walk-in option"],
             price_risk: "low",
             walk_in_friendliness: "high",
             service_speed: "fast",
             formality_level: 0,
-            vibe_tags: ["casual", "family", "value"]
+            vibe_tags: ["casual", "family", "value"],
         },
 
         {
@@ -373,16 +343,12 @@ module.exports = {
             address: "1 Beerburrum St, Dicky Beach QLD 4551",
             is_active: true,
             best_for: ["lunch", "afternoon", "dinner", "beer"],
-            known_for_bullets: [
-                "Big ocean views",
-                "Great value club meals",
-                "Easy family-friendly option"
-            ],
+            known_for_bullets: ["Big ocean views", "Great value club meals", "Easy family-friendly option"],
             price_risk: "low",
             walk_in_friendliness: "high",
             service_speed: "fast",
             formality_level: 0,
-            vibe_tags: ["views", "casual", "family"]
+            vibe_tags: ["views", "casual", "family"],
         },
 
         {
@@ -397,16 +363,12 @@ module.exports = {
             address: "6 Beerburrum St, Dicky Beach QLD 4551",
             is_active: true,
             best_for: ["breakfast", "coffee", "lunch"],
-            known_for_bullets: [
-                "Local favourite café",
-                "Strong coffee + modern brunch",
-                "Worth the short walk from the beach"
-            ],
+            known_for_bullets: ["Local favourite café", "Strong coffee + modern brunch", "Worth the short walk from the beach"],
             price_risk: "medium",
             walk_in_friendliness: "medium",
             service_speed: "medium",
             formality_level: 0,
-            vibe_tags: ["locals", "brunch", "quality"]
+            vibe_tags: ["locals", "brunch", "quality"],
         },
 
         {
@@ -414,25 +376,22 @@ module.exports = {
             slug: "monicas-on-the-beach-caloundra",
             category: "Seafood / Italian",
             icon: "/icons/fancy_dinner.png",
-            lat: -26.806840,
+            lat: -26.80684,
             lng: 153.134191,
             coords_source: "address",
             coords_accuracy: "high",
             address: "47 The Esplanade, Bulcock Beach QLD 4551",
             is_active: true,
             best_for: ["lunch", "dinner", "fancy_dinner"],
-            known_for_bullets: [
-                "Italian + seafood classics",
-                "Beachfront dining experience",
-                "Good for long lunches or date nights"
-            ],
+            known_for_bullets: ["Italian + seafood classics", "Beachfront dining experience", "Good for long lunches or date nights"],
             price_risk: "high",
             walk_in_friendliness: "medium",
             service_speed: "slow",
             formality_level: 2,
             vibe_tags: ["views", "date", "classic"],
-            booking_likely: true
+            booking_likely: true,
         },
+
         {
             name: "The Pocket Espresso Bar",
             slug: "the-pocket-espresso-bar-moffat-beach",
@@ -445,16 +404,12 @@ module.exports = {
             address: "1 Seaview Terrace, Moffat Beach QLD 4551",
             is_active: true,
             best_for: ["breakfast", "coffee", "afternoon"],
-            known_for_bullets: [
-                "Legendary Moffat coffee stop",
-                "Perfect pre- or post-beach",
-                "Fast, quality caffeine hit"
-            ],
+            known_for_bullets: ["Legendary Moffat coffee stop", "Perfect pre- or post-beach", "Fast, quality caffeine hit"],
             price_risk: "low",
             walk_in_friendliness: "high",
             service_speed: "fast",
             formality_level: 0,
-            vibe_tags: ["locals", "beach", "quick"]
+            vibe_tags: ["locals", "beach", "quick"],
         },
 
         {
@@ -467,18 +422,15 @@ module.exports = {
             address: "La Balsa Park, Moffat Beach QLD 4551",
             is_active: true,
             best_for: ["breakfast", "coffee", "lunch"],
-            known_for_bullets: [
-                "Brunch with ocean views",
-                "Good for relaxed mornings",
-                "Popular with locals + families"
-            ],
+            known_for_bullets: ["Brunch with ocean views", "Good for relaxed mornings", "Popular with locals + families"],
             price_risk: "medium",
             walk_in_friendliness: "medium",
             service_speed: "medium",
             formality_level: 0,
-            vibe_tags: ["brunch", "views", "locals"]
+            vibe_tags: ["brunch", "views", "locals"],
         },
 
+        // --- Existing (Industrial Ave) venue kept ---
         {
             name: "Moffat Beach Brewing Co",
             slug: "moffat-beach-brewing-co",
@@ -491,16 +443,12 @@ module.exports = {
             address: "51-55 Industrial Ave, Caloundra West QLD 4551",
             is_active: true,
             best_for: ["beer", "afternoon", "dinner", "late_night"],
-            known_for_bullets: [
-                "Flagship Sunshine Coast brewery",
-                "Food trucks + beer hall vibe",
-                "Great for groups & casual nights"
-            ],
+            known_for_bullets: ["Flagship Sunshine Coast brewery", "Food trucks + beer hall vibe", "Great for groups & casual nights"],
             price_risk: "medium",
             walk_in_friendliness: "high",
             service_speed: "medium",
             formality_level: 0,
-            vibe_tags: ["lively", "groups", "beer"]
+            vibe_tags: ["lively", "groups", "beer"],
         },
 
         {
@@ -515,16 +463,12 @@ module.exports = {
             address: "20 Bowman Rd, Kings Beach QLD 4551",
             is_active: true,
             best_for: ["beer", "lunch", "dinner"],
-            known_for_bullets: [
-                "Classic Aussie pub",
-                "Reliable pub meals",
-                "Good fallback when busy elsewhere"
-            ],
+            known_for_bullets: ["Classic Aussie pub", "Reliable pub meals", "Good fallback when busy elsewhere"],
             price_risk: "low",
             walk_in_friendliness: "high",
             service_speed: "fast",
             formality_level: 0,
-            vibe_tags: ["casual", "locals", "value"]
+            vibe_tags: ["casual", "locals", "value"],
         },
 
         {
@@ -539,17 +483,13 @@ module.exports = {
             address: "52 Queen of Colonies Parade, Moffat Beach QLD 4551",
             is_active: true,
             best_for: ["lunch", "dinner", "fancy_dinner"],
-            known_for_bullets: [
-                "Modern coastal dining",
-                "Good for date nights",
-                "Less hectic than Hastings-style strips"
-            ],
+            known_for_bullets: ["Modern coastal dining", "Good for date nights", "Less hectic than Hastings-style strips"],
             price_risk: "high",
             walk_in_friendliness: "medium",
             service_speed: "slow",
             formality_level: 2,
             vibe_tags: ["date", "coastal", "polished"],
-            booking_likely: true
+            booking_likely: true,
         },
 
         {
@@ -564,39 +504,12 @@ module.exports = {
             address: "2/47 Bulcock St, Caloundra QLD 4551",
             is_active: true,
             best_for: ["coffee", "breakfast"],
-            known_for_bullets: [
-                "Small laneway coffee bar",
-                "Quick espresso stop",
-                "Good grab-and-go option"
-            ],
+            known_for_bullets: ["Small laneway coffee bar", "Quick espresso stop", "Good grab-and-go option"],
             price_risk: "low",
             walk_in_friendliness: "high",
             service_speed: "fast",
             formality_level: 0,
-            vibe_tags: ["quick", "locals"]
-        },
-
-        {
-            name: "Tides Waterfront Dining",
-            slug: "tides-waterfront-dining-golden-beach",
-            category: "Modern Australian",
-            icon: "/icons/fancy_dinner.png",
-            lat: -26.807688,
-            lng: 153.123028,
-            address: "Cnr Landsborough Parade & Victoria Tce, Golden Beach QLD 4551",
-            is_active: true,
-            best_for: ["lunch", "dinner", "fancy_dinner"],
-            known_for_bullets: [
-                "Waterfront sit-down dining",
-                "Good for celebrations",
-                "Relaxed but polished atmosphere"
-            ],
-            price_risk: "high",
-            walk_in_friendliness: "low",
-            service_speed: "slow",
-            formality_level: 2,
-            vibe_tags: ["views", "date", "calm"],
-            booking_likely: true
+            vibe_tags: ["quick", "locals"],
         },
 
         {
@@ -611,16 +524,12 @@ module.exports = {
             address: "Shop 1/6 Ormonde Tce, Kings Beach QLD 4551",
             is_active: true,
             best_for: ["lunch", "afternoon"],
-            known_for_bullets: [
-                "Classic fish & chips",
-                "Easy beach takeaway",
-                "Quick, affordable feeds"
-            ],
+            known_for_bullets: ["Classic fish & chips", "Easy beach takeaway", "Quick, affordable feeds"],
             price_risk: "low",
             walk_in_friendliness: "high",
             service_speed: "fast",
             formality_level: 0,
-            vibe_tags: ["casual", "beach", "quick"]
+            vibe_tags: ["casual", "beach", "quick"],
         },
 
         {
@@ -628,24 +537,330 @@ module.exports = {
             slug: "grounded-coffee-co-caloundra",
             category: "Cafe",
             icon: "/icons/coffee.png",
-            lat: -26.804500,
+            lat: -26.8045,
             lng: 153.132968,
             coords_source: "address",
             coords_accuracy: "high",
             address: "6/45 Bulcock St, Caloundra QLD 4551",
             is_active: true,
             best_for: ["coffee", "breakfast", "afternoon"],
-            known_for_bullets: [
-                "Reliable local coffee",
-                "Good for quick breaks",
-                "Friendly local crowd"
-            ],
+            known_for_bullets: ["Reliable local coffee", "Good for quick breaks", "Friendly local crowd"],
             price_risk: "low",
             walk_in_friendliness: "high",
             service_speed: "fast",
             formality_level: 0,
-            vibe_tags: ["locals", "casual"]
-        }
+            vibe_tags: ["locals", "casual"],
+        },
 
-    ]
+        // -------------------------------------------------------------------------
+        // NEW ADDS (coords TBD - add lat/lng later via geocode or manual pin)
+        // -------------------------------------------------------------------------
+
+        // Caloundra / Bulcock St core
+        {
+            name: "Amici Restaurant & Pizzeria",
+            slug: "amici-caloundra",
+            category: "Italian / Pizza",
+            icon: "/icons/italian.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "16 Bulcock St, Caloundra QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "dinner"],
+            known_for_bullets: ["Italian classics + pizza", "Good ‘easy date’ option", "Solid sit-down dinner"],
+            price_risk: "medium",
+            walk_in_friendliness: "medium",
+            service_speed: "medium",
+            formality_level: 1,
+            vibe_tags: ["date", "italian", "sit-down"],
+        },
+
+        {
+            name: "Acqua Restaurant & Bar",
+            slug: "acqua-caloundra",
+            category: "Mediterranean / Waterfront",
+            icon: "/icons/fancy_dinner.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "Corner of The Esplanade & Otranto Ave, Bulcock Beach, Caloundra QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "dinner", "fancy_dinner"],
+            known_for_bullets: ["Waterfront vibes", "Good for celebrations", "Long lunch / dinner spot"],
+            price_risk: "high",
+            walk_in_friendliness: "low",
+            service_speed: "slow",
+            formality_level: 2,
+            vibe_tags: ["views", "date", "special-occasion"],
+            booking_likely: true,
+        },
+
+        {
+            name: "Sokuri Restaurant",
+            slug: "sokuri-caloundra",
+            category: "Japanese / Korean",
+            icon: "/icons/asian.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "Shop 3/105–111 Bulcock St, Caloundra QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "dinner"],
+            known_for_bullets: ["Japanese + Korean dishes", "Good casual dinner", "Great when you want noodles/rice + grill vibes"],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["casual", "quick", "asian"],
+        },
+
+        {
+            name: "Caloundra Hotel (Bistro)",
+            slug: "caloundra-hotel-bistro",
+            category: "Pub / Bistro",
+            icon: "/icons/burger.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "12 Bulcock St, Caloundra QLD 4551",
+            is_active: true,
+            best_for: ["beer", "lunch", "dinner"],
+            known_for_bullets: ["Classic pub bistro", "Easy walk-in meals", "Good fallback when everywhere is busy"],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "groups", "value"],
+        },
+
+        {
+            name: "Blue Orchid Thai",
+            slug: "blue-orchid-thai-caloundra",
+            category: "Thai",
+            icon: "/icons/asian.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "22 Bulcock St, Caloundra QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "dinner"],
+            known_for_bullets: ["Reliable Thai favourites", "Good value for groups", "Easy casual dinner"],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "groups", "quick"],
+        },
+
+        {
+            name: "Penang Chinese Cuisine",
+            slug: "penang-chinese-cuisine-caloundra",
+            category: "Chinese / Malaysian",
+            icon: "/icons/asian.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "3/18 Bulcock St, Caloundra QLD 4551",
+            is_active: true,
+            best_for: ["dinner"],
+            known_for_bullets: ["Chinese-Malaysian lean", "Good comfort-food dinner", "Easy pick for families"],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["family", "casual", "comfort-food"],
+        },
+
+        {
+            name: "Daikichi Sushi (Bulcock)",
+            slug: "daikichi-sushi-bulcock-caloundra",
+            category: "Japanese / Sushi",
+            icon: "/icons/asian.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "78 Bulcock St, Caloundra QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "dinner", "quick_bite"],
+            known_for_bullets: ["Quick sushi + Japanese bites", "Good grab-and-go option", "Easy lunch stop"],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["quick", "casual", "grab-and-go"],
+        },
+
+        // Kings Beach extras
+        {
+            name: "Surfside Pizza",
+            slug: "surfside-pizza-kings-beach",
+            category: "Pizza",
+            icon: "/icons/italian.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "43 Moreton Pde, Kings Beach QLD 4551",
+            is_active: true,
+            best_for: ["dinner", "late_night"],
+            known_for_bullets: ["Casual pizza night", "Good with beach beers", "Easy takeaway or quick sit-down"],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "quick", "takeaway-friendly"],
+        },
+
+        {
+            name: "Domenico’s On Kings",
+            slug: "domenicos-on-kings",
+            category: "Italian",
+            icon: "/icons/italian.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "Shop 4, Shearwater Resort, 79 Edmund St, Kings Beach QLD 4551",
+            is_active: true,
+            best_for: ["dinner", "fancy_dinner"],
+            known_for_bullets: ["Italian sit-down dinner", "Good for date night", "Reliable ‘nice but not too formal’"],
+            price_risk: "high",
+            walk_in_friendliness: "medium",
+            service_speed: "slow",
+            formality_level: 2,
+            vibe_tags: ["date", "polished", "italian"],
+            booking_likely: true,
+        },
+
+        // Moffat Beach essentials
+        {
+            name: "Moffat Beach Brewing Co (Beachside)",
+            slug: "moffat-beach-brewing-co-beachside",
+            category: "Brewery / Food",
+            icon: "/icons/craft_beer.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "12 Seaview Tce, Moffat Beach QLD 4551",
+            is_active: true,
+            best_for: ["beer", "afternoon", "dinner", "late_night"],
+            known_for_bullets: ["Beachside brewery venue", "Good for sunset sessions", "Great casual group stop"],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["beach", "lively", "groups"],
+        },
+
+        {
+            name: "Blackwater Trading Co",
+            slug: "blackwater-trading-co-moffat",
+            category: "Cafe / Brunch",
+            icon: "/icons/coffee.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "12 Seaview Tce, Moffat Beach QLD 4551",
+            is_active: true,
+            best_for: ["breakfast", "coffee", "lunch"],
+            known_for_bullets: ["Strong coffee + brunch", "Popular Moffat strip spot", "Good daytime sit-down"],
+            price_risk: "medium",
+            walk_in_friendliness: "medium",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["brunch", "locals", "beach"],
+        },
+
+        {
+            name: "ZeeCaf Nosh Co",
+            slug: "zeecaf-nosh-co-moffat",
+            category: "Japanese / Cafe",
+            icon: "/icons/asian.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "63 William St, Moffat Beach QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "dinner"],
+            known_for_bullets: ["Japanese bites + café vibe", "Good casual meal", "Nice change from burgers/pizza"],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["casual", "asian", "locals"],
+        },
+
+        {
+            name: "Moffs Moffat Beach",
+            slug: "moffs-moffat-beach",
+            category: "Modern Australian",
+            icon: "/icons/fancy_dinner.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "Moffat Beach QLD 4551",
+            is_active: true,
+            best_for: ["dinner", "fancy_dinner"],
+            known_for_bullets: ["Higher-end local dining", "Great for date night", "Good ‘treat yourself’ option"],
+            price_risk: "high",
+            walk_in_friendliness: "low",
+            service_speed: "slow",
+            formality_level: 2,
+            vibe_tags: ["date", "special-occasion", "polished"],
+            booking_likely: true,
+        },
+
+        // Golden Beach adds
+        {
+            name: "Copper Spoon Thai Restaurant & Bar",
+            slug: "copper-spoon-thai-golden-beach",
+            category: "Thai",
+            icon: "/icons/asian.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "Ramada Resort, 75 Esplanade, Golden Beach QLD 4551",
+            is_active: true,
+            best_for: ["dinner"],
+            known_for_bullets: ["Resort-area Thai dinner", "Good for relaxed sit-down", "Solid option near the Esplanade"],
+            price_risk: "medium",
+            walk_in_friendliness: "medium",
+            service_speed: "medium",
+            formality_level: 1,
+            vibe_tags: ["casual", "sit-down", "groups"],
+        },
+
+        {
+            name: "Dilon’s Kitchen",
+            slug: "dilons-kitchen-golden-beach",
+            category: "Indian",
+            icon: "/icons/asian.png",
+            lat: null,
+            lng: null,
+            coords_source: "tbd",
+            coords_accuracy: "tbd",
+            address: "Shop 7B, 60–62 Landsborough Pde, Golden Beach QLD 4551",
+            is_active: true,
+            best_for: ["dinner", "takeaway"],
+            known_for_bullets: ["Good curry night", "Takeaway-friendly", "Solid value for groups"],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["casual", "comfort-food", "takeaway-friendly"],
+        },
+    ],
 };

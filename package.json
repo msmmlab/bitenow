@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "geocode": "node scripts/geocode-venues.js",
-    "seed": "node scripts/seedDB.js"
+    "seed": "node scripts/seedDB.js",
+    "checkHours": "node scripts/check-hours.js",
+    "update-coords": "node scripts/update-coords.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
