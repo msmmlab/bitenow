@@ -3,11 +3,16 @@
 // ✅ Updates locations/<townSlug>.js IN-PLACE by adding/updating:
 //    - google_place_id
 //    - opening_hours_json
+//    - internationalPhoneNumber
+//    - rating
 // ✅ PRESERVES formatting/comments using AST (recast)
 // ✅ Avoids redundant calls:
 //    - If google_place_id exists => details only
 //    - Else => searchText + details, then saves google_place_id
-// ✅ Skips API calls if opening_hours_json already exists & is non-empty (unless --force)
+// ✅ Skips API calls only if ALL exist (unless --force):
+//    - opening_hours_json is non-empty
+//    - internationalPhoneNumber exists
+//    - rating exists
 //
 // Usage:
 //   node scripts/checkOpeningHours.js caloundra all
@@ -17,6 +22,8 @@
 //
 // Env (.env.local):
 //   GOOGLE_PLACES_API_KEY=xxxx
+// Optional:
+//   DEBUG_PLACES=1  (prints full details response)
 //
 const fs = require("fs");
 const path = require("path");
@@ -108,11 +115,6 @@ function hmToHHMM(h, m) {
 
 function emptyHours() {
     return { mon: [], tue: [], wed: [], thu: [], fri: [], sat: [], sun: [] };
-}
-
-function isNonEmptyOpeningHours(obj) {
-    if (!obj || typeof obj !== "object") return false;
-    return DAY_KEYS.some((k) => Array.isArray(obj[k]) && obj[k].length > 0);
 }
 
 function dedupeSort(list) {
@@ -250,7 +252,16 @@ function scoreAddressMatch(venueAddress, candidateAddress) {
     const number = (a.match(/\b\d+\b/) || [])[0];
     if (number && b.includes(number)) score += 2;
 
-    const keyTokens = ["bulcock", "caloundra", "kings", "moffat", "golden", "dicky", "4551", "qld"];
+    const keyTokens = [
+        "bulcock",
+        "caloundra",
+        "kings",
+        "moffat",
+        "golden",
+        "dicky",
+        "4551",
+        "qld",
+    ];
     for (const t of keyTokens) if (a.includes(t) && b.includes(t)) score += 2;
 
     const tokens = a.split(/[^a-z0-9]+/).filter(Boolean);
@@ -289,7 +300,10 @@ async function placesSearchText(textQuery) {
         textQuery,
         locationBias: {
             circle: {
-                center: { latitude: DEFAULT_BIAS_CENTER.lat, longitude: DEFAULT_BIAS_CENTER.lng },
+                center: {
+                    latitude: DEFAULT_BIAS_CENTER.lat,
+                    longitude: DEFAULT_BIAS_CENTER.lng,
+                },
                 radius: DEFAULT_BIAS_RADIUS_M,
             },
         },
@@ -303,33 +317,41 @@ async function placesSearchText(textQuery) {
         headers: {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
-            "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location",
+            "X-Goog-FieldMask":
+                "places.id,places.displayName,places.formattedAddress,places.location",
         },
         body: JSON.stringify(body),
     });
 
     if (!res.ok) {
         const text = await res.text().catch(() => "");
-        throw new Error(`places:searchText failed (${res.status}): ${text.slice(0, 400)}`);
+        throw new Error(
+            `places:searchText failed (${res.status}): ${text.slice(0, 400)}`
+        );
     }
     return res.json();
 }
 
 async function placesGetDetails(placeId) {
-    const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`;
+    const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(
+        placeId
+    )}`;
 
+    // ✅ include rating + internationalPhoneNumber here
     const res = await fetch(url, {
         method: "GET",
         headers: {
             "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
             "X-Goog-FieldMask":
-                "id,displayName,formattedAddress,regularOpeningHours.periods,regularOpeningHours.weekdayDescriptions,currentOpeningHours.periods,currentOpeningHours.weekdayDescriptions,utcOffsetMinutes",
+                "id,displayName,formattedAddress,internationalPhoneNumber,rating,regularOpeningHours.periods,regularOpeningHours.weekdayDescriptions,currentOpeningHours.periods,currentOpeningHours.weekdayDescriptions,utcOffsetMinutes",
         },
     });
 
     if (!res.ok) {
         const text = await res.text().catch(() => "");
-        throw new Error(`places details failed (${res.status}): ${text.slice(0, 400)}`);
+        throw new Error(
+            `places details failed (${res.status}): ${text.slice(0, 400)}`
+        );
     }
     return res.json();
 }
@@ -366,7 +388,8 @@ function getPropKeyName(prop) {
     const k = prop.key;
     if (!k) return null;
     if (k.type === "Identifier") return k.name;
-    if (k.type === "StringLiteral" || k.type === "Literal") return String(k.value);
+    if (k.type === "StringLiteral" || k.type === "Literal")
+        return String(k.value);
     return null;
 }
 
@@ -377,7 +400,15 @@ function findObjectProperty(objExpr, propName) {
 
 function getStringValue(node) {
     if (!node) return null;
-    if (node.type === "StringLiteral" || node.type === "Literal") return String(node.value);
+    if (node.type === "StringLiteral" || node.type === "Literal")
+        return String(node.value);
+    return null;
+}
+
+function getNumberValue(node) {
+    if (!node) return null;
+    if (node.type === "NumericLiteral") return node.value;
+    if (node.type === "Literal" && typeof node.value === "number") return node.value;
     return null;
 }
 
@@ -414,7 +445,8 @@ function extractVenuesFromAST(ast) {
         if (!venuesProp) return { venuesArrayExpr: null };
 
         const venuesVal = venuesProp.value;
-        if (!venuesVal || venuesVal.type !== "ArrayExpression") return { venuesArrayExpr: null };
+        if (!venuesVal || venuesVal.type !== "ArrayExpression")
+            return { venuesArrayExpr: null };
 
         return { venuesArrayExpr: venuesVal };
     }
@@ -427,10 +459,15 @@ function extractVenueMeta(venueObjExpr) {
     const addrProp = findObjectProperty(venueObjExpr, "address");
     const hoursProp = findObjectProperty(venueObjExpr, "opening_hours_json");
     const placeIdProp = findObjectProperty(venueObjExpr, "google_place_id");
+    const phoneProp = findObjectProperty(venueObjExpr, "internationalPhoneNumber");
+    const ratingProp = findObjectProperty(venueObjExpr, "rating");
 
     const name = nameProp ? getStringValue(nameProp.value) : null;
     const address = addrProp ? getStringValue(addrProp.value) : null;
     const google_place_id = placeIdProp ? getStringValue(placeIdProp.value) : null;
+
+    const internationalPhoneNumber = phoneProp ? getStringValue(phoneProp.value) : null;
+    const rating = ratingProp ? getNumberValue(ratingProp.value) : null;
 
     let hasNonEmptyHours = false;
     if (hoursProp && hoursProp.value && hoursProp.value.type === "ObjectExpression") {
@@ -445,12 +482,28 @@ function extractVenueMeta(venueObjExpr) {
         }
     }
 
-    return { name, address, google_place_id, hasNonEmptyHours };
+    const hasPhone = !!(internationalPhoneNumber && String(internationalPhoneNumber).trim());
+    const hasRating = typeof rating === "number" && Number.isFinite(rating);
+
+    return { name, address, google_place_id, hasNonEmptyHours, hasPhone, hasRating };
 }
 
 function upsertStringProperty(objExpr, propName, value) {
+    if (value == null || value === "") return;
     const existing = findObjectProperty(objExpr, propName);
     const newProp = b.property("init", b.identifier(propName), b.stringLiteral(value));
+
+    if (existing) {
+        existing.value = newProp.value;
+        return;
+    }
+    objExpr.properties.push(newProp);
+}
+
+function upsertNumberProperty(objExpr, propName, value) {
+    if (value == null || !Number.isFinite(value)) return;
+    const existing = findObjectProperty(objExpr, propName);
+    const newProp = b.property("init", b.identifier(propName), b.numericLiteral(value));
 
     if (existing) {
         existing.value = newProp.value;
@@ -514,7 +567,9 @@ async function run() {
         limit = Math.min(n, venueNodes.length);
     }
 
-    console.log(`\n🔍 ${townSlug.toUpperCase()} — checking opening hours for ${limit}/${venueNodes.length} venues (Google Places)`);
+    console.log(
+        `\n🔍 ${townSlug.toUpperCase()} — checking data for ${limit}/${venueNodes.length} venues (Google Places)`
+    );
     console.log("------------------------------------------------------------");
 
     let updated = 0;
@@ -527,9 +582,11 @@ async function run() {
         const meta = extractVenueMeta(venueObjExpr);
         const displayName = meta.name || `(venue #${i + 1})`;
 
-        if (!force && meta.hasNonEmptyHours) {
+        // ✅ Skip only if ALL are present (unless --force)
+        const isComplete = meta.hasNonEmptyHours && meta.hasPhone && meta.hasRating;
+        if (!force && isComplete) {
             skipped++;
-            console.log(`⏭️  [${i + 1}/${limit}] ${displayName}... (skipped; already has opening_hours_json)`);
+            console.log(`⏭️  [${i + 1}/${limit}] ${displayName}... (skipped; hours+phone+rating already present)`);
             continue;
         }
 
@@ -537,24 +594,23 @@ async function run() {
 
         try {
             let placeId = meta.google_place_id || null;
-            let matchedText = null;
-            let matchedAddr = null;
 
             if (!placeId) {
-                // searchText
-                const best = await getBestPlaceForVenue({ name: meta.name || "", address: meta.address || "" });
+                const best = await getBestPlaceForVenue({
+                    name: meta.name || "",
+                    address: meta.address || "",
+                });
                 if (!best?.id) {
                     console.log("❌ Not Found");
                     continue;
                 }
                 placeId = best.id;
-                matchedText = best.displayName?.text || "(no name)";
-                matchedAddr = best.formattedAddress || "(no address)";
                 searched++;
 
-                console.log(`\n    ↳ matched: ${matchedText} | ${matchedAddr} | ${placeId}`);
+                console.log(
+                    `\n    ↳ matched: ${best.displayName?.text || "(no name)"} | ${best.formattedAddress || "(no address)"} | ${placeId}`
+                );
 
-                // Save place id immediately so next run can use details-only
                 upsertStringProperty(venueObjExpr, "google_place_id", placeId);
             } else {
                 detailsOnly++;
@@ -567,19 +623,51 @@ async function run() {
                 console.log("\n🧩 DETAILS RAW:\n" + JSON.stringify(details, null, 2));
             }
 
-            const rawPeriods =
-                details?.regularOpeningHours?.periods || details?.currentOpeningHours?.periods;
-            if (rawPeriods) console.log(`    ↳ raw periods count: ${rawPeriods.length}`);
+            // hours (only update if missing OR --force)
+            const needHours = force || !meta.hasNonEmptyHours;
+            if (needHours) {
+                const rawPeriods =
+                    details?.regularOpeningHours?.periods ||
+                    details?.currentOpeningHours?.periods;
+                if (rawPeriods) console.log(`    ↳ raw periods count: ${rawPeriods.length}`);
 
-            const hours = normalizeHours(details);
-            if (!hours) {
-                console.log("    ⚠️ No opening hours fields (periods/weekdayDescriptions)");
-                continue;
+                const hours = normalizeHours(details);
+                if (hours) {
+                    upsertHoursProperty(venueObjExpr, objectLiteralFromHours(hours));
+                    console.log(`    ✅ opening_hours_json: ${JSON.stringify(hours)}`);
+                } else {
+                    console.log("    ⚠️ No opening hours fields (periods/weekdayDescriptions)");
+                }
+            } else {
+                console.log("    ⏭️  opening_hours_json already present (not forcing)");
             }
 
-            upsertHoursProperty(venueObjExpr, objectLiteralFromHours(hours));
+            // phone + rating (always fill if missing, or refresh if --force)
+            const phone = details?.internationalPhoneNumber || null;
+            const rating = typeof details?.rating === "number" ? details.rating : null;
+
+            const needPhone = force || !meta.hasPhone;
+            const needRating = force || !meta.hasRating;
+
+            if (needPhone && phone) {
+                upsertStringProperty(venueObjExpr, "internationalPhoneNumber", phone);
+                console.log(`    ✅ internationalPhoneNumber: ${phone}`);
+            } else if (!needPhone) {
+                console.log("    ⏭️  internationalPhoneNumber already present (not forcing)");
+            } else {
+                console.log("    ⚠️ No internationalPhoneNumber in details");
+            }
+
+            if (needRating && rating != null) {
+                upsertNumberProperty(venueObjExpr, "rating", rating);
+                console.log(`    ✅ rating: ${rating}`);
+            } else if (!needRating) {
+                console.log("    ⏭️  rating already present (not forcing)");
+            } else {
+                console.log("    ⚠️ No rating in details");
+            }
+
             updated++;
-            console.log(`    ✅ opening_hours_json: ${JSON.stringify(hours)}`);
         } catch (err) {
             console.log(`\n    ❌ Error: ${err.message}`);
         }
@@ -589,13 +677,11 @@ async function run() {
 
     console.log("------------------------------------------------------------");
     console.log(
-        `✨ Done. Updated ${updated}/${limit}. Skipped ${skipped}. (searchText=${searched}, detailsOnly=${detailsOnly})\n`
+        `✨ Done. Processed ${updated}/${limit}. Skipped ${skipped}. (searchText=${searched}, detailsOnly=${detailsOnly})\n`
     );
 
-    // Safety backup (in case)
     fs.copyFileSync(filePath, `${filePath}.bak`);
 
-    // Preserve comments/formatting
     const newSource = recast.print(ast, { quote: "double" }).code;
     fs.writeFileSync(filePath, newSource, "utf8");
 

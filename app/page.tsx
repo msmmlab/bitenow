@@ -136,7 +136,7 @@ function HomePageContent() {
   const viewParam = searchParams.get('view');
   const queryParam = searchParams.get('q');
 
-  const [activeFilter] = useState("All");
+  const [sortFilter, setSortFilter] = useState<'Best' | 'Close By' | 'Deals'>('Best');
   const [viewMode, setViewMode] = useState<'list' | 'radar'>((viewParam as any) || 'list');
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
@@ -144,8 +144,17 @@ function HomePageContent() {
   const [joinUsVenue, setJoinUsVenue] = useState<Venue | null>(null);
   const [suggestText, setSuggestText] = useState("");
   const [suggestSuccess, setSuggestSuccess] = useState(false);
-  const [timeFilter, setTimeFilter] = useState<'Now' | 'Later' | 'Tonight'>('Now');
-  const [intent, setIntent] = useState<{ label: string;[key: string]: any } | null>(null);
+  const [timeFilter, setTimeFilter] = useState<'Open Now' | 'Later Today' | 'Tomorrow'>('Open Now');
+  const [intentFilter, setIntentFilter] = useState<'All' | 'Coffee' | 'Breakfast' | 'Lunch' | 'Dinner' | 'Date' | 'Drinks'>(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 9) return 'Coffee';
+    if (hour >= 9 && hour < 11) return 'Breakfast';
+    if (hour >= 11 && hour < 15) return 'Lunch';
+    if (hour >= 15 && hour < 17) return 'Drinks';
+    if (hour >= 17 && hour < 21) return 'Dinner';
+    if (hour >= 21 || hour < 5) return 'Drinks';
+    return 'All';
+  });
 
   // Sync viewMode with URL
   useEffect(() => {
@@ -267,10 +276,14 @@ function HomePageContent() {
         isOpen
       };
     }).sort((a, b) => {
+      if (sortFilter === 'Close By') {
+        return (a.distanceValue || 999) - (b.distanceValue || 999);
+      }
+
       const context = {
         timeLens: timeFilter.toLowerCase(),
         date: new Date(),
-        intent: intent,
+        intent: intentFilter === 'All' ? null : { label: intentFilter, type: intentFilter.toLowerCase() },
         distanceValue: a.distanceValue
       };
 
@@ -279,36 +292,33 @@ function HomePageContent() {
 
       return resultB.score - resultA.score;
     });
-  }, [venues, userLocation, timeFilter, intent]);
+  }, [venues, userLocation, timeFilter, intentFilter, sortFilter]);
 
   // --- UNIFIED FILTERING LOGIC ---
   const isVenueMatch = useCallback((v: Venue & { distanceValue?: number; isOpen?: boolean }, isList: boolean) => {
     // 0. Distance-Based Filtering (ONLY FOR LIST VIEW)
     if (isList && v.distanceValue !== undefined) {
-      if (timeFilter === 'Now' && v.distanceValue > 10) return false;
-      if ((timeFilter === 'Tonight' || timeFilter === 'Later') && v.distanceValue > 25) return false;
+      if (timeFilter === 'Open Now' && v.distanceValue > 10) return false;
+      if (timeFilter === 'Later Today' && v.distanceValue > 25) return false;
+      // No strict distance limit for 'Tomorrow' planning
     }
 
-    // 1. Explicit Filter Block (Intent / Category / Non-Now Time)
-    if (intent || activeFilter !== "All" || timeFilter !== 'Now') {
+    // 1. Explicit Filter Block (Intent / Deals / Non-Now Time)
+    if (intentFilter !== 'All' || sortFilter === 'Deals' || timeFilter !== 'Open Now') {
       const lowerCat = v.category?.toLowerCase() || "";
       const lowerName = v.name.toLowerCase();
       const bestFor = v.best_for || [];
 
-      // (A) Time-Based (Tonight)
-      if (timeFilter === 'Tonight') {
-        const isEveningVenue = ["dinner", "cocktails", "pub", "bar", "brewery", "pizza", "asian", "restaurant"].some(c => lowerCat.includes(c)) ||
-          bestFor.some((t: string) => ["dinner", "late", "drinks", "fancy_dinner"].includes(t));
-        const isNightSpecial = v.special && (v.special.title.toLowerCase().includes("dinner") || v.special.description.toLowerCase().includes("pm"));
-        if (!isEveningVenue && !isNightSpecial) return false;
+      // (A) Time-Based (Tomorrow) - Broad view for planning
+      if (timeFilter === 'Tomorrow') {
+        return true;
       }
 
       // (B) Intent
-      if (intent) {
-        const intentLabel = typeof intent === 'string' ? intent : intent.label;
-        const cleanIntent = intentLabel.replace(/[^\w\s]/gi, '').trim().toLowerCase();
+      if (intentFilter !== 'All') {
+        const cleanIntent = intentFilter.toLowerCase();
 
-        if (cleanIntent === 'date night') {
+        if (cleanIntent === 'date') {
           const isFancy = (v.formality_level || 0) >= 2 || bestFor.includes('fancy_dinner') || bestFor.includes('date_night');
           if (!isFancy) return false;
         }
@@ -344,15 +354,9 @@ function HomePageContent() {
         }
       }
 
-      // (C) Category (All-time Specials filter)
-      if (activeFilter !== "All") {
+      // (C) Sorting-based filtering (Deals)
+      if (sortFilter === 'Deals') {
         if (!v.special) return false;
-        const lowerTitle = v.special.title.toLowerCase();
-        const lowerDesc = v.special.description.toLowerCase();
-        if (activeFilter === "Lunch") return lowerTitle.includes("lunch") || lowerTitle.includes("burger") || lowerDesc.includes("12pm");
-        if (activeFilter === "Dinner") return lowerTitle.includes("dinner") || lowerTitle.includes("steak") || lowerTitle.includes("pizza") || lowerTitle.includes("tacos") || lowerDesc.includes("5pm");
-        if (activeFilter === "Live Music") return lowerDesc.includes("live") || lowerDesc.includes("music") || lowerDesc.includes("tunes");
-        if (activeFilter === "Family") return lowerDesc.includes("kids") || lowerTitle.includes("family") || lowerTitle.includes("pizza");
       }
 
       return true;
@@ -378,7 +382,7 @@ function HomePageContent() {
       return isNight && !isMorningCafe;
     }
     return true;
-  }, [timeFilter, intent, activeFilter]);
+  }, [timeFilter, intentFilter, sortFilter]);
 
   // Apply filters
   const filteredVenuesForList = useMemo(() => {
@@ -398,7 +402,7 @@ function HomePageContent() {
     if (contentRef.current) {
       contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [timeFilter, intent]);
+  }, [timeFilter, intentFilter, sortFilter]);
 
   // Memoize map venues
   const mapVenues = useMemo(() => {
@@ -460,65 +464,45 @@ function HomePageContent() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col md:flex-row md:items-center gap-4">
-                    <div className="flex-1 max-w-xl flex bg-gray-50/50 dark:bg-zinc-900/50 rounded-2xl p-1 gap-1 border border-gray-100/50 dark:border-zinc-800/50">
-                      {(['Now', 'Later', 'Tonight'] as const).map((t) => (
-                        <button
-                          key={t}
-                          onClick={() => {
-                            setTimeFilter(t);
-                            setIntent(null);
-                            gtag.event({
-                              action: 'change_time_lens',
-                              category: 'interaction',
-                              label: t
-                            });
-                          }}
-                          className={cn(
-                            "flex-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-200",
-                            timeFilter === t
-                              ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5"
-                              : "text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-gray-300"
-                          )}
-                        >
-                          {t}
-                        </button>
-                      ))}
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* Select 1: Time */}
+                    <div className="bg-gray-50/50 dark:bg-zinc-900/50 rounded-xl p-0.5 flex border border-gray-100/50 dark:border-zinc-800/50">
+                      <select
+                        value={timeFilter}
+                        onChange={(e) => {
+                          setTimeFilter(e.target.value as any);
+                          setIntentFilter('All');
+                        }}
+                        className="w-full bg-transparent text-[10px] font-black uppercase tracking-widest px-3 py-2 cursor-pointer outline-none dark:text-white"
+                      >
+                        {['Open Now', 'Later Today', 'Tomorrow'].map(t => <option key={t} value={t} className="bg-white dark:bg-zinc-900">{t}</option>)}
+                      </select>
                     </div>
 
-                    <div className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 shrink-0 opacity-70">Take me for</span>
-                      <div className="flex gap-2">
-                        {getIntentOptions(timeFilter.toLowerCase(), new Date()).map((option: IntentOption) => (
-                          <button
-                            key={option.type}
-                            onClick={() => {
-                              const isSame = intent?.type === option.type || intent?.label === option.label;
-                              const newIntent = isSame ? null : option;
-                              setIntent(newIntent);
-                              if (newIntent) {
-                                gtag.event({
-                                  action: 'select_intent',
-                                  category: 'interaction',
-                                  label: option.label
-                                });
-                              }
-                            }}
-                            className={cn(
-                              "px-4 py-2 rounded-xl text-[10px] font-bold transition-all duration-200 border whitespace-nowrap",
-                              (intent?.type === option.type || intent?.label === option.label)
-                                ? "bg-black uppercase text-white dark:bg-white dark:text-black border-black dark:border-white shadow-lg -translate-y-0.5"
-                                : "bg-white uppercase dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-100 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-500"
-                            )}
-                          >
-                            {option.label}
-                          </button>
-                        ))}
-                      </div>
+                    {/* Select 2: Occasion */}
+                    <div className="bg-gray-50/50 dark:bg-zinc-900/50 rounded-xl p-0.5 flex border border-gray-100/50 dark:border-zinc-800/50">
+                      <select
+                        value={intentFilter}
+                        onChange={(e) => setIntentFilter(e.target.value as any)}
+                        className="w-full bg-transparent text-[10px] font-black uppercase tracking-widest px-3 py-2 cursor-pointer outline-none dark:text-white"
+                      >
+                        {['All', 'Coffee', 'Breakfast', 'Lunch', 'Dinner', 'Date', 'Drinks'].map(i => <option key={i} value={i} className="bg-white dark:bg-zinc-900">{i}</option>)}
+                      </select>
+                    </div>
+
+                    {/* Select 3: Mode */}
+                    <div className="bg-gray-50/50 dark:bg-zinc-900/50 rounded-xl p-0.5 flex border border-gray-100/50 dark:border-zinc-800/50">
+                      <select
+                        value={sortFilter}
+                        onChange={(e) => setSortFilter(e.target.value as any)}
+                        className="w-full bg-transparent text-[10px] font-black uppercase tracking-widest px-3 py-2 cursor-pointer outline-none dark:text-white"
+                      >
+                        {['Best', 'Close By', 'Deals'].map(s => <option key={s} value={s} className="bg-white dark:bg-zinc-900">{s}</option>)}
+                      </select>
                     </div>
                   </div>
                 </div>
-              </header>
+              </header >
 
               <div className="p-4 space-y-4 max-w-7xl mx-auto pt-6">
                 {!loading && !hasAnySpecials && (
@@ -537,7 +521,7 @@ function HomePageContent() {
 
                 <div className="flex items-center justify-between px-1">
                   <span className="text-sm text-gray-500 font-bold">
-                    {intent ? 'Curated Picks' : (hasAnySpecials ? 'Active Specials' : 'Nearby Venues')}
+                    {intentFilter !== 'All' ? 'Curated Picks' : (hasAnySpecials ? 'Active Specials' : 'Nearby Venues')}
                   </span>
                 </div>
 
@@ -554,16 +538,16 @@ function HomePageContent() {
                   </div>
                 )}
 
-                {filteredVenuesForList.length > 0 && intent && (
+                {!loading && filteredVenuesForList.length > 0 && intentFilter !== 'All' && (
                   <div className="pt-2 pb-2">
                     <p className="text-2xl font-black text-gray-900 dark:text-white leading-tight">
-                      Best for <span className="text-orange-500">{typeof intent === 'string' ? intent : intent.label}</span>
+                      Best for <span className="text-orange-500">{intentFilter}</span>
                     </p>
                   </div>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredVenuesForList.slice(0, intent ? 3 : filteredVenuesForList.length).map((item) => (
+                  {filteredVenuesForList.slice(0, intentFilter !== 'All' ? 3 : filteredVenuesForList.length).map((item) => (
                     <VenueTile
                       key={item.id}
                       venue={item}
@@ -583,7 +567,7 @@ function HomePageContent() {
                   ))}
                 </div>
 
-                {intent && filteredVenuesForList.length > 3 && (
+                {intentFilter !== 'All' && filteredVenuesForList.length > 3 && (
                   <>
                     <div className="pt-8 pb-4">
                       <div className="h-px bg-gray-100 dark:bg-zinc-800 w-full mb-6" />
@@ -613,8 +597,8 @@ function HomePageContent() {
                 )}
                 <div className="h-32 md:h-24"></div>
               </div>
-            </div>
-          </div>
+            </div >
+          </div >
         ) : (
           <div className="h-full w-full flex flex-col bg-black overflow-hidden animate-in fade-in duration-500">
             {/* Radar View Header - Flex Child */}
@@ -655,61 +639,41 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row md:items-center gap-4">
-                  <div className="flex-1 max-w-xl flex bg-gray-50/50 dark:bg-zinc-900/50 rounded-2xl p-1 gap-1 border border-gray-100/50 dark:border-zinc-800/50">
-                    {(['Now', 'Later', 'Tonight'] as const).map((t) => (
-                      <button
-                        key={t}
-                        onClick={() => {
-                          setTimeFilter(t);
-                          setIntent(null);
-                          gtag.event({
-                            action: 'change_time_lens',
-                            category: 'interaction',
-                            label: t
-                          });
-                        }}
-                        className={cn(
-                          "flex-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-200",
-                          timeFilter === t
-                            ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5"
-                            : "text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-gray-300"
-                        )}
-                      >
-                        {t}
-                      </button>
-                    ))}
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Select 1: Time */}
+                  <div className="bg-gray-50/50 dark:bg-zinc-900/50 rounded-xl p-0.5 flex border border-gray-100/50 dark:border-zinc-800/50">
+                    <select
+                      value={timeFilter}
+                      onChange={(e) => {
+                        setTimeFilter(e.target.value as any);
+                        setIntentFilter('All');
+                      }}
+                      className="w-full bg-transparent text-[10px] font-black uppercase tracking-widest px-3 py-2 cursor-pointer outline-none dark:text-white"
+                    >
+                      {['Open Now', 'Later Today', 'Tomorrow'].map(t => <option key={t} value={t} className="bg-white dark:bg-zinc-900">{t}</option>)}
+                    </select>
                   </div>
 
-                  <div className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 shrink-0 opacity-70">Take me for</span>
-                    <div className="flex gap-2">
-                      {getIntentOptions(timeFilter.toLowerCase(), new Date()).map((option: IntentOption) => (
-                        <button
-                          key={option.type}
-                          onClick={() => {
-                            const isSame = intent?.type === option.type || intent?.label === option.label;
-                            const newIntent = isSame ? null : option;
-                            setIntent(newIntent);
-                            if (newIntent) {
-                              gtag.event({
-                                action: 'select_intent',
-                                category: 'interaction',
-                                label: option.label
-                              });
-                            }
-                          }}
-                          className={cn(
-                            "px-4 py-2 rounded-xl text-[10px] font-bold transition-all duration-200 border whitespace-nowrap",
-                            (intent?.type === option.type || intent?.label === option.label)
-                              ? "bg-black uppercase text-white dark:bg-white dark:text-black border-black dark:border-white shadow-lg -translate-y-0.5"
-                              : "bg-white uppercase dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-100 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-500"
-                          )}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </div>
+                  {/* Select 2: Occasion */}
+                  <div className="bg-gray-50/50 dark:bg-zinc-900/50 rounded-xl p-0.5 flex border border-gray-100/50 dark:border-zinc-800/50">
+                    <select
+                      value={intentFilter}
+                      onChange={(e) => setIntentFilter(e.target.value as any)}
+                      className="w-full bg-transparent text-[10px] font-black uppercase tracking-widest px-3 py-2 cursor-pointer outline-none dark:text-white"
+                    >
+                      {['All', 'Coffee', 'Breakfast', 'Lunch', 'Dinner', 'Date', 'Drinks'].map(i => <option key={i} value={i} className="bg-white dark:bg-zinc-900">{i}</option>)}
+                    </select>
+                  </div>
+
+                  {/* Select 3: Mode */}
+                  <div className="bg-gray-50/50 dark:bg-zinc-900/50 rounded-xl p-0.5 flex border border-gray-100/50 dark:border-zinc-800/50">
+                    <select
+                      value={sortFilter}
+                      onChange={(e) => setSortFilter(e.target.value as any)}
+                      className="w-full bg-transparent text-[10px] font-black uppercase tracking-widest px-3 py-2 cursor-pointer outline-none dark:text-white"
+                    >
+                      {['Best', 'Close By', 'Deals'].map(s => <option key={s} value={s} className="bg-white dark:bg-zinc-900">{s}</option>)}
+                    </select>
                   </div>
                 </div>
               </div>
@@ -724,112 +688,115 @@ function HomePageContent() {
               />
             </div>
           </div>
-        )}
-      </div>
+        )
+        }
+      </div >
 
       {/* MODALS */}
-      {showJoinUs && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowJoinUs(false)} />
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 relative z-10 w-full max-w-sm border border-gray-100 dark:border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200">
-            <button onClick={() => setShowJoinUs(false)} className="absolute top-4 right-4 text-gray-400"><X className="w-6 h-6" /></button>
-            {!suggestSuccess ? (
-              <div className="text-center space-y-6 py-4">
-                {joinUsVenue ? (
-                  <div className="space-y-6">
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl p-6 text-left border border-yellow-100 dark:border-yellow-900/30">
-                      <h4 className="font-black text-[10px] text-yellow-700 dark:text-yellow-500 uppercase tracking-[0.2em] mb-3">Own this place?</h4>
-                      <p className="text-lg text-yellow-900 dark:text-yellow-400 font-black leading-tight mb-2">
-                        Activate specials in seconds
-                      </p>
-                      <p className="text-sm text-yellow-800 dark:text-yellow-500/80 leading-relaxed mb-6">
-                        No logins, no dashboards. Just text us your deal or a photo of today&apos;s specials board.
-                      </p>
+      {
+        showJoinUs && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowJoinUs(false)} />
+            <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 relative z-10 w-full max-w-sm border border-gray-100 dark:border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200">
+              <button onClick={() => setShowJoinUs(false)} className="absolute top-4 right-4 text-gray-400"><X className="w-6 h-6" /></button>
+              {!suggestSuccess ? (
+                <div className="text-center space-y-6 py-4">
+                  {joinUsVenue ? (
+                    <div className="space-y-6">
+                      <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl p-6 text-left border border-yellow-100 dark:border-yellow-900/30">
+                        <h4 className="font-black text-[10px] text-yellow-700 dark:text-yellow-500 uppercase tracking-[0.2em] mb-3">Own this place?</h4>
+                        <p className="text-lg text-yellow-900 dark:text-yellow-400 font-black leading-tight mb-2">
+                          Activate specials in seconds
+                        </p>
+                        <p className="text-sm text-yellow-800 dark:text-yellow-500/80 leading-relaxed mb-6">
+                          No logins, no dashboards. Just text us your deal or a photo of today&apos;s specials board.
+                        </p>
 
-                      <div className="bg-white dark:bg-black/40 rounded-xl p-4 mb-6 font-mono text-center border border-yellow-200 dark:border-yellow-900/50 shadow-sm relative group overflow-hidden">
-                        <span className="text-[10px] text-yellow-700 font-bold uppercase tracking-wider block mb-1">Text your special to:</span>
-                        <a
-                          href={`tel:${joinUsVenue?.system_sms_number || process.env.NEXT_PUBLIC_ACTIVATION_PHONE || '+61 400 000 000'}`}
-                          className="font-black text-xl text-yellow-900 dark:text-yellow-400 break-all underline decoration-2 underline-offset-4 hover:text-orange-600 transition-colors"
-                        >
-                          {joinUsVenue?.system_sms_number || process.env.NEXT_PUBLIC_ACTIVATION_PHONE || '+61 400 000 000'}
-                        </a>
+                        <div className="bg-white dark:bg-black/40 rounded-xl p-4 mb-6 font-mono text-center border border-yellow-200 dark:border-yellow-900/50 shadow-sm relative group overflow-hidden">
+                          <span className="text-[10px] text-yellow-700 font-bold uppercase tracking-wider block mb-1">Text your special to:</span>
+                          <a
+                            href={`tel:${joinUsVenue?.system_sms_number || process.env.NEXT_PUBLIC_ACTIVATION_PHONE || '+61 400 000 000'}`}
+                            className="font-black text-xl text-yellow-900 dark:text-yellow-400 break-all underline decoration-2 underline-offset-4 hover:text-orange-600 transition-colors"
+                          >
+                            {joinUsVenue?.system_sms_number || process.env.NEXT_PUBLIC_ACTIVATION_PHONE || '+61 400 000 000'}
+                          </a>
+                        </div>
+
+                        <div className="space-y-2 opacity-80">
+                          <p className="text-xs text-yellow-700 italic font-medium leading-tight">&quot;$19 Lunch schnitzel $9 IPA schooner 30% off kids menu 3–4PM&quot;</p>
+                          <p className="text-xs text-yellow-700 italic font-medium leading-tight">Or just text a photo of your specials board</p>
+                        </div>
+
+                        <div className="mt-6 pt-4 border-t border-yellow-200 dark:border-yellow-900/30 flex items-center gap-2">
+                          <p className="text-[10px] font-bold text-yellow-800 dark:text-yellow-600 uppercase tracking-tight">
+                            That&apos;s all you need to do and we&apos;ll turn it into a live deal card for nearby tourists.
+                          </p>
+                        </div>
+
                       </div>
+                      <button
+                        onClick={() => setShowJoinUs(false)}
+                        className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl"
+                      >
+                        Got it
+                      </button>
+                      <p className="text-[10px] font-bold text-yellow-800 dark:text-yellow-600 uppercase tracking-tight">
+                        Local pilot — free while we test in Noosa.
+                      </p>
 
-                      <div className="space-y-2 opacity-80">
-                        <p className="text-xs text-yellow-700 italic font-medium leading-tight">&quot;$19 Lunch schnitzel $9 IPA schooner 30% off kids menu 3–4PM&quot;</p>
-                        <p className="text-xs text-yellow-700 italic font-medium leading-tight">Or just text a photo of your specials board</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-16 h-16 bg-orange-100 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Store className="w-8 h-8 text-orange-500" />
                       </div>
-
-                      <div className="mt-6 pt-4 border-t border-yellow-200 dark:border-yellow-900/30 flex items-center gap-2">
-                        <p className="text-[10px] font-bold text-yellow-800 dark:text-yellow-600 uppercase tracking-tight">
-                          That&apos;s all you need to do and we&apos;ll turn it into a live deal card for nearby tourists.
+                      <div>
+                        <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-wide mb-2">
+                          Know a hidden gem?
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Tell us about a great venue or special we&apos;re missing.
                         </p>
                       </div>
-
-                    </div>
-                    <button
-                      onClick={() => setShowJoinUs(false)}
-                      className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl"
-                    >
-                      Got it
-                    </button>
-                    <p className="text-[10px] font-bold text-yellow-800 dark:text-yellow-600 uppercase tracking-tight">
-                      Local pilot — free while we test in Noosa.
-                    </p>
-
+                      <div className="space-y-3">
+                        <textarea
+                          className="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl border border-gray-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-sm min-h-[100px]"
+                          placeholder="Venue name and details..."
+                          value={suggestText}
+                          onChange={(e) => setSuggestText(e.target.value)}
+                        />
+                        <button
+                          disabled={!suggestText.trim()}
+                          onClick={async () => {
+                            setSuggestSuccess(true);
+                            setTimeout(() => {
+                              setShowJoinUs(false);
+                            }, 2000);
+                          }}
+                          className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
+                        >
+                          Send it
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-10 space-y-4">
+                  <div className="w-16 h-16 bg-green-100 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-2 animate-in zoom-in duration-300">
+                    <MessageSquare className="w-8 h-8 text-green-600 dark:text-green-500" />
                   </div>
-                ) : (
-                  <>
-                    <div className="w-16 h-16 bg-orange-100 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Store className="w-8 h-8 text-orange-500" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-wide mb-2">
-                        Know a hidden gem?
-                      </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Tell us about a great venue or special we&apos;re missing.
-                      </p>
-                    </div>
-                    <div className="space-y-3">
-                      <textarea
-                        className="w-full p-4 bg-gray-50 dark:bg-zinc-800 rounded-2xl border border-gray-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-sm min-h-[100px]"
-                        placeholder="Venue name and details..."
-                        value={suggestText}
-                        onChange={(e) => setSuggestText(e.target.value)}
-                      />
-                      <button
-                        disabled={!suggestText.trim()}
-                        onClick={async () => {
-                          setSuggestSuccess(true);
-                          setTimeout(() => {
-                            setShowJoinUs(false);
-                          }, 2000);
-                        }}
-                        className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
-                      >
-                        Send it
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-10 space-y-4">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-2 animate-in zoom-in duration-300">
-                  <MessageSquare className="w-8 h-8 text-green-600 dark:text-green-500" />
+                  <div>
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-wide">Thanks Legend!</h3>
+                    <p className="text-sm text-gray-500 mt-2">We&apos;ll check it out.</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-wide">Thanks Legend!</h3>
-                  <p className="text-sm text-gray-500 mt-2">We&apos;ll check it out.</p>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      )}
-    </main>
+        )
+      }
+    </main >
   );
 }
 

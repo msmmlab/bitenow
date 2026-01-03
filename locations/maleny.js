@@ -18,6 +18,29 @@ module.exports = {
         // Cafes / Breakfast / Coffee
         // -------------------------
         {
+            name: "Maleny Lane",
+            slug: "maleny-lane-caloundra",
+            category: "Food Hall",
+            icon: "/icons/mixed.png",
+            lat: -26.801980,
+            lng: 153.133200,
+            coords_source: "address",
+            coords_accuracy: "high",
+            address: "51 Minchinton St, Caloundra QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "casual_dinner"],
+            known_for_bullets: [
+                "Indoor food hall with multiple cuisines",
+                "Good rainy-day or group option",
+                "Easy choice when tastes differ"
+            ],
+            price_risk: "medium",
+            walk_in_friendliness: "high",
+            service_speed: "fast",
+            formality_level: 0,
+            vibe_tags: ["casual", "variety", "group-friendly"],
+
+        }, {
             name: "Maple 3 Cafe",
             slug: "maple-3-cafe-maleny",
             category: "Cafe",

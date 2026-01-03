@@ -355,13 +355,22 @@ export default function RadarView({ venues, userLocation, onUpdateLocation, init
                                     }}
                                 >
                                     <div className={cn(
-                                        "flex items-center justify-center drop-shadow-[0_0_10px_rgba(255,255,255,0.3)] filter grayscale-[0.3] hover:grayscale-0 transition-transform duration-300 hover:scale-150",
+                                        "relative flex items-center justify-center transition-all duration-300 hover:scale-150",
+                                        venue.isOpen
+                                            ? "drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                                            : "filter grayscale opacity-40"
                                     )}>
                                         {PlanetIcon}
+                                        {!venue.isOpen && (
+                                            <div className="absolute -inset-1.5 border border-orange-500/40 rounded-full" />
+                                        )}
+                                        {venue.isOpen && (
+                                            <div className="absolute -inset-1.5 bg-white/10 rounded-full animate-pulse blur-[2px]" />
+                                        )}
                                     </div>
                                     <div className={cn(
                                         "absolute top-full -mt-1 flex flex-col items-center pointer-events-none -space-y-[2px] bg-black/90 px-2.5 py-2 rounded-xl border shadow-lg",
-                                        isMatch ? "border-orange-500/30" : "border-white/10"
+                                        isMatch ? "border-orange-500/30" : (venue.isOpen ? "border-white/10" : "border-orange-950/20")
                                     )}>
                                         {/* Callout (Priority): Special or Known For */}
                                         {(() => {

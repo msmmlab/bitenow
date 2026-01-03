@@ -9,6 +9,154 @@ module.exports = {
 
     venues: [
         // --- Batch 1: Caloundra / Kings Beach / Bulcock Beach / Golden Beach / Dicky Beach ---
+        {
+            name: "Finn Thai",
+            slug: "finn-thai-golden-beach-caloundra",
+            category: "Thai",
+            icon: "/icons/asian.png",
+            lat: -26.388620,
+            lng: 153.110540,
+            coords_source: "address",
+            coords_accuracy: "high",
+            address: "10/48 Landsborough Parade, Golden Beach QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "dinner", "takeaway"],
+
+            known_for_bullets: [
+                "Highly recommended",
+                "Reliable local Thai favourite",
+                "Well-balanced flavours and curries",
+                "Good option for casual dine-in or takeaway"
+            ],
+
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["casual", "local-favourite", "comfort-food"],
+            google_place_id: "ChIJE1ZtFQCZk2sRpSKQoNClYic",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                tue: [],
+
+                wed: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                thu: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                fri: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                sat: [{
+                    open: "1200",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                sun: [{
+                    open: "1200",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }]
+            },
+
+            internationalPhoneNumber: "+61 452 625 965",
+            rating: 4.8
+        },
+        {
+            name: "Golden Beach Tavern",
+            slug: "golden-beach-tavern-caloundra",
+            category: "Pub / Bistro",
+            icon: "/icons/pub.png",
+            lat: -26.389430,
+            lng: 153.109210,
+            coords_source: "address",
+            coords_accuracy: "high",
+            address: "32 Bowman Rd, Caloundra QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "dinner"],
+
+            known_for_bullets: [
+                "Classic Aussie pub meals",
+                "Family-friendly with outdoor seating",
+                "Reliable portions and value"
+            ],
+
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["casual", "family-friendly", "pub-classic"],
+            google_place_id: "ChIJu19TVFuZk2sRhtqNTz3kZiQ",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1000",
+                    close: "0400"
+                }],
+
+                tue: [{
+                    open: "1000",
+                    close: "0400"
+                }],
+
+                wed: [{
+                    open: "1000",
+                    close: "0400"
+                }],
+
+                thu: [{
+                    open: "1000",
+                    close: "0400"
+                }],
+
+                fri: [{
+                    open: "1000",
+                    close: "0400"
+                }],
+
+                sat: [{
+                    open: "1000",
+                    close: "0400"
+                }],
+
+                sun: [{
+                    open: "1000",
+                    close: "0400"
+                }]
+            },
+
+            internationalPhoneNumber: "+61 7 5492 8300",
+            rating: 4.5
+        },
 
         {
             name: "White Picket Fence Cafe",
@@ -65,7 +213,10 @@ module.exports = {
                     open: "0630",
                     close: "1400"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5343 6911",
+            rating: 4.3
         },
 
         {
@@ -123,7 +274,10 @@ module.exports = {
                     open: "0530",
                     close: "1900"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5438 1773",
+            rating: 4.2
         },
 
         {
@@ -202,7 +356,9 @@ module.exports = {
                     open: "1630",
                     close: "2030"
                 }]
-            }
+            },
+
+            rating: 4.5
         },
 
         // --- FIX: keep this one (Bulcock Beach). We'll remove the duplicate "Tides" further down. ---
@@ -260,7 +416,10 @@ module.exports = {
                     open: "1200",
                     close: "2200"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5438 2304",
+            rating: 4.6
         },
 
         {
@@ -340,7 +499,10 @@ module.exports = {
                     open: "1700",
                     close: "2100"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5499 7427",
+            rating: 4.6
         },
 
         {
@@ -418,7 +580,10 @@ module.exports = {
                     open: "1730",
                     close: "2100"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5492 8155",
+            rating: 4.3
         },
 
         {
@@ -439,7 +604,9 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["family", "groups", "casual"],
-            google_place_id: "ChIJkWSi4EaZk2sRQzXhg2oLjl4"
+            google_place_id: "ChIJkWSi4EaZk2sRQzXhg2oLjl4",
+            internationalPhoneNumber: "+61 7 5491 2768",
+            rating: 3.8
         },
 
         {
@@ -497,7 +664,10 @@ module.exports = {
                     open: "0530",
                     close: "2000"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5492 2466",
+            rating: 4.3
         },
 
         {
@@ -552,7 +722,10 @@ module.exports = {
                     open: "0600",
                     close: "1330"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 426 681 281",
+            rating: 4.7
         },
 
         {
@@ -564,7 +737,7 @@ module.exports = {
             lng: 153.128602,
             coords_source: "address",
             coords_accuracy: "high",
-            address: "111 Bulcock St, Caloundra QLD 4551",
+            address: "40 Landsborough Parade, Golden Beach QLD 4551",
             is_active: true,
             best_for: ["breakfast", "coffee", "lunch"],
             known_for_bullets: ["Classic café breakfasts", "Good coffee + fast service", "Reliable daytime option"],
@@ -610,7 +783,78 @@ module.exports = {
                     open: "0600",
                     close: "1500"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 423 800 482",
+            rating: 4.7
+        },
+
+
+        {
+            name: "Caloundra Power Boat Club",
+            slug: "caloundra-power-boat-club-golden-beach",
+            category: "Club / Bistro",
+            icon: "/icons/pub.png",
+            lat: -26.387980,
+            lng: 153.108350,
+            coords_source: "address",
+            coords_accuracy: "high",
+            address: "2 Bowman Rd, Golden Beach QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "dinner"],
+
+            known_for_bullets: [
+                "Waterfront dining on Pumicestone Passage",
+                "Large menu with seafood and classics",
+                "Good for groups and families"
+            ],
+
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["waterfront", "casual", "group-friendly"],
+            google_place_id: "ChIJoTBWm0KZk2sRxk9oxLKjwhE",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1000",
+                    close: "0000"
+                }],
+
+                tue: [{
+                    open: "1000",
+                    close: "0000"
+                }],
+
+                wed: [{
+                    open: "1000",
+                    close: "0000"
+                }],
+
+                thu: [{
+                    open: "1000",
+                    close: "0000"
+                }],
+
+                fri: [{
+                    open: "1000",
+                    close: "0000"
+                }],
+
+                sat: [{
+                    open: "1000",
+                    close: "0000"
+                }],
+
+                sun: [{
+                    open: "1000",
+                    close: "0000"
+                }]
+            },
+
+            internationalPhoneNumber: "+61 7 5492 1444",
+            rating: 4.2
         },
 
         {
@@ -680,7 +924,10 @@ module.exports = {
                     open: "1630",
                     close: "2130"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5438 9688",
+            rating: 4.3
         },
 
         {
@@ -753,7 +1000,10 @@ module.exports = {
                     open: "1630",
                     close: "2030"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5492 6644",
+            rating: 4.1
         },
 
         {
@@ -811,7 +1061,10 @@ module.exports = {
                     open: "0530",
                     close: "1900"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5438 1773",
+            rating: 4.2
         },
 
         {
@@ -869,7 +1122,10 @@ module.exports = {
                     open: "0600",
                     close: "2000"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5341 8475",
+            rating: 4.5
         },
 
         {
@@ -928,7 +1184,10 @@ module.exports = {
                     open: "0600",
                     close: "2000"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5341 8475",
+            rating: 4.5
         },
 
         {
@@ -986,7 +1245,10 @@ module.exports = {
                     open: "1000",
                     close: "2100"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 3558 3310",
+            rating: 3.9
         },
 
         {
@@ -1044,7 +1306,10 @@ module.exports = {
                     open: "1000",
                     close: "2200"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5491 6078",
+            rating: 4.3
         },
 
         {
@@ -1102,7 +1367,10 @@ module.exports = {
                     open: "0700",
                     close: "1430"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 424 762 946",
+            rating: 4.6
         },
 
         {
@@ -1161,7 +1429,10 @@ module.exports = {
                     open: "1200",
                     close: "2200"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5438 2304",
+            rating: 4.6
         },
 
         {
@@ -1219,7 +1490,10 @@ module.exports = {
                     open: "0530",
                     close: "2100"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 476 793 800",
+            rating: 4.5
         },
 
         {
@@ -1275,7 +1549,10 @@ module.exports = {
                     open: "0700",
                     close: "1430"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 424 762 946",
+            rating: 4.6
         },
 
         // --- Existing (Industrial Ave) venue kept ---
@@ -1327,7 +1604,10 @@ module.exports = {
                     open: "1200",
                     close: "1900"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5491 4023",
+            rating: 4.6
         },
 
         {
@@ -1385,7 +1665,10 @@ module.exports = {
                     open: "1000",
                     close: "0100"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 3051 7647",
+            rating: 4
         },
 
         {
@@ -1407,7 +1690,9 @@ module.exports = {
             formality_level: 2,
             vibe_tags: ["date", "coastal", "polished"],
             booking_likely: true,
-            google_place_id: "ChIJMYD6Es2ek2sRdT0yuf19GM0"
+            google_place_id: "ChIJMYD6Es2ek2sRdT0yuf19GM0",
+            internationalPhoneNumber: "+61 7 5492 6666",
+            rating: 4.2
         },
 
         {
@@ -1465,7 +1750,10 @@ module.exports = {
                     open: "0700",
                     close: "1400"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 455 616 237",
+            rating: 4.8
         },
 
         {
@@ -1523,7 +1811,10 @@ module.exports = {
                     open: "0830",
                     close: "1900"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5437 0344",
+            rating: 3.9
         },
 
         {
@@ -1581,7 +1872,10 @@ module.exports = {
                     open: "0630",
                     close: "1200"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 400 535 900",
+            rating: 4.8
         },
 
         // -------------------------------------------------------------------------
@@ -1641,7 +1935,10 @@ module.exports = {
                     open: "1700",
                     close: "2000"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5491 9511",
+            rating: 4.5
         },
 
         {
@@ -1721,7 +2018,10 @@ module.exports = {
                     open: "1730",
                     close: "2100"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5492 8155",
+            rating: 4.3
         },
 
         {
@@ -1794,7 +2094,10 @@ module.exports = {
                     open: "1700",
                     close: "2000"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5437 0990",
+            rating: 4.8
         },
 
         {
@@ -1852,7 +2155,10 @@ module.exports = {
                     open: "1000",
                     close: "0500"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5439 4555",
+            rating: 4.3
         },
 
         {
@@ -1910,7 +2216,10 @@ module.exports = {
                     open: "0900",
                     close: "1730"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5325 1367",
+            rating: 4.8
         },
 
         {
@@ -1986,7 +2295,10 @@ module.exports = {
                     open: "1630",
                     close: "2030"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5499 7075",
+            rating: 4.3
         },
 
         {
@@ -2038,7 +2350,10 @@ module.exports = {
                 }],
 
                 sun: []
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5357 9674",
+            rating: 4.7
         },
 
         // Kings Beach extras
@@ -2097,7 +2412,10 @@ module.exports = {
                     open: "1200",
                     close: "2000"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5491 6660",
+            rating: 3.9
         },
 
         {
@@ -2156,7 +2474,10 @@ module.exports = {
                     open: "0700",
                     close: "1900"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5337 9926",
+            rating: 4.1
         },
 
         // Moffat Beach essentials
@@ -2215,7 +2536,10 @@ module.exports = {
                     open: "0630",
                     close: "2200"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5491 4023",
+            rating: 4.3
         },
 
         {
@@ -2273,7 +2597,10 @@ module.exports = {
                     open: "0630",
                     close: "2200"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5491 4023",
+            rating: 4.3
         },
 
         {
@@ -2333,7 +2660,10 @@ module.exports = {
                 }],
 
                 sun: []
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5438 2175",
+            rating: 4.9
         },
 
         {
@@ -2355,7 +2685,8 @@ module.exports = {
             formality_level: 2,
             vibe_tags: ["date", "special-occasion", "polished"],
             booking_likely: true,
-            google_place_id: "ChIJawkSxRefk2sRIU7CimVLR9Q"
+            google_place_id: "ChIJawkSxRefk2sRIU7CimVLR9Q",
+            rating: 4.6
         },
 
         // Golden Beach adds
@@ -2423,7 +2754,10 @@ module.exports = {
                     open: "1700",
                     close: "2000"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5437 4258",
+            rating: 4.4
         },
 
         {
@@ -2478,7 +2812,10 @@ module.exports = {
                     open: "1630",
                     close: "2100"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5437 3578",
+            rating: 4.6
         },
     ],
 };

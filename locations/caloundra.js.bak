@@ -9,6 +9,154 @@ module.exports = {
 
     venues: [
         // --- Batch 1: Caloundra / Kings Beach / Bulcock Beach / Golden Beach / Dicky Beach ---
+        {
+            name: "Finn Thai",
+            slug: "finn-thai-golden-beach-caloundra",
+            category: "Thai",
+            icon: "/icons/asian.png",
+            lat: -26.388620,
+            lng: 153.110540,
+            coords_source: "address",
+            coords_accuracy: "high",
+            address: "10/48 Landsborough Parade, Golden Beach QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "dinner", "takeaway"],
+
+            known_for_bullets: [
+                "Highly recommended",
+                "Reliable local Thai favourite",
+                "Well-balanced flavours and curries",
+                "Good option for casual dine-in or takeaway"
+            ],
+
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["casual", "local-favourite", "comfort-food"],
+            google_place_id: "ChIJE1ZtFQCZk2sRpSKQoNClYic",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                tue: [],
+
+                wed: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                thu: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                fri: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                sat: [{
+                    open: "1200",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                sun: [{
+                    open: "1200",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }]
+            },
+
+            internationalPhoneNumber: "+61 452 625 965",
+            rating: 4.8
+        },
+        {
+            name: "Golden Beach Tavern",
+            slug: "golden-beach-tavern-caloundra",
+            category: "Pub / Bistro",
+            icon: "/icons/pub.png",
+            lat: -26.389430,
+            lng: 153.109210,
+            coords_source: "address",
+            coords_accuracy: "high",
+            address: "32 Bowman Rd, Caloundra QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "dinner"],
+
+            known_for_bullets: [
+                "Classic Aussie pub meals",
+                "Family-friendly with outdoor seating",
+                "Reliable portions and value"
+            ],
+
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["casual", "family-friendly", "pub-classic"],
+            google_place_id: "ChIJu19TVFuZk2sRhtqNTz3kZiQ",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1000",
+                    close: "0400"
+                }],
+
+                tue: [{
+                    open: "1000",
+                    close: "0400"
+                }],
+
+                wed: [{
+                    open: "1000",
+                    close: "0400"
+                }],
+
+                thu: [{
+                    open: "1000",
+                    close: "0400"
+                }],
+
+                fri: [{
+                    open: "1000",
+                    close: "0400"
+                }],
+
+                sat: [{
+                    open: "1000",
+                    close: "0400"
+                }],
+
+                sun: [{
+                    open: "1000",
+                    close: "0400"
+                }]
+            },
+
+            internationalPhoneNumber: "+61 7 5492 8300",
+            rating: 4.5
+        },
 
         {
             name: "White Picket Fence Cafe",
@@ -65,7 +213,10 @@ module.exports = {
                     open: "0630",
                     close: "1400"
                 }]
-            }
+            },
+
+            internationalPhoneNumber: "+61 7 5343 6911",
+            rating: 4.3
         },
 
         {
@@ -360,6 +511,65 @@ module.exports = {
             formality_level: 2,
             vibe_tags: ["steak", "date", "buzz"],
             booking_likely: true,
+            google_place_id: "ChIJyS9lLUeZk2sRWvxHwRHLkUM",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }],
+
+                tue: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }],
+
+                wed: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }],
+
+                thu: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }],
+
+                fri: [{
+                    open: "0730",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }],
+
+                sat: [{
+                    open: "0730",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }],
+
+                sun: [{
+                    open: "0730",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }]
+            }
         },
 
         {
@@ -380,6 +590,7 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["family", "groups", "casual"],
+            google_place_id: "ChIJkWSi4EaZk2sRQzXhg2oLjl4"
         },
 
         {
@@ -400,6 +611,44 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["waterfront", "casual", "family"],
+            google_place_id: "ChIJMaB4j0KZk2sRl_SwsAonMl4",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0530",
+                    close: "1400"
+                }],
+
+                tue: [{
+                    open: "0530",
+                    close: "1400"
+                }],
+
+                wed: [{
+                    open: "0530",
+                    close: "1400"
+                }],
+
+                thu: [{
+                    open: "0530",
+                    close: "1400"
+                }],
+
+                fri: [{
+                    open: "0530",
+                    close: "2000"
+                }],
+
+                sat: [{
+                    open: "0530",
+                    close: "2000"
+                }],
+
+                sun: [{
+                    open: "0530",
+                    close: "2000"
+                }]
+            }
         },
 
         {
@@ -420,6 +669,41 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["locals", "brunch", "casual"],
+            google_place_id: "ChIJj9OSJMmek2sRKCOixlFdhM8",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0600",
+                    close: "1330"
+                }],
+
+                tue: [{
+                    open: "0600",
+                    close: "1330"
+                }],
+
+                wed: [{
+                    open: "0600",
+                    close: "1330"
+                }],
+
+                thu: [],
+
+                fri: [{
+                    open: "0600",
+                    close: "1330"
+                }],
+
+                sat: [{
+                    open: "0600",
+                    close: "1330"
+                }],
+
+                sun: [{
+                    open: "0600",
+                    close: "1330"
+                }]
+            }
         },
 
         {
@@ -431,7 +715,7 @@ module.exports = {
             lng: 153.128602,
             coords_source: "address",
             coords_accuracy: "high",
-            address: "111 Bulcock St, Caloundra QLD 4551",
+            address: "40 Landsborough Parade, Golden Beach QLD 4551",
             is_active: true,
             best_for: ["breakfast", "coffee", "lunch"],
             known_for_bullets: ["Classic café breakfasts", "Good coffee + fast service", "Reliable daytime option"],
@@ -440,6 +724,69 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["casual", "quick", "locals"],
+            google_place_id: "ChIJVX8fPx6Zk2sReu__uukWpa4",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0600",
+                    close: "1500"
+                }],
+
+                tue: [{
+                    open: "0600",
+                    close: "1500"
+                }],
+
+                wed: [{
+                    open: "0600",
+                    close: "1500"
+                }],
+
+                thu: [{
+                    open: "0600",
+                    close: "1500"
+                }],
+
+                fri: [{
+                    open: "0600",
+                    close: "1500"
+                }],
+
+                sat: [{
+                    open: "0600",
+                    close: "1500"
+                }],
+
+                sun: [{
+                    open: "0600",
+                    close: "1500"
+                }]
+            }
+        },
+
+
+        {
+            name: "Caloundra Power Boat Club",
+            slug: "caloundra-power-boat-club-golden-beach",
+            category: "Club / Bistro",
+            icon: "/icons/pub.png",
+            lat: -26.387980,
+            lng: 153.108350,
+            coords_source: "address",
+            coords_accuracy: "high",
+            address: "2 Bowman Rd, Golden Beach QLD 4551",
+            is_active: true,
+            best_for: ["lunch", "dinner"],
+            known_for_bullets: [
+                "Waterfront dining on Pumicestone Passage",
+                "Large menu with seafood and classics",
+                "Good for groups and families"
+            ],
+            price_risk: "low",
+            walk_in_friendliness: "high",
+            service_speed: "medium",
+            formality_level: 0,
+            vibe_tags: ["waterfront", "casual", "group-friendly"],
         },
 
         {
@@ -460,6 +807,56 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["casual", "hearty", "comfort-food"],
+            google_place_id: "ChIJq0xOVEeZk2sROmIZQtM20Zo",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1430",
+                    close: "2130"
+                }],
+
+                tue: [{
+                    open: "1430",
+                    close: "2130"
+                }],
+
+                wed: [{
+                    open: "1630",
+                    close: "2130"
+                }],
+
+                thu: [{
+                    open: "1130",
+                    close: "1500"
+                }, {
+                    open: "1630",
+                    close: "2130"
+                }],
+
+                fri: [{
+                    open: "1130",
+                    close: "1500"
+                }, {
+                    open: "1630",
+                    close: "2130"
+                }],
+
+                sat: [{
+                    open: "1130",
+                    close: "1500"
+                }, {
+                    open: "1630",
+                    close: "2130"
+                }],
+
+                sun: [{
+                    open: "1130",
+                    close: "1500"
+                }, {
+                    open: "1630",
+                    close: "2130"
+                }]
+            }
         },
 
         {
@@ -480,6 +877,59 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["casual", "groups", "quick"],
+            google_place_id: "ChIJJ3hRd0eZk2sRRe0_cbpD7DQ",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1030",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                tue: [{
+                    open: "1030",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                wed: [{
+                    open: "1030",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                thu: [{
+                    open: "1030",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                fri: [{
+                    open: "1030",
+                    close: "1430"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                sat: [{
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                sun: [{
+                    open: "1630",
+                    close: "2030"
+                }]
+            }
         },
 
         {
@@ -500,6 +950,44 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["brunch", "beach", "locals"],
+            google_place_id: "ChIJG2XwNjqZk2sRxkqk0_rFAAw",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0530",
+                    close: "1530"
+                }],
+
+                tue: [{
+                    open: "0530",
+                    close: "1530"
+                }],
+
+                wed: [{
+                    open: "0530",
+                    close: "1530"
+                }],
+
+                thu: [{
+                    open: "0530",
+                    close: "2130"
+                }],
+
+                fri: [{
+                    open: "0530",
+                    close: "2130"
+                }],
+
+                sat: [{
+                    open: "0530",
+                    close: "2130"
+                }],
+
+                sun: [{
+                    open: "0530",
+                    close: "1900"
+                }]
+            }
         },
 
         {
@@ -520,6 +1008,44 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["views", "casual", "sunset"],
+            google_place_id: "ChIJY7EMNDqZk2sRAOgd2g7XSmA",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0600",
+                    close: "2100"
+                }],
+
+                tue: [{
+                    open: "0600",
+                    close: "2100"
+                }],
+
+                wed: [{
+                    open: "0600",
+                    close: "2100"
+                }],
+
+                thu: [{
+                    open: "0600",
+                    close: "2100"
+                }],
+
+                fri: [{
+                    open: "0600",
+                    close: "2100"
+                }],
+
+                sat: [{
+                    open: "0600",
+                    close: "2100"
+                }],
+
+                sun: [{
+                    open: "0600",
+                    close: "2000"
+                }]
+            }
         },
 
         {
@@ -541,6 +1067,44 @@ module.exports = {
             formality_level: 2,
             vibe_tags: ["date", "calm", "polished"],
             booking_likely: true,
+            google_place_id: "ChIJY7EMNDqZk2sRAOgd2g7XSmA",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0600",
+                    close: "2100"
+                }],
+
+                tue: [{
+                    open: "0600",
+                    close: "2100"
+                }],
+
+                wed: [{
+                    open: "0600",
+                    close: "2100"
+                }],
+
+                thu: [{
+                    open: "0600",
+                    close: "2100"
+                }],
+
+                fri: [{
+                    open: "0600",
+                    close: "2100"
+                }],
+
+                sat: [{
+                    open: "0600",
+                    close: "2100"
+                }],
+
+                sun: [{
+                    open: "0600",
+                    close: "2000"
+                }]
+            }
         },
 
         {
@@ -561,6 +1125,44 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["casual", "family", "value"],
+            google_place_id: "ChIJ9W2LYceek2sRMYnAk1RFW-U",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1000",
+                    close: "2100"
+                }],
+
+                tue: [{
+                    open: "1000",
+                    close: "2100"
+                }],
+
+                wed: [{
+                    open: "1000",
+                    close: "2100"
+                }],
+
+                thu: [{
+                    open: "1000",
+                    close: "2100"
+                }],
+
+                fri: [{
+                    open: "1000",
+                    close: "0000"
+                }],
+
+                sat: [{
+                    open: "1000",
+                    close: "0000"
+                }],
+
+                sun: [{
+                    open: "1000",
+                    close: "2100"
+                }]
+            }
         },
 
         {
@@ -581,6 +1183,44 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["views", "casual", "family"],
+            google_place_id: "ChIJp71ptsiek2sRxxYGqx2TNzE",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1000",
+                    close: "2200"
+                }],
+
+                tue: [{
+                    open: "1000",
+                    close: "2200"
+                }],
+
+                wed: [{
+                    open: "1000",
+                    close: "2230"
+                }],
+
+                thu: [{
+                    open: "1000",
+                    close: "2230"
+                }],
+
+                fri: [{
+                    open: "1000",
+                    close: "0000"
+                }],
+
+                sat: [{
+                    open: "1000",
+                    close: "0000"
+                }],
+
+                sun: [{
+                    open: "1000",
+                    close: "2200"
+                }]
+            }
         },
 
         {
@@ -601,6 +1241,44 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["locals", "brunch", "quality"],
+            google_place_id: "ChIJe8R308qek2sRtpKYa05CmQE",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0700",
+                    close: "1430"
+                }],
+
+                tue: [{
+                    open: "0700",
+                    close: "1430"
+                }],
+
+                wed: [{
+                    open: "0700",
+                    close: "1430"
+                }],
+
+                thu: [{
+                    open: "0700",
+                    close: "1430"
+                }],
+
+                fri: [{
+                    open: "0700",
+                    close: "1430"
+                }],
+
+                sat: [{
+                    open: "0700",
+                    close: "1430"
+                }],
+
+                sun: [{
+                    open: "0700",
+                    close: "1430"
+                }]
+            }
         },
 
         {
@@ -622,6 +1300,44 @@ module.exports = {
             formality_level: 2,
             vibe_tags: ["views", "date", "classic"],
             booking_likely: true,
+            google_place_id: "ChIJN62dqUCZk2sROcaMrU85DVU",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1200",
+                    close: "2200"
+                }],
+
+                tue: [{
+                    open: "1200",
+                    close: "2200"
+                }],
+
+                wed: [{
+                    open: "1200",
+                    close: "2200"
+                }],
+
+                thu: [{
+                    open: "1200",
+                    close: "2200"
+                }],
+
+                fri: [{
+                    open: "1200",
+                    close: "2200"
+                }],
+
+                sat: [{
+                    open: "1200",
+                    close: "2200"
+                }],
+
+                sun: [{
+                    open: "1200",
+                    close: "2200"
+                }]
+            }
         },
 
         {
@@ -642,6 +1358,44 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["locals", "beach", "quick"],
+            google_place_id: "ChIJ87-8BM2ek2sRFuG9voNdOZw",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0530",
+                    close: "1430"
+                }],
+
+                tue: [{
+                    open: "0530",
+                    close: "1430"
+                }],
+
+                wed: [{
+                    open: "0530",
+                    close: "1430"
+                }],
+
+                thu: [{
+                    open: "0530",
+                    close: "2100"
+                }],
+
+                fri: [{
+                    open: "0530",
+                    close: "2100"
+                }],
+
+                sat: [{
+                    open: "0530",
+                    close: "2100"
+                }],
+
+                sun: [{
+                    open: "0530",
+                    close: "2100"
+                }]
+            }
         },
 
         {
@@ -660,6 +1414,44 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["brunch", "views", "locals"],
+            google_place_id: "ChIJe8R308qek2sRtpKYa05CmQE",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0700",
+                    close: "1430"
+                }],
+
+                tue: [{
+                    open: "0700",
+                    close: "1430"
+                }],
+
+                wed: [{
+                    open: "0700",
+                    close: "1430"
+                }],
+
+                thu: [{
+                    open: "0700",
+                    close: "1430"
+                }],
+
+                fri: [{
+                    open: "0700",
+                    close: "1430"
+                }],
+
+                sat: [{
+                    open: "0700",
+                    close: "1430"
+                }],
+
+                sun: [{
+                    open: "0700",
+                    close: "1430"
+                }]
+            }
         },
 
         // --- Existing (Industrial Ave) venue kept ---
@@ -681,6 +1473,37 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["lively", "groups", "beer"],
+            google_place_id: "ChIJC2xbLyGbk2sRFyYjd7QoRPI",
+
+            opening_hours_json: {
+                mon: [],
+                tue: [],
+
+                wed: [{
+                    open: "1200",
+                    close: "1900"
+                }],
+
+                thu: [{
+                    open: "1200",
+                    close: "1900"
+                }],
+
+                fri: [{
+                    open: "1200",
+                    close: "1900"
+                }],
+
+                sat: [{
+                    open: "1200",
+                    close: "1900"
+                }],
+
+                sun: [{
+                    open: "1200",
+                    close: "1900"
+                }]
+            }
         },
 
         {
@@ -701,6 +1524,44 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["casual", "locals", "value"],
+            google_place_id: "ChIJz2EsSjCZk2sRmmJmwRAMw6I",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1000",
+                    close: "0100"
+                }],
+
+                tue: [{
+                    open: "1000",
+                    close: "0100"
+                }],
+
+                wed: [{
+                    open: "1000",
+                    close: "0100"
+                }],
+
+                thu: [{
+                    open: "1000",
+                    close: "0100"
+                }],
+
+                fri: [{
+                    open: "1000",
+                    close: "0300"
+                }],
+
+                sat: [{
+                    open: "1000",
+                    close: "0300"
+                }],
+
+                sun: [{
+                    open: "1000",
+                    close: "0100"
+                }]
+            }
         },
 
         {
@@ -722,6 +1583,7 @@ module.exports = {
             formality_level: 2,
             vibe_tags: ["date", "coastal", "polished"],
             booking_likely: true,
+            google_place_id: "ChIJMYD6Es2ek2sRdT0yuf19GM0"
         },
 
         {
@@ -742,6 +1604,44 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["quick", "locals"],
+            google_place_id: "ChIJgbA8jDiZk2sRyDwUCHiK0_I",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0600",
+                    close: "1430"
+                }],
+
+                tue: [{
+                    open: "0600",
+                    close: "1430"
+                }],
+
+                wed: [{
+                    open: "0600",
+                    close: "1430"
+                }],
+
+                thu: [{
+                    open: "0600",
+                    close: "1430"
+                }],
+
+                fri: [{
+                    open: "0600",
+                    close: "1430"
+                }],
+
+                sat: [{
+                    open: "0700",
+                    close: "1400"
+                }],
+
+                sun: [{
+                    open: "0700",
+                    close: "1400"
+                }]
+            }
         },
 
         {
@@ -762,6 +1662,44 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["casual", "beach", "quick"],
+            google_place_id: "ChIJG2XwNjqZk2sRAVTIQLp495E",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0830",
+                    close: "1900"
+                }],
+
+                tue: [{
+                    open: "0830",
+                    close: "1900"
+                }],
+
+                wed: [{
+                    open: "0830",
+                    close: "1900"
+                }],
+
+                thu: [{
+                    open: "0830",
+                    close: "1900"
+                }],
+
+                fri: [{
+                    open: "0830",
+                    close: "1900"
+                }],
+
+                sat: [{
+                    open: "0830",
+                    close: "1900"
+                }],
+
+                sun: [{
+                    open: "0830",
+                    close: "1900"
+                }]
+            }
         },
 
         {
@@ -769,9 +1707,9 @@ module.exports = {
             slug: "grounded-coffee-co-caloundra",
             category: "Cafe",
             icon: "/icons/coffee.png",
-            lat: -26.8045,
-            lng: 153.132968,
-            coords_source: "address",
+            lat: -26.567723,
+            lng: 153.095461,
+            coords_source: "mapbox_poi",
             coords_accuracy: "high",
             address: "6/45 Bulcock St, Caloundra QLD 4551",
             is_active: true,
@@ -782,6 +1720,44 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["locals", "casual"],
+            google_place_id: "ChIJYc2y1biZk2sRi6T0xFCA-8w",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0530",
+                    close: "1400"
+                }],
+
+                tue: [{
+                    open: "0530",
+                    close: "1630"
+                }],
+
+                wed: [{
+                    open: "0530",
+                    close: "1600"
+                }],
+
+                thu: [{
+                    open: "0530",
+                    close: "1630"
+                }],
+
+                fri: [{
+                    open: "0530",
+                    close: "1830"
+                }],
+
+                sat: [{
+                    open: "0530",
+                    close: "1200"
+                }],
+
+                sun: [{
+                    open: "0630",
+                    close: "1200"
+                }]
+            }
         },
 
         // -------------------------------------------------------------------------
@@ -807,6 +1783,41 @@ module.exports = {
             service_speed: "medium",
             formality_level: 1,
             vibe_tags: ["date", "italian", "sit-down"],
+            google_place_id: "ChIJ_xBn3TiZk2sRXk5KEkzFGco",
+
+            opening_hours_json: {
+                mon: [],
+
+                tue: [{
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                wed: [{
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                thu: [{
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                fri: [{
+                    open: "1700",
+                    close: "2030"
+                }],
+
+                sat: [{
+                    open: "1700",
+                    close: "2030"
+                }],
+
+                sun: [{
+                    open: "1700",
+                    close: "2000"
+                }]
+            }
         },
 
         {
@@ -814,10 +1825,10 @@ module.exports = {
             slug: "acqua-caloundra",
             category: "Mediterranean / Waterfront",
             icon: "/icons/fancy_dinner.png",
-            lat: null,
-            lng: null,
-            coords_source: "tbd",
-            coords_accuracy: "tbd",
+            lat: -26.805708,
+            lng: 153.130232,
+            coords_source: "mapbox_poi",
+            coords_accuracy: "high",
             address: "Corner of The Esplanade & Otranto Ave, Bulcock Beach, Caloundra QLD 4551",
             is_active: true,
             best_for: ["lunch", "dinner", "fancy_dinner"],
@@ -828,6 +1839,65 @@ module.exports = {
             formality_level: 2,
             vibe_tags: ["views", "date", "special-occasion"],
             booking_likely: true,
+            google_place_id: "ChIJyS9lLUeZk2sRWvxHwRHLkUM",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }],
+
+                tue: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }],
+
+                wed: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }],
+
+                thu: [{
+                    open: "1100",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }],
+
+                fri: [{
+                    open: "0730",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }],
+
+                sat: [{
+                    open: "0730",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }],
+
+                sun: [{
+                    open: "0730",
+                    close: "1430"
+                }, {
+                    open: "1730",
+                    close: "2100"
+                }]
+            }
         },
 
         {
@@ -848,6 +1918,59 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["casual", "quick", "asian"],
+            google_place_id: "ChIJTejUkk2Zk2sRdD0wbusKMvk",
+
+            opening_hours_json: {
+                mon: [],
+
+                tue: [{
+                    open: "1130",
+                    close: "1500"
+                }, {
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                wed: [{
+                    open: "1130",
+                    close: "1500"
+                }, {
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                thu: [{
+                    open: "1130",
+                    close: "1500"
+                }, {
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                fri: [{
+                    open: "1130",
+                    close: "1500"
+                }, {
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                sat: [{
+                    open: "1130",
+                    close: "1500"
+                }, {
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                sun: [{
+                    open: "1130",
+                    close: "1500"
+                }, {
+                    open: "1700",
+                    close: "2000"
+                }]
+            }
         },
 
         {
@@ -868,6 +1991,44 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["casual", "groups", "value"],
+            google_place_id: "ChIJEeMQIkeZk2sR26ShH32C284",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1000",
+                    close: "0500"
+                }],
+
+                tue: [{
+                    open: "1000",
+                    close: "0500"
+                }],
+
+                wed: [{
+                    open: "1000",
+                    close: "0500"
+                }],
+
+                thu: [{
+                    open: "1000",
+                    close: "0500"
+                }],
+
+                fri: [{
+                    open: "1000",
+                    close: "0500"
+                }],
+
+                sat: [{
+                    open: "1000",
+                    close: "0500"
+                }],
+
+                sun: [{
+                    open: "1000",
+                    close: "0500"
+                }]
+            }
         },
 
         {
@@ -888,6 +2049,44 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["casual", "groups", "quick"],
+            google_place_id: "ChIJ__9v_DiZk2sR3FbBz26MLS8",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0900",
+                    close: "1730"
+                }],
+
+                tue: [{
+                    open: "0900",
+                    close: "1730"
+                }],
+
+                wed: [{
+                    open: "0900",
+                    close: "1730"
+                }],
+
+                thu: [{
+                    open: "0900",
+                    close: "1730"
+                }],
+
+                fri: [{
+                    open: "0900",
+                    close: "1730"
+                }],
+
+                sat: [{
+                    open: "0900",
+                    close: "1730"
+                }],
+
+                sun: [{
+                    open: "0900",
+                    close: "1730"
+                }]
+            }
         },
 
         {
@@ -895,10 +2094,10 @@ module.exports = {
             slug: "penang-chinese-cuisine-caloundra",
             category: "Chinese / Malaysian",
             icon: "/icons/asian.png",
-            lat: null,
-            lng: null,
-            coords_source: "tbd",
-            coords_accuracy: "tbd",
+            lat: -26.805149,
+            lng: 153.134491,
+            coords_source: "mapbox_poi",
+            coords_accuracy: "high",
             address: "3/18 Bulcock St, Caloundra QLD 4551",
             is_active: true,
             best_for: ["dinner"],
@@ -908,6 +2107,62 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["family", "casual", "comfort-food"],
+            google_place_id: "ChIJWcc7-ziZk2sRMQEBxul22Ks",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                tue: [{
+                    open: "1130",
+                    close: "1400"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                wed: [{
+                    open: "1130",
+                    close: "1400"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                thu: [{
+                    open: "1130",
+                    close: "1400"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }],
+
+                fri: [{
+                    open: "1130",
+                    close: "1400"
+                }, {
+                    open: "1630",
+                    close: "2100"
+                }],
+
+                sat: [{
+                    open: "1130",
+                    close: "1400"
+                }, {
+                    open: "1630",
+                    close: "2100"
+                }],
+
+                sun: [{
+                    open: "1130",
+                    close: "1400"
+                }, {
+                    open: "1630",
+                    close: "2030"
+                }]
+            }
         },
 
         {
@@ -928,6 +2183,38 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["quick", "casual", "grab-and-go"],
+            google_place_id: "ChIJ3Qe0KaiZk2sRzIoSxpJbrRw",
+
+            opening_hours_json: {
+                mon: [],
+
+                tue: [{
+                    open: "1000",
+                    close: "1530"
+                }],
+
+                wed: [{
+                    open: "1000",
+                    close: "1530"
+                }],
+
+                thu: [{
+                    open: "1000",
+                    close: "1530"
+                }],
+
+                fri: [{
+                    open: "1000",
+                    close: "1530"
+                }],
+
+                sat: [{
+                    open: "1000",
+                    close: "1430"
+                }],
+
+                sun: []
+            }
         },
 
         // Kings Beach extras
@@ -936,10 +2223,10 @@ module.exports = {
             slug: "surfside-pizza-kings-beach",
             category: "Pizza",
             icon: "/icons/italian.png",
-            lat: null,
-            lng: null,
-            coords_source: "tbd",
-            coords_accuracy: "tbd",
+            lat: -26.567723,
+            lng: 153.095461,
+            coords_source: "mapbox_poi",
+            coords_accuracy: "high",
             address: "43 Moreton Pde, Kings Beach QLD 4551",
             is_active: true,
             best_for: ["dinner", "late_night"],
@@ -949,6 +2236,44 @@ module.exports = {
             service_speed: "fast",
             formality_level: 0,
             vibe_tags: ["casual", "quick", "takeaway-friendly"],
+            google_place_id: "ChIJxVGpFTCZk2sRYpyvY5ybhQw",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1200",
+                    close: "2000"
+                }],
+
+                tue: [{
+                    open: "1200",
+                    close: "2000"
+                }],
+
+                wed: [{
+                    open: "1200",
+                    close: "2000"
+                }],
+
+                thu: [{
+                    open: "1200",
+                    close: "2000"
+                }],
+
+                fri: [{
+                    open: "1200",
+                    close: "2000"
+                }],
+
+                sat: [{
+                    open: "1200",
+                    close: "2000"
+                }],
+
+                sun: [{
+                    open: "1200",
+                    close: "2000"
+                }]
+            }
         },
 
         {
@@ -970,6 +2295,44 @@ module.exports = {
             formality_level: 2,
             vibe_tags: ["date", "polished", "italian"],
             booking_likely: true,
+            google_place_id: "ChIJm7ugntqZk2sRapW0Bjiug7Y",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0800",
+                    close: "1900"
+                }],
+
+                tue: [{
+                    open: "0800",
+                    close: "1900"
+                }],
+
+                wed: [{
+                    open: "0800",
+                    close: "1900"
+                }],
+
+                thu: [{
+                    open: "0800",
+                    close: "1900"
+                }],
+
+                fri: [{
+                    open: "0800",
+                    close: "1900"
+                }],
+
+                sat: [{
+                    open: "0700",
+                    close: "1900"
+                }],
+
+                sun: [{
+                    open: "0700",
+                    close: "1900"
+                }]
+            }
         },
 
         // Moffat Beach essentials
@@ -978,10 +2341,10 @@ module.exports = {
             slug: "moffat-beach-brewing-co-beachside",
             category: "Brewery / Food",
             icon: "/icons/craft_beer.png",
-            lat: null,
-            lng: null,
-            coords_source: "tbd",
-            coords_accuracy: "tbd",
+            lat: -26.790154,
+            lng: 153.142053,
+            coords_source: "mapbox_poi",
+            coords_accuracy: "high",
             address: "12 Seaview Tce, Moffat Beach QLD 4551",
             is_active: true,
             best_for: ["beer", "afternoon", "dinner", "late_night"],
@@ -991,6 +2354,44 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["beach", "lively", "groups"],
+            google_place_id: "ChIJ2YNjG82ek2sRZopGqY_g3RU",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0630",
+                    close: "2100"
+                }],
+
+                tue: [{
+                    open: "0630",
+                    close: "2200"
+                }],
+
+                wed: [{
+                    open: "0630",
+                    close: "2200"
+                }],
+
+                thu: [{
+                    open: "0630",
+                    close: "2200"
+                }],
+
+                fri: [{
+                    open: "0630",
+                    close: "2200"
+                }],
+
+                sat: [{
+                    open: "0630",
+                    close: "2200"
+                }],
+
+                sun: [{
+                    open: "0630",
+                    close: "2200"
+                }]
+            }
         },
 
         {
@@ -1011,6 +2412,44 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["brunch", "locals", "beach"],
+            google_place_id: "ChIJ2YNjG82ek2sRZopGqY_g3RU",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "0630",
+                    close: "2100"
+                }],
+
+                tue: [{
+                    open: "0630",
+                    close: "2200"
+                }],
+
+                wed: [{
+                    open: "0630",
+                    close: "2200"
+                }],
+
+                thu: [{
+                    open: "0630",
+                    close: "2200"
+                }],
+
+                fri: [{
+                    open: "0630",
+                    close: "2200"
+                }],
+
+                sat: [{
+                    open: "0630",
+                    close: "2200"
+                }],
+
+                sun: [{
+                    open: "0630",
+                    close: "2200"
+                }]
+            }
         },
 
         {
@@ -1018,10 +2457,10 @@ module.exports = {
             slug: "zeecaf-nosh-co-moffat",
             category: "Japanese / Cafe",
             icon: "/icons/asian.png",
-            lat: null,
-            lng: null,
-            coords_source: "tbd",
-            coords_accuracy: "tbd",
+            lat: -26.567723,
+            lng: 153.095461,
+            coords_source: "mapbox_poi",
+            coords_accuracy: "high",
             address: "63 William St, Moffat Beach QLD 4551",
             is_active: true,
             best_for: ["lunch", "dinner"],
@@ -1031,6 +2470,46 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["casual", "asian", "locals"],
+            google_place_id: "ChIJK4YwgEqZk2sRvfrwWSBNs00",
+
+            opening_hours_json: {
+                mon: [],
+                tue: [],
+
+                wed: [{
+                    open: "1100",
+                    close: "1400"
+                }, {
+                    open: "1700",
+                    close: "1900"
+                }],
+
+                thu: [{
+                    open: "1100",
+                    close: "1400"
+                }, {
+                    open: "1700",
+                    close: "1900"
+                }],
+
+                fri: [{
+                    open: "1100",
+                    close: "1400"
+                }, {
+                    open: "1700",
+                    close: "1900"
+                }],
+
+                sat: [{
+                    open: "1100",
+                    close: "1400"
+                }, {
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                sun: []
+            }
         },
 
         {
@@ -1052,6 +2531,7 @@ module.exports = {
             formality_level: 2,
             vibe_tags: ["date", "special-occasion", "polished"],
             booking_likely: true,
+            google_place_id: "ChIJawkSxRefk2sRIU7CimVLR9Q"
         },
 
         // Golden Beach adds
@@ -1060,10 +2540,10 @@ module.exports = {
             slug: "copper-spoon-thai-golden-beach",
             category: "Thai",
             icon: "/icons/asian.png",
-            lat: null,
-            lng: null,
-            coords_source: "tbd",
-            coords_accuracy: "tbd",
+            lat: -26.821501,
+            lng: 153.120956,
+            coords_source: "mapbox_poi",
+            coords_accuracy: "high",
             address: "Ramada Resort, 75 Esplanade, Golden Beach QLD 4551",
             is_active: true,
             best_for: ["dinner"],
@@ -1073,6 +2553,53 @@ module.exports = {
             service_speed: "medium",
             formality_level: 1,
             vibe_tags: ["casual", "sit-down", "groups"],
+            google_place_id: "ChIJY1fhBXCZk2sRIajALv5xoYk",
+
+            opening_hours_json: {
+                mon: [{
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                tue: [{
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                wed: [{
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                thu: [{
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                fri: [{
+                    open: "1200",
+                    close: "1430"
+                }, {
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                sat: [{
+                    open: "1200",
+                    close: "1430"
+                }, {
+                    open: "1700",
+                    close: "2000"
+                }],
+
+                sun: [{
+                    open: "1200",
+                    close: "1430"
+                }, {
+                    open: "1700",
+                    close: "2000"
+                }]
+            }
         },
 
         {
@@ -1093,6 +2620,41 @@ module.exports = {
             service_speed: "medium",
             formality_level: 0,
             vibe_tags: ["casual", "comfort-food", "takeaway-friendly"],
+            google_place_id: "ChIJO5ZtTcyZk2sR7zfHEZQzNMM",
+
+            opening_hours_json: {
+                mon: [],
+
+                tue: [{
+                    open: "1630",
+                    close: "2100"
+                }],
+
+                wed: [{
+                    open: "1630",
+                    close: "2100"
+                }],
+
+                thu: [{
+                    open: "1630",
+                    close: "2100"
+                }],
+
+                fri: [{
+                    open: "1630",
+                    close: "2100"
+                }],
+
+                sat: [{
+                    open: "1630",
+                    close: "2100"
+                }],
+
+                sun: [{
+                    open: "1630",
+                    close: "2100"
+                }]
+            }
         },
     ],
 };
