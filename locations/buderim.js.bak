@@ -42,10 +42,8 @@ module.exports = {
             formality_level: 0,
             vibe_tags: ["locals", "brunch", "casual"],
             google_place_id: "ChIJk9LFRpV2k2sRtYkovq3h9bw",
-            googleMatchedName: "The Loose Goose Restaurant",
-            googleMatchedAddress: "Unit 3/175 Ocean Dr, Twin Waters QLD 4564, Australia",
-            validationStatus: "Rejected",
-            validationReason: "address_mismatch"
+
+
         },
 
 
@@ -121,11 +119,7 @@ module.exports = {
             rating: 4.3,
             userRatingCount: 4172,
             primaryType: "pub",
-            businessStatus: "OPERATIONAL",
-            googleMatchedName: "Buderim Tavern",
-            googleMatchedAddress: "81 Burnett St, Buderim QLD 4556, Australia",
-            validationStatus: "Passed",
-            validationReason: "match_ok"
+            businessStatus: "OPERATIONAL"
         },
 
         {
@@ -152,11 +146,7 @@ module.exports = {
             service_speed: "medium",
             formality_level: 1,
             vibe_tags: ["relaxed", "date", "locals"],
-            google_place_id: "ChIJqVTfQsl1k2sR-LRvDga26yA",
-            googleMatchedName: "Pavilion Mooloolaba",
-            googleMatchedAddress: "Unit 26/121 Mooloolaba Espl, Mooloolaba QLD 4557, Australia",
-            validationStatus: "Rejected",
-            validationReason: "name_mismatch"
+            google_place_id: "ChIJqVTfQsl1k2sR-LRvDga26yA"
         },
 
         // -------------------------
@@ -189,63 +179,7 @@ module.exports = {
             primaryType: "thai_restaurant",
             businessStatus: "OPERATIONAL",
             internationalPhoneNumber: "+61 7 5456 1440",
-            rating: 4.1,
-            googleMatchedName: "Chuan Chim Thai Restaurant",
-            googleMatchedAddress: "Shop 4-5/9 Pittards Rd, Buderim QLD 4556, Australia",
-            validationStatus: "Passed",
-            validationReason: "match_ok",
-
-            opening_hours_json: {
-                mon: [{
-                    open: "1130",
-                    close: "1430"
-                }, {
-                    open: "1600",
-                    close: "2000"
-                }],
-
-                tue: [],
-
-                wed: [{
-                    open: "1130",
-                    close: "1430"
-                }, {
-                    open: "1600",
-                    close: "2000"
-                }],
-
-                thu: [{
-                    open: "1130",
-                    close: "1430"
-                }, {
-                    open: "1600",
-                    close: "2000"
-                }],
-
-                fri: [{
-                    open: "1130",
-                    close: "1430"
-                }, {
-                    open: "1600",
-                    close: "2000"
-                }],
-
-                sat: [{
-                    open: "1130",
-                    close: "1430"
-                }, {
-                    open: "1600",
-                    close: "2000"
-                }],
-
-                sun: [{
-                    open: "1130",
-                    close: "1430"
-                }, {
-                    open: "1600",
-                    close: "2000"
-                }]
-            }
+            rating: 4.1
         },
 
         {

@@ -5,6 +5,14 @@
 //    - opening_hours_json
 //    - internationalPhoneNumber
 //    - rating
+//    - userRatingCount
+//    - primaryType
+//    - businessStatus
+//    - validationStatus ("Passed" | "Rejected")
+//    - validationReason (why rejected / or "match_ok")
+//    - googleMatchedName (for audits)
+//    - googleMatchedAddress (for audits)
+//
 // ✅ PRESERVES formatting/comments using AST (recast)
 // ✅ Avoids redundant calls:
 //    - If google_place_id exists => details only
@@ -13,22 +21,115 @@
 //    - opening_hours_json is non-empty
 //    - internationalPhoneNumber exists
 //    - rating exists
+//    - userRatingCount exists
+//    - primaryType exists
+//    - businessStatus exists
+//    - validationStatus exists
 //
 // Usage:
-//   node scripts/checkOpeningHours.js caloundra all
-//   node scripts/checkOpeningHours.js caloundra 1
-//   node scripts/checkOpeningHours.js caloundra 5
-//   node scripts/checkOpeningHours.js caloundra all --force
+//   DEBUG_PLACES=1 node scripts/checkOpeningHours.js buderim 4
+//   node scripts/checkOpeningHours.js buderim all
+//   node scripts/checkOpeningHours.js buderim all --force
 //
 // Env (.env.local):
 //   GOOGLE_PLACES_API_KEY=xxxx
 // Optional:
-//   DEBUG_PLACES=1  (prints full details response)
+//   DEBUG_PLACES=1  (prints extra details/logs)
 //
 const fs = require("fs");
 const path = require("path");
 const recast = require("recast");
 const babelParser = require("@babel/parser");
+
+/* -------------------- Validation rules -------------------- */
+
+const DISALLOWED_TYPES = [
+    "community_center",
+    "shopping_mall",
+    "church",
+    "place_of_worship",
+    "school",
+    "university",
+    "gym",
+    "sports_complex",
+    "health",
+    "event_venue",
+    "lodging",
+];
+
+// Primary types that are “food-first” businesses.
+// If primaryType is one of these, we allow even if the place is inside a larger complex.
+const FOOD_FIRST_PRIMARY_TYPES = [
+    "cafe",
+    "restaurant",
+    "bar",
+    "bakery",
+    "meal_takeaway",
+    "meal_delivery",
+];
+
+function validatePlaceDetailsForVenueMatch(details, venue) {
+    const name = (details?.displayName?.text || "").toLowerCase().trim();
+    const venueName = (venue?.name || "").toLowerCase().trim();
+
+    const primaryType = (details?.primaryType || "").toLowerCase();
+    const types = (details?.types || []).map((t) => (t || "").toLowerCase());
+
+    const formattedAddress = (details?.formattedAddress || "").toLowerCase().trim();
+    const venueAddress = (venue?.address || "").toLowerCase().trim();
+
+    // --- A) Hard reject: disallowed types (with food-first escape hatch)
+    const hasDisallowed = types.some((t) => DISALLOWED_TYPES.includes(t));
+    const isFoodFirstPrimary = FOOD_FIRST_PRIMARY_TYPES.includes(primaryType);
+
+    if (hasDisallowed && !isFoodFirstPrimary) {
+        return {
+            ok: false,
+            reason: "disallowed_types",
+            debug: { primaryType, types },
+        };
+    }
+
+    // --- B) Name sanity check
+    const venueTokens = venueName.split(/\s+/).filter(Boolean);
+    const tokenHits = venueTokens.filter((tok) => tok.length >= 4 && name.includes(tok)).length;
+
+    // Require at least 2 meaningful token hits (e.g. "goodlife" + "cafe")
+    if (venueTokens.length >= 2 && tokenHits < 2) {
+        return {
+            ok: false,
+            reason: "name_mismatch",
+            debug: { name, venueName, tokenHits },
+        };
+    }
+
+    // --- C) Address sanity check (fuzzy)
+    const hasSomeAddressOverlap =
+        !venueAddress ||
+        !formattedAddress ||
+        venueAddress.includes("marketplace") ||
+        venueAddress.includes("shopping") ||
+        formattedAddress.includes("marketplace") ||
+        venueAddress.split(/\s+/).some((w) => w.length >= 5 && formattedAddress.includes(w));
+
+    if (!hasSomeAddressOverlap) {
+        return {
+            ok: false,
+            reason: "address_mismatch",
+            debug: { formattedAddress, venueAddress },
+        };
+    }
+
+    return {
+        ok: true,
+        reason: "match_ok",
+        debug: { primaryType, types },
+    };
+}
+
+/* -------------------- AST setup -------------------- */
+
+const b = recast.types.builders;
 
 function parseWithBabel(source) {
     return recast.parse(source, {
@@ -51,9 +152,8 @@ function parseWithBabel(source) {
     });
 }
 
-const b = recast.types.builders;
+/* -------------------- Env loading -------------------- */
 
-// -------------------- Env loading --------------------
 function loadEnv() {
     const envPath = path.join(__dirname, "../.env.local");
     if (!fs.existsSync(envPath)) return;
@@ -79,9 +179,18 @@ if (!GOOGLE_PLACES_API_KEY) {
 
 const LOCATIONS_DIR = path.join(__dirname, "../locations");
 
-// Sunshine Coast bias
-const DEFAULT_BIAS_CENTER = { lat: -26.7, lng: 153.1 };
-const DEFAULT_BIAS_RADIUS_M = 45000;
+/* -------------------- Helpers -------------------- */
+
+function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+}
+
+function toSlug(townArg) {
+    return String(townArg || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-");
+}
 
 // Hours schema
 const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
@@ -94,18 +203,6 @@ const DOW_TO_KEY = {
     SATURDAY: "sat",
     SUNDAY: "sun",
 };
-
-// -------------------- Utils --------------------
-function sleep(ms) {
-    return new Promise((r) => setTimeout(r, ms));
-}
-
-function toSlug(townArg) {
-    return String(townArg || "")
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "-");
-}
 
 function hmToHHMM(h, m) {
     const hh = String(h ?? 0).padStart(2, "0");
@@ -131,13 +228,11 @@ function dedupeSort(list) {
     return out;
 }
 
-// -------------------- Normalize from Google details --------------------
+/* -------------------- Normalize opening hours -------------------- */
+
 function normalizeHoursFromPeriods(detailsJson) {
     const out = emptyHours();
-    const periods =
-        detailsJson?.regularOpeningHours?.periods ||
-        detailsJson?.currentOpeningHours?.periods;
-
+    const periods = detailsJson?.regularOpeningHours?.periods || detailsJson?.currentOpeningHours?.periods;
     if (!Array.isArray(periods) || periods.length === 0) return null;
 
     for (const p of periods) {
@@ -235,13 +330,13 @@ function normalizeHours(detailsJson) {
     return (
         normalizeHoursFromPeriods(detailsJson) ||
         parseWeekdayDescriptions(
-            detailsJson?.regularOpeningHours?.weekdayDescriptions ||
-            detailsJson?.currentOpeningHours?.weekdayDescriptions
+            detailsJson?.regularOpeningHours?.weekdayDescriptions || detailsJson?.currentOpeningHours?.weekdayDescriptions
         )
     );
 }
 
-// -------------------- Address scoring --------------------
+/* -------------------- Address scoring for searchText candidates -------------------- */
+
 function scoreAddressMatch(venueAddress, candidateAddress) {
     if (!venueAddress || !candidateAddress) return 0;
 
@@ -252,16 +347,8 @@ function scoreAddressMatch(venueAddress, candidateAddress) {
     const number = (a.match(/\b\d+\b/) || [])[0];
     if (number && b.includes(number)) score += 2;
 
-    const keyTokens = [
-        "bulcock",
-        "caloundra",
-        "kings",
-        "moffat",
-        "golden",
-        "dicky",
-        "4551",
-        "qld",
-    ];
+    // (optional: tune per region; harmless if not present)
+    const keyTokens = ["qld", "4551", "4556", "4557"];
     for (const t of keyTokens) if (a.includes(t) && b.includes(t)) score += 2;
 
     const tokens = a.split(/[^a-z0-9]+/).filter(Boolean);
@@ -292,7 +379,12 @@ function pickBestPlace(searchJson, venue) {
     return best;
 }
 
-// -------------------- Google Places (New) --------------------
+/* -------------------- Google Places API -------------------- */
+
+// Sunshine Coast bias
+const DEFAULT_BIAS_CENTER = { lat: -26.7, lng: 153.1 };
+const DEFAULT_BIAS_RADIUS_M = 45000;
+
 async function placesSearchText(textQuery) {
     const url = "https://places.googleapis.com/v1/places:searchText";
 
@@ -317,41 +409,33 @@ async function placesSearchText(textQuery) {
         headers: {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
-            "X-Goog-FieldMask":
-                "places.id,places.displayName,places.formattedAddress,places.location",
+            "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress",
         },
         body: JSON.stringify(body),
     });
 
     if (!res.ok) {
         const text = await res.text().catch(() => "");
-        throw new Error(
-            `places:searchText failed (${res.status}): ${text.slice(0, 400)}`
-        );
+        throw new Error(`places:searchText failed (${res.status}): ${text.slice(0, 400)}`);
     }
     return res.json();
 }
 
 async function placesGetDetails(placeId) {
-    const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(
-        placeId
-    )}`;
+    const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`;
 
-    // ✅ include rating + internationalPhoneNumber here
     const res = await fetch(url, {
         method: "GET",
         headers: {
             "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
             "X-Goog-FieldMask":
-                "id,displayName,formattedAddress,internationalPhoneNumber,rating,regularOpeningHours.periods,regularOpeningHours.weekdayDescriptions,currentOpeningHours.periods,currentOpeningHours.weekdayDescriptions,utcOffsetMinutes",
+                "id,displayName,formattedAddress,internationalPhoneNumber,rating,userRatingCount,businessStatus,primaryType,types,regularOpeningHours.periods,regularOpeningHours.weekdayDescriptions,currentOpeningHours.periods,currentOpeningHours.weekdayDescriptions,utcOffsetMinutes",
         },
     });
 
     if (!res.ok) {
         const text = await res.text().catch(() => "");
-        throw new Error(
-            `places details failed (${res.status}): ${text.slice(0, 400)}`
-        );
+        throw new Error(`places details failed (${res.status}): ${text.slice(0, 400)}`);
     }
     return res.json();
 }
@@ -367,7 +451,8 @@ async function getBestPlaceForVenue(venue) {
     return pickBestPlace(searchJson, venue);
 }
 
-// -------------------- AST helpers --------------------
+/* -------------------- AST helpers -------------------- */
+
 function isIdentifierNamed(node, name) {
     return node && node.type === "Identifier" && node.name === name;
 }
@@ -388,8 +473,7 @@ function getPropKeyName(prop) {
     const k = prop.key;
     if (!k) return null;
     if (k.type === "Identifier") return k.name;
-    if (k.type === "StringLiteral" || k.type === "Literal")
-        return String(k.value);
+    if (k.type === "StringLiteral" || k.type === "Literal") return String(k.value);
     return null;
 }
 
@@ -400,8 +484,7 @@ function findObjectProperty(objExpr, propName) {
 
 function getStringValue(node) {
     if (!node) return null;
-    if (node.type === "StringLiteral" || node.type === "Literal")
-        return String(node.value);
+    if (node.type === "StringLiteral" || node.type === "Literal") return String(node.value);
     return null;
 }
 
@@ -445,8 +528,7 @@ function extractVenuesFromAST(ast) {
         if (!venuesProp) return { venuesArrayExpr: null };
 
         const venuesVal = venuesProp.value;
-        if (!venuesVal || venuesVal.type !== "ArrayExpression")
-            return { venuesArrayExpr: null };
+        if (!venuesVal || venuesVal.type !== "ArrayExpression") return { venuesArrayExpr: null };
 
         return { venuesArrayExpr: venuesVal };
     }
@@ -457,10 +539,17 @@ function extractVenuesFromAST(ast) {
 function extractVenueMeta(venueObjExpr) {
     const nameProp = findObjectProperty(venueObjExpr, "name");
     const addrProp = findObjectProperty(venueObjExpr, "address");
+
     const hoursProp = findObjectProperty(venueObjExpr, "opening_hours_json");
     const placeIdProp = findObjectProperty(venueObjExpr, "google_place_id");
+
     const phoneProp = findObjectProperty(venueObjExpr, "internationalPhoneNumber");
     const ratingProp = findObjectProperty(venueObjExpr, "rating");
+
+    const userRatingCountProp = findObjectProperty(venueObjExpr, "userRatingCount");
+    const primaryTypeProp = findObjectProperty(venueObjExpr, "primaryType");
+    const businessStatusProp = findObjectProperty(venueObjExpr, "businessStatus");
+    const validationStatusProp = findObjectProperty(venueObjExpr, "validationStatus");
 
     const name = nameProp ? getStringValue(nameProp.value) : null;
     const address = addrProp ? getStringValue(addrProp.value) : null;
@@ -468,6 +557,11 @@ function extractVenueMeta(venueObjExpr) {
 
     const internationalPhoneNumber = phoneProp ? getStringValue(phoneProp.value) : null;
     const rating = ratingProp ? getNumberValue(ratingProp.value) : null;
+
+    const userRatingCount = userRatingCountProp ? getNumberValue(userRatingCountProp.value) : null;
+    const primaryType = primaryTypeProp ? getStringValue(primaryTypeProp.value) : null;
+    const businessStatus = businessStatusProp ? getStringValue(businessStatusProp.value) : null;
+    const validationStatus = validationStatusProp ? getStringValue(validationStatusProp.value) : null;
 
     let hasNonEmptyHours = false;
     if (hoursProp && hoursProp.value && hoursProp.value.type === "ObjectExpression") {
@@ -485,13 +579,29 @@ function extractVenueMeta(venueObjExpr) {
     const hasPhone = !!(internationalPhoneNumber && String(internationalPhoneNumber).trim());
     const hasRating = typeof rating === "number" && Number.isFinite(rating);
 
-    return { name, address, google_place_id, hasNonEmptyHours, hasPhone, hasRating };
+    const hasUserRatingCount = typeof userRatingCount === "number" && Number.isFinite(userRatingCount);
+    const hasPrimaryType = !!(primaryType && String(primaryType).trim());
+    const hasBusinessStatus = !!(businessStatus && String(businessStatus).trim());
+    const hasValidationStatus = !!(validationStatus && String(validationStatus).trim());
+
+    return {
+        name,
+        address,
+        google_place_id,
+        hasNonEmptyHours,
+        hasPhone,
+        hasRating,
+        hasUserRatingCount,
+        hasPrimaryType,
+        hasBusinessStatus,
+        hasValidationStatus,
+    };
 }
 
 function upsertStringProperty(objExpr, propName, value) {
     if (value == null || value === "") return;
     const existing = findObjectProperty(objExpr, propName);
-    const newProp = b.property("init", b.identifier(propName), b.stringLiteral(value));
+    const newProp = b.property("init", b.identifier(propName), b.stringLiteral(String(value)));
 
     if (existing) {
         existing.value = newProp.value;
@@ -518,12 +628,11 @@ function upsertHoursProperty(venueObjExpr, hoursObjLiteralExpr) {
         existing.value = hoursObjLiteralExpr;
         return;
     }
-    venueObjExpr.properties.push(
-        b.property("init", b.identifier("opening_hours_json"), hoursObjLiteralExpr)
-    );
+    venueObjExpr.properties.push(b.property("init", b.identifier("opening_hours_json"), hoursObjLiteralExpr));
 }
 
-// -------------------- Main --------------------
+/* -------------------- Main -------------------- */
+
 async function run() {
     const townArg = process.argv[2];
     const countArg = process.argv[3];
@@ -567,9 +676,7 @@ async function run() {
         limit = Math.min(n, venueNodes.length);
     }
 
-    console.log(
-        `\n🔍 ${townSlug.toUpperCase()} — checking data for ${limit}/${venueNodes.length} venues (Google Places)`
-    );
+    console.log(`\n🔍 ${townSlug.toUpperCase()} — checking data for ${limit}/${venueNodes.length} venues (Google Places)`);
     console.log("------------------------------------------------------------");
 
     let updated = 0;
@@ -583,10 +690,18 @@ async function run() {
         const displayName = meta.name || `(venue #${i + 1})`;
 
         // ✅ Skip only if ALL are present (unless --force)
-        const isComplete = meta.hasNonEmptyHours && meta.hasPhone && meta.hasRating;
+        const isComplete =
+            meta.hasNonEmptyHours &&
+            meta.hasPhone &&
+            meta.hasRating &&
+            meta.hasUserRatingCount &&
+            meta.hasPrimaryType &&
+            meta.hasBusinessStatus &&
+            meta.hasValidationStatus;
+
         if (!force && isComplete) {
             skipped++;
-            console.log(`⏭️  [${i + 1}/${limit}] ${displayName}... (skipped; hours+phone+rating already present)`);
+            console.log(`⏭️  [${i + 1}/${limit}] ${displayName}... (skipped; all fields already present)`);
             continue;
         }
 
@@ -602,14 +717,16 @@ async function run() {
                 });
                 if (!best?.id) {
                     console.log("❌ Not Found");
+                    // mark as rejected audit (no match)
+                    upsertStringProperty(venueObjExpr, "validationStatus", "Rejected");
+                    upsertStringProperty(venueObjExpr, "validationReason", "not_found");
+                    updated++;
                     continue;
                 }
                 placeId = best.id;
                 searched++;
 
-                console.log(
-                    `\n    ↳ matched: ${best.displayName?.text || "(no name)"} | ${best.formattedAddress || "(no address)"} | ${placeId}`
-                );
+                console.log(`\n    ↳ matched: ${best.displayName?.text || "(no name)"} | ${best.formattedAddress || "(no address)"} | ${placeId}`);
 
                 upsertStringProperty(venueObjExpr, "google_place_id", placeId);
             } else {
@@ -619,22 +736,64 @@ async function run() {
 
             const details = await placesGetDetails(placeId);
 
+            const venue = {
+                name: meta.name || "",
+                address: meta.address || "",
+            };
+
+            const verdict = validatePlaceDetailsForVenueMatch(details, venue);
+
+            // Persist audit info no matter what (helps debugging)
+            upsertStringProperty(venueObjExpr, "googleMatchedName", details?.displayName?.text || "");
+            upsertStringProperty(venueObjExpr, "googleMatchedAddress", details?.formattedAddress || "");
+
+            if (!verdict.ok) {
+                upsertStringProperty(venueObjExpr, "validationStatus", "Rejected");
+                upsertStringProperty(venueObjExpr, "validationReason", verdict.reason);
+
+                if (process.env.DEBUG_PLACES === "1") {
+                    console.log(`❌ Reject match for "${venue.name}" → "${details?.displayName?.text}"`, verdict);
+                } else {
+                    console.log(`❌ Rejected (${verdict.reason})`);
+                }
+                updated++;
+                continue; // ✅ reject but continue processing next venues
+            }
+
+            // ✅ accepted
+            upsertStringProperty(venueObjExpr, "validationStatus", "Passed");
+            upsertStringProperty(venueObjExpr, "validationReason", "match_ok");
+
+            // --- Persist “metadata” fields
+            const userRatingCount = typeof details?.userRatingCount === "number" ? details.userRatingCount : null;
+            const primaryType = typeof details?.primaryType === "string" ? details.primaryType : null;
+            const businessStatus = typeof details?.businessStatus === "string" ? details.businessStatus : null;
+
+            if (userRatingCount != null) upsertNumberProperty(venueObjExpr, "userRatingCount", userRatingCount);
+            if (primaryType) upsertStringProperty(venueObjExpr, "primaryType", primaryType);
+            if (businessStatus) upsertStringProperty(venueObjExpr, "businessStatus", businessStatus);
+
             if (process.env.DEBUG_PLACES === "1") {
-                console.log("\n🧩 DETAILS RAW:\n" + JSON.stringify(details, null, 2));
+                console.log("✅ Accepted Google match", {
+                    venue: venue.name,
+                    googleName: details.displayName?.text,
+                    rating: details.rating,
+                    userRatingCount: details.userRatingCount,
+                    primaryType: details.primaryType,
+                    businessStatus: details.businessStatus,
+                });
             }
 
             // hours (only update if missing OR --force)
             const needHours = force || !meta.hasNonEmptyHours;
             if (needHours) {
-                const rawPeriods =
-                    details?.regularOpeningHours?.periods ||
-                    details?.currentOpeningHours?.periods;
+                const rawPeriods = details?.regularOpeningHours?.periods || details?.currentOpeningHours?.periods;
                 if (rawPeriods) console.log(`    ↳ raw periods count: ${rawPeriods.length}`);
 
                 const hours = normalizeHours(details);
                 if (hours) {
                     upsertHoursProperty(venueObjExpr, objectLiteralFromHours(hours));
-                    console.log(`    ✅ opening_hours_json: ${JSON.stringify(hours)}`);
+                    console.log(`    ✅ opening_hours_json updated`);
                 } else {
                     console.log("    ⚠️ No opening hours fields (periods/weekdayDescriptions)");
                 }
@@ -642,7 +801,7 @@ async function run() {
                 console.log("    ⏭️  opening_hours_json already present (not forcing)");
             }
 
-            // phone + rating (always fill if missing, or refresh if --force)
+            // phone + rating (fill if missing OR refresh if --force)
             const phone = details?.internationalPhoneNumber || null;
             const rating = typeof details?.rating === "number" ? details.rating : null;
 
@@ -651,7 +810,7 @@ async function run() {
 
             if (needPhone && phone) {
                 upsertStringProperty(venueObjExpr, "internationalPhoneNumber", phone);
-                console.log(`    ✅ internationalPhoneNumber: ${phone}`);
+                console.log(`    ✅ internationalPhoneNumber updated`);
             } else if (!needPhone) {
                 console.log("    ⏭️  internationalPhoneNumber already present (not forcing)");
             } else {
@@ -660,7 +819,7 @@ async function run() {
 
             if (needRating && rating != null) {
                 upsertNumberProperty(venueObjExpr, "rating", rating);
-                console.log(`    ✅ rating: ${rating}`);
+                console.log(`    ✅ rating updated`);
             } else if (!needRating) {
                 console.log("    ⏭️  rating already present (not forcing)");
             } else {
@@ -670,18 +829,20 @@ async function run() {
             updated++;
         } catch (err) {
             console.log(`\n    ❌ Error: ${err.message}`);
+            // audit failure
+            upsertStringProperty(venueObjExpr, "validationStatus", "Rejected");
+            upsertStringProperty(venueObjExpr, "validationReason", "api_error");
+            updated++;
         }
 
         await sleep(150);
     }
 
     console.log("------------------------------------------------------------");
-    console.log(
-        `✨ Done. Processed ${updated}/${limit}. Skipped ${skipped}. (searchText=${searched}, detailsOnly=${detailsOnly})\n`
-    );
+    console.log(`✨ Done. Updated ${updated}/${limit}. Skipped ${skipped}. (searchText=${searched}, detailsOnly=${detailsOnly})\n`);
 
+    // Always write file (even if some venues rejected)
     fs.copyFileSync(filePath, `${filePath}.bak`);
-
     const newSource = recast.print(ast, { quote: "double" }).code;
     fs.writeFileSync(filePath, newSource, "utf8");
 
